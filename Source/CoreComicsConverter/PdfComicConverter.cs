@@ -57,7 +57,11 @@ namespace CoreComicsConverter
             compressCbzTask.Pdf.CleanOutputDirectory();
             compressCbzTask.Pdf.CbzFileCreated = true;
 
+            var oldColor = Console.ForegroundColor;
+            Console.ForegroundColor = ConsoleColor.Green;
+
             Console.WriteLine($"FINISH {compressCbzTask.Pdf.GetCbzName()}");
+            Console.ForegroundColor = oldColor;
         }
 
         public CompressCbzTask StartCompressPages(Pdf pdf)
