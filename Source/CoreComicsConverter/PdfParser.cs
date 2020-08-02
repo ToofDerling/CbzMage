@@ -18,23 +18,21 @@ namespace CoreComicsConverter
         private ConcurrentBag<(int width, int height)> _imageSizes;
 
         private List<Exception> _parserErrors;
-
-        public void SetPageCount(Pdf pdf)
+                
+        public static void SetPageCount(PdfComic pdf)
         {
             using var pdfReader = new PdfReader(pdf.PdfPath);
-
-            var pdfDoc = new PdfDocument(pdfReader);
+            using var pdfDoc = new PdfDocument(pdfReader);
 
             if (pdfReader.IsEncrypted())
             {
-                throw new ApplicationException(pdf.PdfPath + " is encrypted.");
+                throw new ApplicationException($"{pdf.PdfPath} is encrypted.");
             }
-
 
             pdf.PageCount = pdfDoc.GetNumberOfPages();
         }
 
-        public List<(int width, int height, int count)> ParseImages(Pdf pdf)
+        public List<(int width, int height, int count)> ParseImages(PdfComic pdf)
         {
             if (pdf.PageCount == 0)
             {
@@ -47,7 +45,7 @@ namespace CoreComicsConverter
             _imageSizes = new ConcurrentBag<(int, int)>();
             _parserErrors = new List<Exception>();
 
-            Parallel.For(0, Program.ParallelThreads, (index, state) => ProcessPages(pdf, state));
+            Parallel.For(0, Settings.ParallelThreads, (index, state) => ProcessPages(pdf, state));
 
             pdf.ImageCount = _imageSizes.Count;
 
@@ -78,7 +76,7 @@ namespace CoreComicsConverter
             return imageSizesMap;
         }
 
-        private void ProcessPages(Pdf pdf, ParallelLoopState loopState)
+        private void ProcessPages(PdfComic pdf, ParallelLoopState loopState)
         {
             if (_pageQueue.IsEmpty)
             {

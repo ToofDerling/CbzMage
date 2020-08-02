@@ -5,9 +5,9 @@ using System.Linq;
 
 namespace CoreComicsConverter
 {
-    public class Pdf
+    public class PdfComic
     {
-        public Pdf(string path)
+        public PdfComic(string path)
         {
             PdfPath = path;
             OutputDirectory = Path.ChangeExtension(path, null);
@@ -84,9 +84,9 @@ namespace CoreComicsConverter
             Directory.CreateDirectory(OutputDirectory);
         }
 
-        public static List<Pdf> List(params string[] paths)
+        public static List<PdfComic> List(params string[] paths)
         {
-            return new List<Pdf>(paths.Select(x => new Pdf(x)));
+            return new List<PdfComic>(paths.Select(x => new PdfComic(x)));
         }
     }
 }

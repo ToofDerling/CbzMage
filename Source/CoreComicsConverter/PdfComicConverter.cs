@@ -1,19 +1,17 @@
 ﻿using CoreComicsConverter.Extensions;
-using CoreComicsConverter.Helpers;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace CoreComicsConverter
 {
     public class PdfComicConverter
     {
-        public CompressCbzTask ConvertToCbz(Pdf pdf, CompressCbzTask compressCbzTask)
+        public CompressCbzTask ConvertToCbz(PdfComic pdf, CompressCbzTask compressCbzTask)
         {
             pdf.CreateOutputDirectory();
 
@@ -64,7 +62,7 @@ namespace CoreComicsConverter
             Console.ForegroundColor = oldColor;
         }
 
-        public CompressCbzTask StartCompressPages(Pdf pdf)
+        private static CompressCbzTask StartCompressPages(PdfComic pdf)
         {
             var compressCbzTask = new CompressCbzTask(pdf);
 
@@ -74,7 +72,7 @@ namespace CoreComicsConverter
             return compressCbzTask;
         }
 
-        private List<(int width, int height, int count)> ParsePdfImages(Pdf pdf)
+        private static List<(int width, int height, int count)> ParsePdfImages(PdfComic pdf)
         {
             var progressReporter = new ProgressReporter(pdf.PageCount);
 
@@ -92,7 +90,7 @@ namespace CoreComicsConverter
             return imageSizesMap;
         }
 
-        private int ParseImageSizes(List<(int width, int height, int count)> sortedImageSizes)
+        private static int ParseImageSizes(List<(int width, int height, int count)> sortedImageSizes)
         {
             var mostOfThisSize = sortedImageSizes.First();
 
@@ -112,7 +110,7 @@ namespace CoreComicsConverter
             return largestSize.width;
         }
 
-        private int CalculateDpiForImageSize(Pdf pdf, int wantedImageWidth)
+        private static int CalculateDpiForImageSize(PdfComic pdf, int wantedImageWidth)
         {
             Console.WriteLine($"Wanted width: {wantedImageWidth}");
 
@@ -125,13 +123,13 @@ namespace CoreComicsConverter
             return dpi;
         }
 
-        private List<int>[] CreatePageLists(Pdf pdf)
+        private static List<int>[] CreatePageLists(PdfComic pdf)
         {
             var pageChunker = new PageChunker();
-            var pageLists = pageChunker.CreatePageLists(pdf.PageCount, 2, Program.ParallelThreads);
+            var pageLists = pageChunker.CreatePageLists(pdf.PageCount, 2, Settings.ParallelThreads);
 
             var sb = new StringBuilder();
-            sb.Append(Program.ParallelThreads).Append(" page threads: ");
+            sb.Append(Settings.ParallelThreads).Append(" page threads: ");
 
             Array.ForEach(pageLists, p => sb.Append(p.Count).Append(' '));
             Console.WriteLine(sb);
@@ -139,7 +137,7 @@ namespace CoreComicsConverter
             return pageLists;
         }
 
-        private ConcurrentQueue<(string name, int number)> ReadPages(Pdf pdf, List<int>[] pageLists, int dpi)
+        private static ConcurrentQueue<(string name, int number)> ReadPages(PdfComic pdf, List<int>[] pageLists, int dpi)
         {
             var allReadPages = new ConcurrentQueue<(string name, int number)>();
 
@@ -148,7 +146,7 @@ namespace CoreComicsConverter
 
             var progressReporter = new ProgressReporter(pdf.PageCount);
 
-            Parallel.For(0, Program.ParallelThreads, (index, state) =>
+            Parallel.For(0, Settings.ParallelThreads, (index, state) =>
             {
                 var pageList = pageLists[index];
 
@@ -167,19 +165,19 @@ namespace CoreComicsConverter
 
             if (allReadPages.Count != pdf.PageCount)
             {
-                throw new SomethingWentWrongException($"{nameof(allReadPages)} is {allReadPages.Count} should be {pdf.PageCount}");
+                throw new ApplicationException($"{nameof(allReadPages)} is {allReadPages.Count} should be {pdf.PageCount}");
             }
 
             return allReadPages;
         }
 
-        private void ConvertPages(Pdf pdf, ConcurrentQueue<(string name, int number)> allReadPages)
+        private static void ConvertPages(PdfComic pdf, ConcurrentQueue<(string name, int number)> allReadPages)
         {
             var progressReporter = new ProgressReporter(pdf.PageCount);
 
             var pageConverter = new PageConverter();
 
-            Parallel.For(0, Program.ParallelThreads, (index, state) =>
+            Parallel.For(0, Settings.ParallelThreads, (index, state) =>
             {
                 while (allReadPages.TryDequeue(out var page))
                 {
@@ -198,7 +196,7 @@ namespace CoreComicsConverter
 
             if (allReadPages.Count > 0)
             {
-                throw new SomethingWentWrongException($"{nameof(allReadPages)} is {allReadPages.Count} should be 0");
+                throw new ApplicationException($"{nameof(allReadPages)} is {allReadPages.Count} should be 0");
             }
         }
     }

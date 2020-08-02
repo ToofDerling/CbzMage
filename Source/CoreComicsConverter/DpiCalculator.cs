@@ -8,9 +8,9 @@ namespace CoreComicsConverter
     {
         private readonly int _wantedImageWidth;
 
-        private readonly Pdf _pdf;
+        private readonly PdfComic _pdf;
 
-        public DpiCalculator(Pdf pdf, int wantedImageWidth)
+        public DpiCalculator(PdfComic pdf, int wantedImageWidth)
         {
             _wantedImageWidth = wantedImageWidth;
 
@@ -19,7 +19,7 @@ namespace CoreComicsConverter
 
         public int CalculateDpi()
         {
-            var dpi = Program.QualityConstants.MinimumDpi;
+            var dpi = Settings.MinimumDpi;
 
             var width = GetImageWidth(dpi);
 
@@ -57,7 +57,7 @@ namespace CoreComicsConverter
                     var nextDiff = wantedWidth - nextWidth;
                     var bigStep = CalculateBigStep(diff, nextDiff, step);
 
-                    dpi = Program.QualityConstants.MinimumDpi + bigStep;
+                    dpi = Settings.MinimumDpi + bigStep;
                     nextWidth = GetImageWidth(dpi);
                 }
                 // Go down if big step put us above wanted width
@@ -85,7 +85,7 @@ namespace CoreComicsConverter
             return dpi;
         }
 
-        private int CalculateBigStep(int firstDiff, int nextDiff, int usedStep)
+        private static int CalculateBigStep(int firstDiff, int nextDiff, int usedStep)
         {
             var interval = (double)firstDiff - nextDiff;
             var factor = firstDiff / interval;
@@ -110,7 +110,7 @@ namespace CoreComicsConverter
                 width = image.Width;
             };
 
-            DpiCalculated?.Invoke(this, new DpiCalculatedEventArgs(dpi, Program.QualityConstants.MinimumDpi, width));
+            DpiCalculated?.Invoke(this, new DpiCalculatedEventArgs(dpi, Settings.MinimumDpi, width));
             return width;
         }
 

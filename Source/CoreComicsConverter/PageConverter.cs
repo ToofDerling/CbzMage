@@ -11,7 +11,7 @@ namespace CoreComicsConverter
             {
                 Format = MagickFormat.Jpg,
                 Interlace = Interlace.Plane,
-                Quality = Program.QualityConstants.JpegQuality
+                Quality = Settings.JpegQuality
             };
 
             image.Write(jpgPath);

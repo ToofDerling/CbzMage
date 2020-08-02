@@ -10,7 +10,7 @@ namespace CoreComicsConverter
             Number = number;
         }
 
-        public int Number;
+        public int Number { get; private set; }
 
         public string Name { get; private set; }
     }

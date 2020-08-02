@@ -6,24 +6,14 @@ using System.Linq;
 
 namespace CoreComicsConverter
 {
-    public class Program
+    public static class Program
     {
-        public static class QualityConstants
-        {
-            public const int MinimumDpi = 300;
-
-            public const int JpegQuality = 98;
-        }
 
 #if DEBUG
-        private static readonly string _testPdf = @"D:\Data\Pdf\Test";
+        private const string _testPdf = @"D:\Data\Pdf\Test";
 #else
-        private static readonly string _testPdf = null;
+        private const string _testPdf = null;
 #endif
-
-        public static readonly int ParallelThreads = Environment.ProcessorCount;
-
-        public static readonly string GhostscriptPath = @"C:\Program Files\gs\gs9.52\bin\gswin64c.exe";
 
         public static void Main(string[] args)
         {
@@ -49,12 +39,11 @@ namespace CoreComicsConverter
             Console.ReadLine();
         }
 
-        private static CompressCbzTask ConvertPdf(Pdf pdf, PdfComicConverter converter, CompressCbzTask compressPdfTask)
+        private static CompressCbzTask ConvertPdf(PdfComic pdf, PdfComicConverter converter, CompressCbzTask compressPdfTask)
         {
             var stopWatch = Stopwatch.StartNew();
 
-            var pdfParser = new PdfParser();
-            pdfParser.SetPageCount(pdf);
+            PdfParser.SetPageCount(pdf);
 
             Console.WriteLine(pdf.PdfPath);
             Console.WriteLine($"{pdf.PageCount} pages");
@@ -70,7 +59,7 @@ namespace CoreComicsConverter
             return compressPdfTask;
         }
 
-        private static List<Pdf> InitializePdfPath(string[] args)
+        private static List<PdfComic> InitializePdfPath(string[] args)
         {
             var path = (string)null;
 
@@ -90,17 +79,17 @@ namespace CoreComicsConverter
                     var files = Directory.GetFiles(path, "*.pdf"); // Search pattern is case insensitive
                     if (files.Length > 0)
                     {
-                        return Pdf.List(files.ToArray());
+                        return PdfComic.List(files.ToArray());
                     }
                 }
                 else if (File.Exists(path) && path.EndsWith(".pdf", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    return Pdf.List(path);
+                    return PdfComic.List(path);
                 }
             }
 
             // Nothing to do
-            return Pdf.List();
+            return PdfComic.List();
         }
     }
 }

@@ -7,13 +7,13 @@ namespace CoreComicsConverter
 {
     public class GhostscriptPageMachine
     {
-        private string GetSwitches(Pdf pdf, int dpi, string pageList, string outputFile)
+        private static string GetSwitches(PdfComic pdf, int dpi, string pageList, string outputFile)
         {
             var args = $"-dNOPAUSE -dBATCH -sDEVICE=png16m -sOutputFile={outputFile} -sPageList={pageList} -r{dpi} \"{pdf.PdfPath}\"";
             return args;
         }
 
-        private string CreatePageList(List<int> pageNumbers)
+        private static string CreatePageList(List<int> pageNumbers)
         {
             var sb = new StringBuilder();
 
@@ -23,7 +23,7 @@ namespace CoreComicsConverter
             return sb.ToString();
         }
 
-        public void ReadFirstPage(Pdf pdf, int dpi)
+        public void ReadFirstPage(PdfComic pdf, int dpi)
         {
             var switches = GetSwitches(pdf, dpi, "1", $"page-%0{pdf.PageCountLength}d.png");
 
@@ -32,7 +32,7 @@ namespace CoreComicsConverter
             RunAndWaitForProcess(process);
         }
 
-        public void ReadPageList(Pdf pdf, List<int> pageNumbers, int pageListId, int dpi)
+        public void ReadPageList(PdfComic pdf, List<int> pageNumbers, int pageListId, int dpi)
         {
             var pageList = CreatePageList(pageNumbers);
 
@@ -47,7 +47,7 @@ namespace CoreComicsConverter
             RunAndWaitForProcess(process, ProcessPriorityClass.Idle);
         }
 
-        private Queue<(string name, int number)> GetPageQueue(List<int> pageNumbers, int pageListId, int pageLength)
+        private static Queue<(string name, int number)> GetPageQueue(List<int> pageNumbers, int pageListId, int pageLength)
         {
             var pageQueue = new Queue<(string name, int number)>();
 
@@ -79,7 +79,7 @@ namespace CoreComicsConverter
         public event EventHandler<PageEventArgs> PageRead;
 
 
-        public void RunAndWaitForProcess(Process process, ProcessPriorityClass priorityClass = ProcessPriorityClass.Normal)
+        private static void RunAndWaitForProcess(Process process, ProcessPriorityClass priorityClass = ProcessPriorityClass.Normal)
         {
             process.Start();
 
@@ -91,11 +91,11 @@ namespace CoreComicsConverter
             process.WaitForExit();
         }
 
-        public Process GetGSProcess(string args, string outputDirectory)
+        public static Process GetGSProcess(string args, string outputDirectory)
         {
             var process = new Process();
 
-            process.StartInfo.FileName = Program.GhostscriptPath;
+            process.StartInfo.FileName = Settings.GhostscriptPath;
             process.StartInfo.Arguments = args;
 
             process.StartInfo.WorkingDirectory = outputDirectory;
