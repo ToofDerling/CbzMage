@@ -14,16 +14,6 @@ namespace CoreComicsConverter
                 Quality = Program.QualityConstants.JpegQuality
             };
 
-            //if (image.Height > Program.QualityConstants.MaxHeightThreshold)
-            //{
-            //    image.Resize(new MagickGeometry
-            //    {
-            //        Greater = true,
-            //        Less = false,
-            //        Height = Program.QualityConstants.MaxHeight
-            //    });
-            //}
-
             image.Write(jpgPath);
             File.Delete(pngPath);
 

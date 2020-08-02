@@ -13,10 +13,6 @@ namespace CoreComicsConverter
             public const int MinimumDpi = 300;
 
             public const int JpegQuality = 98;
-
-            public const int MaxHeightThreshold = 3100;
-
-            public const int MaxHeight = 3056;
         }
 
 #if DEBUG
