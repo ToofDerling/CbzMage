@@ -43,7 +43,7 @@ namespace CoreComicsConverter
             }
             else
             {
-                Console.WriteLine("PdfConverter <directory|pdf_file>");
+                Console.WriteLine("CoreComicsConverter <directory|pdf_file>");
             }
 
             Console.ReadLine();
