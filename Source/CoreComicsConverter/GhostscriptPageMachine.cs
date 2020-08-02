@@ -1,10 +1,9 @@
-﻿using Rotvel.PdfConverter;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 
-namespace Rotvel.PdfConverterCore
+namespace CoreComicsConverter
 {
     public class GhostscriptPageMachine
     {

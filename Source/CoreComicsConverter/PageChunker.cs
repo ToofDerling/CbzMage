@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Rotvel.PdfConverter
+namespace CoreComicsConverter
 {
     public class PageChunker
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Rotvel.PdfConverter.Helpers
+namespace CoreComicsConverter.Helpers
 {
     public class SomethingWentWrongException : ApplicationException
     {

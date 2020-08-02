@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Rotvel.PdfConverter.Extensions
+namespace CoreComicsConverter.Extensions
 {
     public static class ExceptionExtensions
     {

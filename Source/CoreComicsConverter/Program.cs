@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
-namespace Rotvel.PdfConverter
+namespace CoreComicsConverter
 {
     public class Program
     {

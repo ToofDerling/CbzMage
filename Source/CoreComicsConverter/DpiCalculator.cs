@@ -1,9 +1,8 @@
 ﻿using ImageMagick;
-using Rotvel.PdfConverterCore;
 using System;
 using System.IO;
 
-namespace Rotvel.PdfConverter
+namespace CoreComicsConverter
 {
     public class DpiCalculator
     {

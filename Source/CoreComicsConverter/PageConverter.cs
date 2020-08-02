@@ -1,7 +1,7 @@
 ﻿using ImageMagick;
 using System.IO;
 
-namespace Rotvel.PdfConverter
+namespace CoreComicsConverter
 {
     public class PageConverter
     {

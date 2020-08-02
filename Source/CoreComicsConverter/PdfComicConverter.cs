@@ -1,6 +1,5 @@
-﻿using Rotvel.PdfConverter.Extensions;
-using Rotvel.PdfConverter.Helpers;
-using Rotvel.PdfConverterCore;
+﻿using CoreComicsConverter.Extensions;
+using CoreComicsConverter.Helpers;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -10,7 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Rotvel.PdfConverter
+namespace CoreComicsConverter
 {
     public class PdfComicConverter
     {

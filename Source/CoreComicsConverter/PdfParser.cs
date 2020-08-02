@@ -1,15 +1,15 @@
-﻿using iText.Kernel.Pdf;
+﻿using CoreComicsConverter.Extensions;
+using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser;
 using iText.Kernel.Pdf.Canvas.Parser.Data;
 using iText.Kernel.Pdf.Canvas.Parser.Listener;
-using Rotvel.PdfConverter.Extensions;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Rotvel.PdfConverter
+namespace CoreComicsConverter
 {
     public class PdfParser : IEventListener
     {

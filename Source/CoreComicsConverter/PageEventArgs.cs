@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Rotvel.PdfConverter
+namespace CoreComicsConverter
 {
     public class PageEventArgs : EventArgs
     {

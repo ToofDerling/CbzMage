@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace Rotvel.PdfConverter
+namespace CoreComicsConverter
 {
     public class CompressCbzTask : Task
     {
