@@ -19,35 +19,35 @@ namespace CoreComicsConverter
 
         private List<Exception> _parserErrors;
                 
-        public static void SetPageCount(PdfComic pdf)
+        public static void SetPageCount(PdfComic pdfComic)
         {
-            using var pdfReader = new PdfReader(pdf.PdfPath);
+            using var pdfReader = new PdfReader(pdfComic.PdfPath);
             using var pdfDoc = new PdfDocument(pdfReader);
 
             if (pdfReader.IsEncrypted())
             {
-                throw new ApplicationException($"{pdf.PdfPath} is encrypted.");
+                throw new ApplicationException($"{pdfComic.PdfPath} is encrypted.");
             }
 
-            pdf.PageCount = pdfDoc.GetNumberOfPages();
+            pdfComic.PageCount = pdfDoc.GetNumberOfPages();
         }
 
-        public List<(int width, int height, int count)> ParseImages(PdfComic pdf)
+        public List<(int width, int height, int count)> ParseImages(PdfComic pdfComic)
         {
-            if (pdf.PageCount == 0)
+            if (pdfComic.PageCount == 0)
             {
-                SetPageCount(pdf);
+                SetPageCount(pdfComic);
             }
 
-            var pages = Enumerable.Range(1, pdf.PageCount);
+            var pages = Enumerable.Range(1, pdfComic.PageCount);
             _pageQueue = new ConcurrentQueue<int>(pages);
 
             _imageSizes = new ConcurrentBag<(int, int)>();
             _parserErrors = new List<Exception>();
 
-            Parallel.For(0, Settings.ParallelThreads, (index, state) => ProcessPages(pdf, state));
+            Parallel.For(0, Settings.ParallelThreads, (index, state) => ProcessPages(pdfComic, state));
 
-            pdf.ImageCount = _imageSizes.Count;
+            pdfComic.ImageCount = _imageSizes.Count;
 
             var imageSizesMap = BuildImageSizesMap();
 
@@ -76,7 +76,7 @@ namespace CoreComicsConverter
             return imageSizesMap;
         }
 
-        private void ProcessPages(PdfComic pdf, ParallelLoopState loopState)
+        private void ProcessPages(PdfComic pdfComic, ParallelLoopState loopState)
         {
             if (_pageQueue.IsEmpty)
             {
@@ -84,7 +84,7 @@ namespace CoreComicsConverter
                 return;
             }
 
-            using var pdfReader = new PdfReader(pdf.PdfPath);
+            using var pdfReader = new PdfReader(pdfComic.PdfPath);
             using var pdfDoc = new PdfDocument(pdfReader);
 
             var pdfDocParser = new PdfDocumentContentParser(pdfDoc);

@@ -4,11 +4,11 @@ namespace CoreComicsConverter
 {
     public class CompressCbzTask : Task
     {
-        public PdfComic Pdf { get; private set; }
+        public PdfComic PdfComic { get; private set; }
 
-        public CompressCbzTask(PdfComic pdf) : base(() => pdf.CompressPages())
+        public CompressCbzTask(PdfComic pdfComic) : base(() => pdfComic.CompressPages())
         {
-            Pdf = pdf;
+            PdfComic = pdfComic;
         }
     }
 }

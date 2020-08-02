@@ -11,32 +11,32 @@ namespace CoreComicsConverter
 {
     public class PdfComicConverter
     {
-        public CompressCbzTask ConvertToCbz(PdfComic pdf, CompressCbzTask compressCbzTask)
+        public CompressCbzTask ConvertToCbz(PdfComic pdfComic, CompressCbzTask compressCbzTask)
         {
-            pdf.CreateOutputDirectory();
+            pdfComic.CreateOutputDirectory();
 
-            var sortedImageSizes = ParsePdfImages(pdf);
+            var sortedImageSizes = ParsePdfImages(pdfComic);
             var wantedImageWidth = ParseImageSizes(sortedImageSizes);
 
-            var dpi = CalculateDpiForImageSize(pdf, wantedImageWidth);
-            var pageLists = CreatePageLists(pdf);
+            var dpi = CalculateDpiForImageSize(pdfComic, wantedImageWidth);
+            var pageLists = CreatePageLists(pdfComic);
 
             WaitForCompressPages(compressCbzTask, onlyCheckIfCompleted: true);
 
-            var allReadPages = ReadPages(pdf, pageLists, dpi);
+            var allReadPages = ReadPages(pdfComic, pageLists, dpi);
 
             WaitForCompressPages(compressCbzTask, onlyCheckIfCompleted: true);
 
-            ConvertPages(pdf, allReadPages);
+            ConvertPages(pdfComic, allReadPages);
 
             WaitForCompressPages(compressCbzTask);
 
-            return StartCompressPages(pdf);
+            return StartCompressPages(pdfComic);
         }
 
         public void WaitForCompressPages(CompressCbzTask compressCbzTask, bool onlyCheckIfCompleted = false)
         {
-            if (compressCbzTask == null || compressCbzTask.Pdf.CbzFileCreated)
+            if (compressCbzTask == null || compressCbzTask.PdfComic.CbzFileCreated)
             {
                 return;
             }
@@ -48,41 +48,41 @@ namespace CoreComicsConverter
                     return;
                 }
 
-                Console.WriteLine($"WAIT {compressCbzTask.Pdf.GetCbzName()}");
+                Console.WriteLine($"WAIT {compressCbzTask.PdfComic.GetCbzName()}");
                 compressCbzTask.Wait();
             }
 
-            compressCbzTask.Pdf.CleanOutputDirectory();
-            compressCbzTask.Pdf.CbzFileCreated = true;
+            compressCbzTask.PdfComic.CleanOutputDirectory();
+            compressCbzTask.PdfComic.CbzFileCreated = true;
 
             var oldColor = Console.ForegroundColor;
             Console.ForegroundColor = ConsoleColor.Green;
 
-            Console.WriteLine($"FINISH {compressCbzTask.Pdf.GetCbzName()}");
+            Console.WriteLine($"FINISH {compressCbzTask.PdfComic.GetCbzName()}");
             Console.ForegroundColor = oldColor;
         }
 
-        private static CompressCbzTask StartCompressPages(PdfComic pdf)
+        private static CompressCbzTask StartCompressPages(PdfComic pdfComic)
         {
-            var compressCbzTask = new CompressCbzTask(pdf);
+            var compressCbzTask = new CompressCbzTask(pdfComic);
 
-            Console.WriteLine($"START {compressCbzTask.Pdf.GetCbzName()}");
+            Console.WriteLine($"START {compressCbzTask.PdfComic.GetCbzName()}");
             compressCbzTask.Start();
 
             return compressCbzTask;
         }
 
-        private static List<(int width, int height, int count)> ParsePdfImages(PdfComic pdf)
+        private static List<(int width, int height, int count)> ParsePdfImages(PdfComic pdfComic)
         {
-            var progressReporter = new ProgressReporter(pdf.PageCount);
+            var progressReporter = new ProgressReporter(pdfComic.PageCount);
 
             var pdfImageParser = new PdfParser();
             pdfImageParser.PageParsed += (s, e) => progressReporter.ShowProgress($"Parsing page-{e.CurrentPage}");
 
-            var imageSizesMap = pdfImageParser.ParseImages(pdf);
+            var imageSizesMap = pdfImageParser.ParseImages(pdfComic);
 
             Console.WriteLine();
-            Console.WriteLine($"{pdf.ImageCount} images");
+            Console.WriteLine($"{pdfComic.ImageCount} images");
 
             var parserErrors = pdfImageParser.GetImageParserErrors();
             parserErrors.ForEach(ex => Console.WriteLine(ex.TypeAndMessage()));
@@ -110,11 +110,11 @@ namespace CoreComicsConverter
             return largestSize.width;
         }
 
-        private static int CalculateDpiForImageSize(PdfComic pdf, int wantedImageWidth)
+        private static int CalculateDpiForImageSize(PdfComic pdfComic, int wantedImageWidth)
         {
             Console.WriteLine($"Wanted width: {wantedImageWidth}");
 
-            var dpiCalculator = new DpiCalculator(pdf, wantedImageWidth);
+            var dpiCalculator = new DpiCalculator(pdfComic, wantedImageWidth);
             dpiCalculator.DpiCalculated += (s, e) => Console.WriteLine($" {e.Dpi} ({e.MinimumDpi}) -> {e.Width}");
 
             var dpi = dpiCalculator.CalculateDpi();
@@ -123,10 +123,10 @@ namespace CoreComicsConverter
             return dpi;
         }
 
-        private static List<int>[] CreatePageLists(PdfComic pdf)
+        private static List<int>[] CreatePageLists(PdfComic pdfComic)
         {
             var pageChunker = new PageChunker();
-            var pageLists = pageChunker.CreatePageLists(pdf.PageCount, 2, Settings.ParallelThreads);
+            var pageLists = pageChunker.CreatePageLists(pdfComic.PageCount, 2, Settings.ParallelThreads);
 
             var sb = new StringBuilder();
             sb.Append(Settings.ParallelThreads).Append(" page threads: ");
@@ -137,14 +137,14 @@ namespace CoreComicsConverter
             return pageLists;
         }
 
-        private static ConcurrentQueue<(string name, int number)> ReadPages(PdfComic pdf, List<int>[] pageLists, int dpi)
+        private static ConcurrentQueue<(string name, int number)> ReadPages(PdfComic pdfComic, List<int>[] pageLists, int dpi)
         {
             var allReadPages = new ConcurrentQueue<(string name, int number)>();
 
             // We have the first page already
-            allReadPages.Enqueue((pdf.GetPngPageString(1), 1));
+            allReadPages.Enqueue((pdfComic.GetPngPageString(1), 1));
 
-            var progressReporter = new ProgressReporter(pdf.PageCount);
+            var progressReporter = new ProgressReporter(pdfComic.PageCount);
 
             Parallel.For(0, Settings.ParallelThreads, (index, state) =>
             {
@@ -158,22 +158,22 @@ namespace CoreComicsConverter
                     progressReporter.ShowProgress($"Read {e.Name}");
                 };
 
-                machine.ReadPageList(pdf, pageList, index, dpi);
+                machine.ReadPageList(pdfComic, pageList, index, dpi);
             });
 
             Console.WriteLine();
 
-            if (allReadPages.Count != pdf.PageCount)
+            if (allReadPages.Count != pdfComic.PageCount)
             {
-                throw new ApplicationException($"{nameof(allReadPages)} is {allReadPages.Count} should be {pdf.PageCount}");
+                throw new ApplicationException($"{nameof(allReadPages)} is {allReadPages.Count} should be {pdfComic.PageCount}");
             }
 
             return allReadPages;
         }
 
-        private static void ConvertPages(PdfComic pdf, ConcurrentQueue<(string name, int number)> allReadPages)
+        private static void ConvertPages(PdfComic pdfComic, ConcurrentQueue<(string name, int number)> allReadPages)
         {
-            var progressReporter = new ProgressReporter(pdf.PageCount);
+            var progressReporter = new ProgressReporter(pdfComic.PageCount);
 
             var pageConverter = new PageConverter();
 
@@ -181,10 +181,10 @@ namespace CoreComicsConverter
             {
                 while (allReadPages.TryDequeue(out var page))
                 {
-                    var pngPath = Path.Combine(pdf.OutputDirectory, page.name);
+                    var pngPath = Path.Combine(pdfComic.OutputDirectory, page.name);
 
-                    var jpg = pdf.GetJpgPageString(page.number);
-                    var jpgPath = Path.Combine(pdf.OutputDirectory, jpg);
+                    var jpg = pdfComic.GetJpgPageString(page.number);
+                    var jpgPath = Path.Combine(pdfComic.OutputDirectory, jpg);
 
                     pageConverter.ConvertPage(pngPath, jpgPath);
 

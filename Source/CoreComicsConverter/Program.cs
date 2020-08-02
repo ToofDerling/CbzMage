@@ -39,16 +39,16 @@ namespace CoreComicsConverter
             Console.ReadLine();
         }
 
-        private static CompressCbzTask ConvertPdf(PdfComic pdf, PdfComicConverter converter, CompressCbzTask compressPdfTask)
+        private static CompressCbzTask ConvertPdf(PdfComic pdfComic, PdfComicConverter converter, CompressCbzTask compressPdfTask)
         {
             var stopWatch = Stopwatch.StartNew();
 
-            PdfParser.SetPageCount(pdf);
+            PdfParser.SetPageCount(pdfComic);
 
-            Console.WriteLine(pdf.PdfPath);
-            Console.WriteLine($"{pdf.PageCount} pages");
+            Console.WriteLine(pdfComic.PdfPath);
+            Console.WriteLine($"{pdfComic.PageCount} pages");
 
-            compressPdfTask = converter.ConvertToCbz(pdf, compressPdfTask);
+            compressPdfTask = converter.ConvertToCbz(pdfComic, compressPdfTask);
 
             stopWatch.Stop();
             var passed = stopWatch.Elapsed;

@@ -7,9 +7,9 @@ namespace CoreComicsConverter
 {
     public class GhostscriptPageMachine
     {
-        private static string GetSwitches(PdfComic pdf, int dpi, string pageList, string outputFile)
+        private static string GetSwitches(PdfComic pdfComic, int dpi, string pageList, string outputFile)
         {
-            var args = $"-dNOPAUSE -dBATCH -sDEVICE=png16m -sOutputFile={outputFile} -sPageList={pageList} -r{dpi} \"{pdf.PdfPath}\"";
+            var args = $"-dNOPAUSE -dBATCH -sDEVICE=png16m -sOutputFile={outputFile} -sPageList={pageList} -r{dpi} \"{pdfComic.PdfPath}\"";
             return args;
         }
 
@@ -23,24 +23,24 @@ namespace CoreComicsConverter
             return sb.ToString();
         }
 
-        public void ReadFirstPage(PdfComic pdf, int dpi)
+        public void ReadFirstPage(PdfComic pdfComic, int dpi)
         {
-            var switches = GetSwitches(pdf, dpi, "1", $"page-%0{pdf.PageCountLength}d.png");
+            var switches = GetSwitches(pdfComic, dpi, "1", $"page-%0{pdfComic.PageCountLength}d.png");
 
-            using var process = GetGSProcess(switches, pdf.OutputDirectory);
+            using var process = GetGSProcess(switches, pdfComic.OutputDirectory);
 
             RunAndWaitForProcess(process);
         }
 
-        public void ReadPageList(PdfComic pdf, List<int> pageNumbers, int pageListId, int dpi)
+        public void ReadPageList(PdfComic pdfComic, List<int> pageNumbers, int pageListId, int dpi)
         {
             var pageList = CreatePageList(pageNumbers);
 
-            var switches = GetSwitches(pdf, dpi, pageList, $"{pageListId}-%0{pdf.PageCountLength}d.png");
+            var switches = GetSwitches(pdfComic, dpi, pageList, $"{pageListId}-%0{pdfComic.PageCountLength}d.png");
 
-            var pageQueue = GetPageQueue(pageNumbers, pageListId, pdf.PageCountLength);
+            var pageQueue = GetPageQueue(pageNumbers, pageListId, pdfComic.PageCountLength);
 
-            using var process = GetGSProcess(switches, pdf.OutputDirectory);
+            using var process = GetGSProcess(switches, pdfComic.OutputDirectory);
 
             process.OutputDataReceived += (s, e) => OutputLineRead(pageQueue, e.Data);
 

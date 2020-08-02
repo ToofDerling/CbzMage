@@ -8,13 +8,13 @@ namespace CoreComicsConverter
     {
         private readonly int _wantedImageWidth;
 
-        private readonly PdfComic _pdf;
+        private readonly PdfComic _pdfComic;
 
-        public DpiCalculator(PdfComic pdf, int wantedImageWidth)
+        public DpiCalculator(PdfComic pdfComic, int wantedImageWidth)
         {
             _wantedImageWidth = wantedImageWidth;
 
-            _pdf = pdf;
+            _pdfComic = pdfComic;
         }
 
         public int CalculateDpi()
@@ -98,10 +98,10 @@ namespace CoreComicsConverter
         {
             var pageMachine = new GhostscriptPageMachine();
 
-            pageMachine.ReadFirstPage(_pdf, dpi);
+            pageMachine.ReadFirstPage(_pdfComic, dpi);
 
-            var page = _pdf.GetPngPageString(1);
-            var pagePath = Path.Combine(_pdf.OutputDirectory, page);
+            var page = _pdfComic.GetPngPageString(1);
+            var pagePath = Path.Combine(_pdfComic.OutputDirectory, page);
 
             int width;
             using (var image = new MagickImage())
