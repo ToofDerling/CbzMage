@@ -1,3 +1,5 @@
+using CoreComicsConverter.Images;
+using CoreComicsConverter.Model;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,13 +12,24 @@ namespace CoreComicsConverter
     {
 
 #if DEBUG
-        private const string _testPdf = @"D:\Data\Pdf\Test";
+        //private const string _testPdf = @"D:\Data\Pdf\Test\Hawkworld New Edition - Timothy Truman";
+        private const string _testPdf = @"D:\Data\Pdf\Test\";
 #else
         private const string _testPdf = null;
 #endif
 
         public static void Main(string[] args)
         {
+            
+            //var comic = new DirectoryComic(_testPdf);
+            ////pdfComic.ExtractPages(_testPdf);
+
+            //var dconverter = new PdfComicConverter();
+            //dconverter.ConvertToCbz(comic, null);
+
+            //var cbzConverter = new ArchiveConverter();
+            //cbzConverter.ConvertToPdf(comic);
+         
             var pdfList = InitializePdfPath(args);
 
             if (pdfList.Any())
@@ -42,11 +55,6 @@ namespace CoreComicsConverter
         private static CompressCbzTask ConvertPdf(PdfComic pdfComic, PdfComicConverter converter, CompressCbzTask compressPdfTask)
         {
             var stopWatch = Stopwatch.StartNew();
-
-            PdfParser.SetPageCount(pdfComic);
-
-            Console.WriteLine(pdfComic.PdfPath);
-            Console.WriteLine($"{pdfComic.PageCount} pages");
 
             compressPdfTask = converter.ConvertToCbz(pdfComic, compressPdfTask);
 

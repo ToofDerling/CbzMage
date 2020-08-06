@@ -3,35 +3,16 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 
-namespace CoreComicsConverter
+namespace CoreComicsConverter.Model
 {
-    public class PdfComic
+    public class PdfComic : Comic
     {
-        public PdfComic(string path)
+        public PdfComic(string path) : base(ComicType.Pdf, path)
         {
-            PdfPath = path;
-            OutputDirectory = Path.ChangeExtension(path, null);
+            OutputDirectory = System.IO.Path.ChangeExtension(path, null);
         }
-
-        public string PdfPath { get; private set; }
 
         public string OutputDirectory { get; private set; }
-
-        public int PageCount
-        {
-            get => _pageCount;
-            set
-            {
-                _pageCount = value;
-                PageCountLength = _pageCount.ToString().Length;
-            }
-        }
-
-        private int _pageCount;
-
-        public int PageCountLength { get; private set; }
-
-        public int ImageCount { get; set; }
 
         public string GetJpgPageString(int pageNumber)
         {
@@ -51,12 +32,12 @@ namespace CoreComicsConverter
 
         public string GetCbzName()
         {
-            return Path.GetFileName(GetCbzPath());
+            return System.IO.Path.GetFileName(GetCbzPath());
         }
 
         public string GetCbzPath()
         {
-            return Path.ChangeExtension(PdfPath, ".cbz");
+            return System.IO.Path.ChangeExtension(Path, ".cbz");
         }
 
         public void CompressPages()
@@ -65,6 +46,12 @@ namespace CoreComicsConverter
             File.Delete(cbzPath);
 
             ZipFile.CreateFromDirectory(OutputDirectory, cbzPath, CompressionLevel.Optimal, includeBaseDirectory: false);
+        }
+
+        public void ExtractPages(string cbzFile)
+        {
+            CleanOutputDirectory();
+            ZipFile.ExtractToDirectory(cbzFile, OutputDirectory);
         }
 
         public bool CbzFileCreated { get; set; }

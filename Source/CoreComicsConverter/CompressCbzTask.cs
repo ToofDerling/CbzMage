@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using CoreComicsConverter.Model;
+using System.Threading.Tasks;
 
 namespace CoreComicsConverter
 {

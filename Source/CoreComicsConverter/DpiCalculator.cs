@@ -1,4 +1,5 @@
-﻿using ImageMagick;
+﻿using CoreComicsConverter.Model;
+using ImageMagick;
 using System;
 using System.IO;
 
@@ -10,9 +11,16 @@ namespace CoreComicsConverter
 
         private readonly PdfComic _pdfComic;
 
-        public DpiCalculator(PdfComic pdfComic, int wantedImageWidth)
+        private readonly (int number, int width, int height) _page;
+
+        private string _currentPage;
+        private (int width, int height) _currentImageSize;
+
+        public DpiCalculator(PdfComic pdfComic, (int number, int width, int height) page)
         {
-            _wantedImageWidth = wantedImageWidth;
+            _page = page;
+
+            _wantedImageWidth = _page.width;
 
             _pdfComic = pdfComic;
         }
@@ -28,7 +36,20 @@ namespace CoreComicsConverter
                 dpi = GoingUp(dpi, width, _wantedImageWidth);
             }
 
+
+
+
             return dpi;
+        }
+
+        public string GetCurrentPage()
+        {
+            return _currentPage;
+        }
+
+        public (int width, int height) GetCurrentImageSize()
+        {
+            return _currentImageSize;
         }
 
         private int GoingUp(int dpi, int width, int wantedWidth)
@@ -98,22 +119,21 @@ namespace CoreComicsConverter
         {
             var pageMachine = new GhostscriptPageMachine();
 
-            pageMachine.ReadFirstPage(_pdfComic, dpi);
+            pageMachine.ReadPage(_pdfComic, _page.number, dpi);
 
-            var page = _pdfComic.GetPngPageString(1);
-            var pagePath = Path.Combine(_pdfComic.OutputDirectory, page);
+            _currentPage = $"{_page.number}-1.png";
+            var pagePath = Path.Combine(_pdfComic.OutputDirectory, _currentPage);
 
-            int width;
-            using (var image = new MagickImage())
-            {
-                image.Ping(pagePath);
-                width = image.Width;
-            };
+            using var image = new MagickImage();
 
-            DpiCalculated?.Invoke(this, new DpiCalculatedEventArgs(dpi, Settings.MinimumDpi, width));
-            return width;
+            image.Ping(pagePath);
+            _currentImageSize = (image.Width, image.Height);
+
+            //DpiCalculated?.Invoke(this, new DpiCalculatedEventArgs(dpi, Settings.MinimumDpi, _currentImageSize.width));
+
+            return _currentImageSize.width;
         }
 
-        public event EventHandler<DpiCalculatedEventArgs> DpiCalculated;
+        //public event EventHandler<DpiCalculatedEventArgs> DpiCalculated;
     }
 }
