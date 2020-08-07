@@ -1,6 +1,7 @@
 ﻿using CoreComicsConverter.Extensions;
 using CoreComicsConverter.Images;
 using CoreComicsConverter.Model;
+using Org.BouncyCastle.Crypto.Prng;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -16,14 +17,21 @@ namespace CoreComicsConverter
         public CompressCbzTask ConvertToCbz(Comic comic, CompressCbzTask compressCbzTask)
         {
             Console.WriteLine(comic.Path);
-            //comic.CreateOutputDirectory();
 
             var pageSizes = ParseComic(comic);
             var imageSizesList = CreateImageSizesList(comic, pageSizes);
 
-            // Pdf conversion flow            
-            var allreadPages = CalculateDpi((PdfComic)comic, imageSizesList);
-            imageSizesList = CoalesceImageSizesList(comic, imageSizesList);
+            switch (comic.Type)
+            {
+                case ComicType.Pdf:
+                    ConversionFlow((PdfComic)comic, imageSizesList);
+                    break;
+                case ComicType.Directory:
+                    ConversionFlow((DirectoryComic)comic, imageSizesList);
+                    break;
+                default:
+                    throw new ApplicationException($"Invalid type {comic.Type}");
+            }
 
             //var dpi = CalculateDpiForImageSize(comic, 300);
             //var pageLists = CreatePageLists(comic);
@@ -42,6 +50,30 @@ namespace CoreComicsConverter
 
             //return StartCompressPages(comic);
         }
+
+        // Pdf conversion flow     
+        private void ConversionFlow(PdfComic pdfComic, List<Pages> pageBatches)
+        {
+            pdfComic.CreateOutputDirectory();
+
+            pageBatches = CalculateDpi(pdfComic, pageBatches, out var allReadPages);
+            VerifyPageBatches(pdfComic, allReadPages, pageBatches);
+
+            pageBatches = CoalescePageBatches(pageBatches);
+            VerifyPageBatches(pdfComic, allReadPages, pageBatches);
+
+            var chunkedPageBatches = ChunkPageBatches(pageBatches);
+            VerifyPageBatches(pdfComic, allReadPages, chunkedPageBatches);
+        }
+
+        private void ConversionFlow(DirectoryComic pdfComic, List<Pages> imageSizesList)
+        {
+            //pdfComic.CreateOutputDirectory();
+            //var allreadPages = CalculateDpi(pdfComic, imageSizesList);
+            CoalescePageBatches(imageSizesList);
+        }
+
+
 
         public void WaitForCompressPages(CompressCbzTask compressCbzTask, bool onlyCheckIfCompleted = false)
         {
@@ -102,22 +134,22 @@ namespace CoreComicsConverter
             return pageSizes;
         }
 
-        private static List<ImageSize> CreateImageSizesList(Comic comic, List<(int pageNumber, int width, int height)> pageSizes)
+        private static List<Pages> CreateImageSizesList(Comic comic, List<(int pageNumber, int width, int height)> pageSizes)
         {
             // Group the pages by imagesize and sort with largest size first
             var sizeLookup = pageSizes.ToLookup(i => (i.width, i.height)).OrderByDescending(i => i.Key.width * i.Key.height);
 
-            var imageSizesList = new List<ImageSize>();
+            var imageSizesList = new List<Pages>();
 
             // Flatten the lookup
             foreach (var size in sizeLookup)
             {
-                var pages = size.Select(s => s.pageNumber).AsList();
+                var pageNumbers = size.Select(s => s.pageNumber).AsList();
 
-                imageSizesList.Add(new ImageSize { Width = size.Key.width, Height = size.Key.height, PageNumber = pages.First(), Pages = pages });
+                imageSizesList.Add(new Pages { Width = size.Key.width, Height = size.Key.height, FirstPageNumber = pageNumbers.First(), PageNumbers = pageNumbers });
             }
 
-            var pagesCount = imageSizesList.Sum(i => i.Pages.Count);
+            var pagesCount = imageSizesList.Sum(i => i.PageNumbers.Count);
             if (pagesCount != comic.PageCount)
             {
                 throw new ApplicationException($"imageSizesList pagesCount is {pagesCount} should be {comic.PageCount}");
@@ -126,48 +158,29 @@ namespace CoreComicsConverter
             return imageSizesList;
         }
 
-
-        private static ConcurrentQueue<(string name, int number)> CalculateDpi(PdfComic pdfComic, List<ImageSize> imageSizesList)
+        private static List<Pages> CalculateDpi(PdfComic pdfComic, List<Pages> imageSizesList, out ConcurrentQueue<(string name, int number)> allReadPages)
         {
-            Console.WriteLine($"Calculating dpi for {imageSizesList.Count} imagesizes (minimum dpi is {Settings.MinimumDpi})");
+            Console.WriteLine($"Calculating dpi for {imageSizesList.Count} imagesizes)");
 
-            // Collect the pages read during calculation to avoid reading them again
-            var allReadPages = new ConcurrentQueue<(string name, int number)>();
+            var readPages = new ConcurrentQueue<(string name, int number)>();
+
+            var imageSizesQueue = new ConcurrentQueue<Pages>(imageSizesList);
 
             var readUsingMinimumDpi = false;
-
-            var imageSizesQueue = new ConcurrentQueue<ImageSize>(imageSizesList);
 
             Parallel.For(0, Settings.ParallelThreads, (index, state) =>
             {
                 while (!imageSizesQueue.IsEmpty)
                 {
-                    if (imageSizesQueue.TryDequeue(out var size))
+                    if (imageSizesQueue.TryDequeue(out var imageSize))
                     {
-                        if (!readUsingMinimumDpi)
+                        if (readUsingMinimumDpi || imageSize.Width == 0)
                         {
-                            // Calculate dpi for this batch of pages
-                            var dpiCalculator = new DpiCalculator(pdfComic, (size.PageNumber, size.Width, size.Height));
-
-                            var calclulatedDpi = dpiCalculator.CalculateDpi();
-                            var (currentWidth, currentHeight) = dpiCalculator.GetCurrentImageSize();
-
-                            Console.WriteLine($"{size.Width} x {size.Height} -> {calclulatedDpi} ({currentWidth} x {currentHeight})");
-
-                            if (calclulatedDpi > Settings.MinimumDpi)
-                            {
-                                size.Dpi = calclulatedDpi;
-                                allReadPages.Enqueue((dpiCalculator.GetCurrentPage(), size.PageNumber));
-                            }
-                            else
-                            {   // Set rest of page batches to minimum dpi
-                                size.Dpi = Settings.MinimumDpi;
-                                readUsingMinimumDpi = true;
-                            }
+                            imageSize.Dpi = Settings.MinimumDpi;
                         }
                         else
                         {
-                            size.Dpi = Settings.MinimumDpi;
+                            readUsingMinimumDpi = CalculateDpiFromImageSize(pdfComic, imageSize, readPages);
                         }
                     }
                 }
@@ -177,52 +190,147 @@ namespace CoreComicsConverter
             {
                 if (imageSize.Dpi < Settings.MinimumDpi)
                 {
-                    throw new ApplicationException($"dpi for {imageSize.Width} x {imageSize.Height} is {imageSize.Dpi} should be {Settings.MinimumDpi} or higher");
+                    throw new ApplicationException($"{imageSize.Width} x {imageSize.Height} dpi is {imageSize.Dpi} should be {Settings.MinimumDpi} or higher");
                 }
             }
 
-            return allReadPages;
+            allReadPages = readPages;
+
+            Console.WriteLine($"Read pages: {allReadPages.Count}");
+
+            // Trim image sizes that have been read fully
+            return imageSizesList.Where(i => i.PageNumbers.Count > 0).AsList();
         }
 
-        private static List<ImageSize> CoalesceImageSizesList(Comic comic, List<ImageSize> imageSizesList)
+        public static bool CalculateDpiFromImageSize(PdfComic pdfComic, Pages imageSize, ConcurrentQueue<(string name, int number)> allReadPages)
+        {
+            var readUsingMinimumDpi = false;
+
+            var dpiCalculator = new DpiCalculator(pdfComic, (imageSize.FirstPageNumber, imageSize.Width, imageSize.Height));
+
+            var calculatedDpi = dpiCalculator.CalculateDpi();
+            var (currentWidth, currentHeight) = dpiCalculator.GetCurrentImageSize();
+
+            Console.WriteLine($"{imageSize.Width} x {imageSize.Height} -> {calculatedDpi} ({currentWidth} x {currentHeight})");
+
+            // Ensure that page read during calculation won't be read again.
+            allReadPages.Enqueue((dpiCalculator.GetCurrentPage(), imageSize.FirstPageNumber));
+
+            imageSize.PageNumbers.Remove(imageSize.FirstPageNumber);
+
+            if (calculatedDpi > Settings.MinimumDpi)
+            {
+                imageSize.Dpi = calculatedDpi;
+            }
+            else if (calculatedDpi == Settings.MinimumDpi)
+            {
+                imageSize.Dpi = Settings.MinimumDpi;
+
+                // Set rest of page batches to minimum dpi
+                readUsingMinimumDpi = true;
+            }
+            else
+            {
+                throw new ApplicationException($"{nameof(calculatedDpi)} is {calculatedDpi}???");
+            }
+
+            return readUsingMinimumDpi;
+        }
+
+        private static List<Pages> CoalescePageBatches(List<Pages> imageSizesList)
         {
             var dpiLookup = imageSizesList.ToLookup(i => i.Dpi);
-            
-            var coalescedList = new List<ImageSize>();
+
+            var coalescedList = new List<Pages>();
 
             foreach (var imageSizesForDpi in dpiLookup)
             {
                 // Dpi and Pages are the only properties needed at this stage
-                var coalesced = new ImageSize { Dpi = imageSizesForDpi.Key, Pages = new List<int>() };
+                var coalesced = new Pages { Dpi = imageSizesForDpi.Key, PageNumbers = new List<int>() };
 
                 coalescedList.Add(coalesced);
 
                 foreach (var imageSize in imageSizesForDpi)
                 {
-                    coalesced.Pages.AddRange(imageSize.Pages);
+                    coalesced.PageNumbers.AddRange(imageSize.PageNumbers);
                 }
-            }
-
-            coalescedList = coalescedList.OrderByDescending(i => i.Dpi).AsList();
-
-            var coalescedPagesCount = coalescedList.Sum(i => i.Pages.Count);
-
-            if (coalescedPagesCount != comic.PageCount)
-            {
-                throw new ApplicationException($"coalescedList pagesCount is {coalescedPagesCount} should be {comic.PageCount}");
-            }
-
-            foreach (var imageSize in coalescedList)
-            {
-                imageSize.Pages.Sort();
-                Console.WriteLine($"{imageSize.Dpi} {imageSize.Pages.Count} pages");
             }
 
             return coalescedList;
         }
 
+        private static void VerifyPageBatches(Comic comic, ConcurrentQueue<(string name, int number)> allReadPages, params List<Pages>[] pageBatches)
+        {
+            var pagesCount = pageBatches.Sum(batch => batch.Sum(i => i.PageNumbers.Count));
+            if (allReadPages.Count + pagesCount != comic.PageCount)
+            {
+                throw new ApplicationException($"{nameof(pageBatches)} pages is {pagesCount} should be {comic.PageCount - allReadPages.Count}");
+            }
+        }
 
+        private static List<Pages>[] ChunkPageBatches(List<Pages> pageBatches)
+        {
+            var pagesCount = pageBatches.Sum(p => p.PageNumbers.Count);
 
+            var chunkListPageCount = pagesCount / Settings.ParallelThreads;
+
+            if (pagesCount % Settings.ParallelThreads > 0)
+            {
+                chunkListPageCount++;
+            }
+
+            var chunkLists = new List<List<Pages>>();
+
+            for (var i = 0; i < Settings.ParallelThreads; i++)
+            {
+                chunkLists.Add(new List<Pages>());
+            }
+
+            pageBatches = pageBatches.OrderByDescending(p => p.Dpi).AsList();
+            var queue = new Queue<Pages>(pageBatches);
+
+            while (queue.Count > 0)
+            {
+                var batch = queue.Dequeue();
+
+                while (batch.PageNumbers.Count > 0)
+                {
+                    var chunkList = SmallestChunkList(chunkLists);
+
+                    var lastChunk = chunkList.LastOrDefault();
+
+                    var take = lastChunk != null ? chunkListPageCount - lastChunk.PageNumbers.Count : chunkListPageCount;
+
+                    var pageNumbers = batch.PageNumbers.Take(take);
+
+                    chunkList.Add(new Pages { Dpi = batch.Dpi, PageNumbers = pageNumbers.AsList() });
+
+                    batch.PageNumbers = batch.PageNumbers.Skip(take).AsList();
+                }
+            }
+
+            foreach (var chunkList in chunkLists)
+            {
+                SortAndView(chunkList);
+            }
+
+            return chunkLists.ToArray();
+
+            static List<Pages> SmallestChunkList(List<List<Pages>> chunkLists)
+            {
+                return chunkLists.OrderBy(l => l.Sum(p => p.PageNumbers.Count)).First();
+            }
+
+            static void SortAndView(List<Pages> chunkList)
+            {
+                foreach (var chunk in chunkList)
+                {
+                    chunk.PageNumbers.Sort();
+                    Console.Write($"{chunk.Dpi}: {chunk.PageNumbers.Count} ");
+                }
+                Console.WriteLine();
+            }
+        }
         private static int ParseImageSizes(List<(int width, int height, int count)> sortedImageSizes)
         {
             var mostOfThisSize = sortedImageSizes.First();
@@ -241,19 +349,6 @@ namespace CoreComicsConverter
             }
 
             return largestSize.width;
-        }
-
-        private static int CalculateDpiForImageSize(PdfComic pdfComic, int wantedImageWidth)
-        {
-            //Console.WriteLine($"Wanted width: {wantedImageWidth}");
-
-            //var dpiCalculator = new DpiCalculator(pdfComic, wantedImageWidth);
-            //dpiCalculator.DpiCalculated += (s, e) => Console.WriteLine($" {e.Dpi} ({e.MinimumDpi}) -> {e.Width}");
-
-            //var dpi = dpiCalculator.CalculateDpi();
-
-            //Console.WriteLine($"Selected dpi: {dpi}");
-            return 0;
         }
 
         private static List<int>[] CreatePageLists(PdfComic pdfComic)

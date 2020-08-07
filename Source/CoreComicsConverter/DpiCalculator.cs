@@ -14,6 +14,7 @@ namespace CoreComicsConverter
         private readonly (int number, int width, int height) _page;
 
         private string _currentPage;
+
         private (int width, int height) _currentImageSize;
 
         public DpiCalculator(PdfComic pdfComic, (int number, int width, int height) page)
@@ -35,9 +36,6 @@ namespace CoreComicsConverter
             {
                 dpi = GoingUp(dpi, width, _wantedImageWidth);
             }
-
-
-
 
             return dpi;
         }
@@ -129,11 +127,7 @@ namespace CoreComicsConverter
             image.Ping(pagePath);
             _currentImageSize = (image.Width, image.Height);
 
-            //DpiCalculated?.Invoke(this, new DpiCalculatedEventArgs(dpi, Settings.MinimumDpi, _currentImageSize.width));
-
             return _currentImageSize.width;
         }
-
-        //public event EventHandler<DpiCalculatedEventArgs> DpiCalculated;
     }
 }
