@@ -64,6 +64,9 @@ namespace CoreComicsConverter
 
             var chunkedPageBatches = ChunkPageBatches(pageBatches);
             VerifyPageBatches(pdfComic, allReadPages, chunkedPageBatches);
+
+            ReadPages(pdfComic, chunkedPageBatches, allReadPages);
+            VerifyPageBatches(pdfComic, allReadPages, chunkedPageBatches);
         }
 
         private void ConversionFlow(DirectoryComic pdfComic, List<Pages> imageSizesList)
@@ -160,7 +163,7 @@ namespace CoreComicsConverter
 
         private static List<Pages> CalculateDpi(PdfComic pdfComic, List<Pages> imageSizesList, out ConcurrentQueue<(string name, int number)> allReadPages)
         {
-            Console.WriteLine($"Calculating dpi for {imageSizesList.Count} imagesizes)");
+            Console.WriteLine($"Calculating dpi for {imageSizesList.Count} imagesizes");
 
             var readPages = new ConcurrentQueue<(string name, int number)>();
 
@@ -365,13 +368,8 @@ namespace CoreComicsConverter
             return pageLists;
         }
 
-        private static ConcurrentQueue<(string name, int number)> ReadPages(PdfComic pdfComic, List<int>[] pageLists, int dpi)
+        private static void ReadPages(PdfComic pdfComic, List<Pages>[] pageLists, ConcurrentQueue<(string name, int number)> allReadPages)
         {
-            var allReadPages = new ConcurrentQueue<(string name, int number)>();
-
-            // We have the first page already
-            allReadPages.Enqueue((pdfComic.GetPngPageString(1), 1));
-
             var progressReporter = new ProgressReporter(pdfComic.PageCount);
 
             Parallel.For(0, Settings.ParallelThreads, (index, state) =>
@@ -386,17 +384,19 @@ namespace CoreComicsConverter
                     progressReporter.ShowProgress($"Read {e.Name}");
                 };
 
-                machine.ReadPageList(pdfComic, pageList, index, dpi);
+                foreach (var pageBatch in pageList)
+                {
+                    machine.ReadPageList(pdfComic, pageBatch);
+                    pageBatch.PageNumbers.Clear();
+                }
             });
 
             Console.WriteLine();
 
-            if (allReadPages.Count != pdfComic.PageCount)
-            {
-                throw new ApplicationException($"{nameof(allReadPages)} is {allReadPages.Count} should be {pdfComic.PageCount}");
-            }
-
-            return allReadPages;
+            //if (allReadPages.Count != pdfComic.PageCount)
+            //{
+            //    throw new ApplicationException($"{nameof(allReadPages)} is {allReadPages.Count} should be {pdfComic.PageCount}");
+            //}
         }
 
         private static void ConvertPages(PdfComic pdfComic, ConcurrentQueue<(string name, int number)> allReadPages)

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 
 namespace CoreComicsConverter
@@ -28,7 +29,7 @@ namespace CoreComicsConverter
         {
             var switches = GetSwitches(pdfComic, dpi, pageNumber.ToString(), $"{pageNumber}-%d.png");
 
-            var pageQueue = GetPageQueue(new List<int>() { pageNumber }, pageNumber);
+            var pageQueue = GetPageQueue(new List<int>() { pageNumber }, pageNumber.ToString());
 
             using var process = GetGSProcess(switches, pdfComic.OutputDirectory);
 
@@ -37,13 +38,16 @@ namespace CoreComicsConverter
             RunAndWaitForProcess(process);
         }
 
-        public void ReadPageList(PdfComic pdfComic, List<int> pageNumbers, int pageListId, int dpi)
+        public void ReadPageList(PdfComic pdfComic, Pages pageBatch)
         {
-            var pageList = CreatePageList(pageNumbers);
+            var pageList = CreatePageList(pageBatch.PageNumbers);
 
-            var switches = GetSwitches(pdfComic, dpi, pageList, $"{pageListId}-%d.png");
+            int padLen = pdfComic.PageCount.ToString().Length;
+            var pageListId = $"{pageBatch.PageNumbers.First().ToString().PadLeft(padLen, '0')}-{pageBatch.PageNumbers.Last().ToString().PadLeft(padLen, '0')}";
 
-            var pageQueue = GetPageQueue(pageNumbers, pageListId);
+            var switches = GetSwitches(pdfComic, pageBatch.Dpi, pageList, $"{pageListId}-%d{padLen}.png");
+
+            var pageQueue = GetPageQueue(pageBatch.PageNumbers, pageListId);
 
             using var process = GetGSProcess(switches, pdfComic.OutputDirectory);
 
@@ -52,7 +56,7 @@ namespace CoreComicsConverter
             RunAndWaitForProcess(process, ProcessPriorityClass.Idle);
         }
 
-        private static Queue<(string name, int number)> GetPageQueue(List<int> pageNumbers, int pageListId)
+        private static Queue<(string name, int number)> GetPageQueue(List<int> pageNumbers, string pageListId)
         {
             var pageQueue = new Queue<(string name, int number)>();
 
