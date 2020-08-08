@@ -1,5 +1,6 @@
 using CoreComicsConverter.Images;
 using CoreComicsConverter.Model;
+using CoreComicsConverter.PdfFlow;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -35,7 +36,7 @@ namespace CoreComicsConverter
             if (pdfList.Any())
             {
                 CompressCbzTask compressCbzTask = null;
-                var converter = new PdfComicConverter();
+                var converter = new ComicConverter();
 
                 pdfList.ForEach(pdf =>
                 {
@@ -52,7 +53,7 @@ namespace CoreComicsConverter
             Console.ReadLine();
         }
 
-        private static CompressCbzTask ConvertPdf(PdfComic pdfComic, PdfComicConverter converter, CompressCbzTask compressPdfTask)
+        private static CompressCbzTask ConvertPdf(PdfComic pdfComic, ComicConverter converter, CompressCbzTask compressPdfTask)
         {
             var stopWatch = Stopwatch.StartNew();
 

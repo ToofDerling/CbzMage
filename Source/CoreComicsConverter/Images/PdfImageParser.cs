@@ -6,13 +6,12 @@ using iText.Kernel.Pdf.Canvas.Parser.Data;
 using iText.Kernel.Pdf.Canvas.Parser.Listener;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace CoreComicsConverter.Images
 {
     public class PdfImageParser : ImageParser, IEventListener
     {
-        private Dictionary<int, (int pageNumber, int width, int height)> _imageMap;
+        private Dictionary<int, Page> _imageMap;
 
         private int _pageNumber;
 
@@ -22,7 +21,7 @@ namespace CoreComicsConverter.Images
         private PdfDocument _pdfDoc;
 
         public PdfImageParser(Comic pdfComic) : base(pdfComic)
-        { 
+        {
         }
 
         public override event EventHandler<PageEventArgs> PageParsed;
@@ -35,9 +34,9 @@ namespace CoreComicsConverter.Images
             _comic.PageCount = _pdfDoc.GetNumberOfPages();
         }
 
-        public override List<(int pageNumber, int width, int height)> ParsePagesSetImageCount()
+        public override List<Page> ParsePagesSetImageCount()
         {
-            _imageMap = new Dictionary<int, (int pageNumber, int width, int height)>();
+            _imageMap = new Dictionary<int, Page>();
 
             if (_pdfReader.IsEncrypted())
             {
@@ -53,10 +52,10 @@ namespace CoreComicsConverter.Images
                 // Handle pages with no images
                 if (!_imageMap.TryGetValue(_pageNumber, out var _))
                 {
-                    _imageMap[_pageNumber] = (_pageNumber, 0, 0);
+                    _imageMap[_pageNumber] = new Page { Number = _pageNumber };
                 }
 
-                PageParsed?.Invoke(this, new PageEventArgs( $"page {_pageNumber}"));
+                PageParsed?.Invoke(this, new PageEventArgs(new Page { Number = _pageNumber }));
             }
 
             _comic.ImageCount = _imageCount;
@@ -85,9 +84,9 @@ namespace CoreComicsConverter.Images
                 var newWidth = Convert.ToInt32(imageObject.GetWidth());
                 var newHeight = Convert.ToInt32(imageObject.GetHeight());
 
-                if (!_imageMap.TryGetValue(_pageNumber, out var old) || (newWidth * newHeight) > (old.width * old.height))
+                if (!_imageMap.TryGetValue(_pageNumber, out var old) || (newWidth * newHeight) > (old.Width * old.Height))
                 {
-                    _imageMap[_pageNumber] = (_pageNumber, newWidth, newHeight);
+                    _imageMap[_pageNumber] = new Page { Number = _pageNumber, Width = newWidth, Height = newHeight };
                 }
 
                 _imageCount++;

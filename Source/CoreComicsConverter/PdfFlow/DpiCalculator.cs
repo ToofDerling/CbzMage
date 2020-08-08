@@ -3,7 +3,7 @@ using ImageMagick;
 using System;
 using System.IO;
 
-namespace CoreComicsConverter
+namespace CoreComicsConverter.PdfFlow
 {
     public class DpiCalculator
     {
@@ -119,7 +119,9 @@ namespace CoreComicsConverter
 
             pageMachine.ReadPage(_pdfComic, _page.number, dpi);
 
-            _currentPage = $"{_page.number}-1.png";
+            _pdfComic.GetPngPageString(1);
+
+            _currentPage = _pdfComic.GetSinglePagePngString(_page.number);
             var pagePath = Path.Combine(_pdfComic.OutputDirectory, _currentPage);
 
             using var image = new MagickImage();

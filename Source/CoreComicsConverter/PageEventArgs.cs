@@ -1,17 +1,15 @@
-﻿using System;
+﻿using CoreComicsConverter.Model;
+using System;
 
 namespace CoreComicsConverter
 {
     public class PageEventArgs : EventArgs
     {
-        public PageEventArgs(string page, int number = 0)
+        public PageEventArgs(Page page)
         {
-            Name = page;
-            Number = number;
+            Page = page;
         }
 
-        public int Number { get; private set; }
-
-        public string Name { get; private set; }
+        public Page Page { get; private set; }
     }
 }

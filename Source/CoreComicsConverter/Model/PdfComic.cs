@@ -24,6 +24,11 @@ namespace CoreComicsConverter.Model
             return GetPageString(pageNumber, "png");
         }
 
+        public string GetSinglePagePngString(int pageNumber)
+        {
+            return $"{pageNumber.ToString().PadLeft(PageCountLength, '0')}-{1.ToString().PadLeft(PageCountLength, '0')}.png";
+        }
+
         private string GetPageString(int pageNumber, string extension)
         {
             var page = pageNumber.ToString().PadLeft(PageCountLength, '0');

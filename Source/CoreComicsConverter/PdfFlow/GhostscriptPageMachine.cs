@@ -2,17 +2,31 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Text;
 
-namespace CoreComicsConverter
+namespace CoreComicsConverter.PdfFlow
 {
     public class GhostscriptPageMachine
     {
         private static string GetSwitches(PdfComic pdfComic, int dpi, string pageList, string outputFile)
         {
-            var args = $"-dNOPAUSE -dBATCH -sDEVICE=png16m -sOutputFile={outputFile} -sPageList={pageList} -r{dpi} \"{pdfComic.Path}\"";
-            return args;
+            var args = new[]
+            {
+                "-dNOPAUSE",
+                "-dBATCH",
+                "-sDEVICE=png16m",
+                "-dUseCIEColor",
+                "-dTextAlphaBits=4",
+                "-dGraphicsAlphaBits=4",
+                "-dGridFitTT=2",
+                "-dUseCropBox",
+                $"-sOutputFile={outputFile}",
+                $"-sPageList={pageList}",
+                $"-r{dpi}",
+                $"\"{pdfComic.Path}\""
+            };
+
+            return string.Join(' ', args);
         }
 
         private static string CreatePageList(List<int> pageNumbers)
@@ -27,27 +41,11 @@ namespace CoreComicsConverter
 
         public void ReadPage(PdfComic pdfComic, int pageNumber, int dpi)
         {
-            var switches = GetSwitches(pdfComic, dpi, pageNumber.ToString(), $"{pageNumber}-%d.png");
+            var padLen = pdfComic.PageCountLength;
 
-            var pageQueue = GetPageQueue(new List<int>() { pageNumber }, pageNumber.ToString());
+            var switches = GetSwitches(pdfComic, dpi, pageNumber.ToString(), $"{pageNumber.ToString().PadLeft(padLen, '0')}-%0{padLen}d.png");
 
-            using var process = GetGSProcess(switches, pdfComic.OutputDirectory);
-
-            process.OutputDataReceived += (s, e) => OutputLineRead(pageQueue, e.Data);
-
-            RunAndWaitForProcess(process);
-        }
-
-        public void ReadPageList(PdfComic pdfComic, Pages pageBatch)
-        {
-            var pageList = CreatePageList(pageBatch.PageNumbers);
-
-            int padLen = pdfComic.PageCount.ToString().Length;
-            var pageListId = $"{pageBatch.PageNumbers.First().ToString().PadLeft(padLen, '0')}-{pageBatch.PageNumbers.Last().ToString().PadLeft(padLen, '0')}";
-
-            var switches = GetSwitches(pdfComic, pageBatch.Dpi, pageList, $"{pageListId}-%d{padLen}.png");
-
-            var pageQueue = GetPageQueue(pageBatch.PageNumbers, pageListId);
+            var pageQueue = GetPageQueue(new List<int>() { pageNumber }, pageNumber.ToString(), padLen);
 
             using var process = GetGSProcess(switches, pdfComic.OutputDirectory);
 
@@ -56,14 +54,33 @@ namespace CoreComicsConverter
             RunAndWaitForProcess(process, ProcessPriorityClass.Idle);
         }
 
-        private static Queue<(string name, int number)> GetPageQueue(List<int> pageNumbers, string pageListId)
+        public void ReadPageList(PdfComic pdfComic, PageBatch batch)
+        {
+            var pageList = CreatePageList(batch.PageNumbers);
+
+            var padLen = pdfComic.PageCountLength;
+
+            var pageListId = $"{batch.FirstPage.ToString().PadLeft(padLen, '0')}-{batch.LastPage.ToString().PadLeft(padLen, '0')}";
+
+            var switches = GetSwitches(pdfComic, batch.Dpi, pageList, $"{pageListId}-%0{padLen}d.png");
+
+            var pageQueue = GetPageQueue(batch.PageNumbers, pageListId, padLen);
+
+            using var process = GetGSProcess(switches, pdfComic.OutputDirectory);
+
+            process.OutputDataReceived += (s, e) => OutputLineRead(pageQueue, e.Data);
+
+            RunAndWaitForProcess(process, ProcessPriorityClass.Idle);
+        }
+
+        private static Queue<(string name, int number)> GetPageQueue(List<int> pageNumbers, string pageListId, int padLen)
         {
             var pageQueue = new Queue<(string name, int number)>();
 
             int gsPageNumber = 1;
             foreach (var pageNumber in pageNumbers)
             {
-                pageQueue.Enqueue(($"{pageListId}-{gsPageNumber}.png", pageNumber));
+                pageQueue.Enqueue(($"{pageListId}-{gsPageNumber.ToString().PadLeft(padLen, '0')}.png", pageNumber));
 
                 gsPageNumber++;
             }
@@ -80,11 +97,10 @@ namespace CoreComicsConverter
 
             var (name, number) = pageQueue.Dequeue();
 
-            PageRead?.Invoke(this, new PageEventArgs(name, number));
+            PageRead?.Invoke(this, new PageEventArgs(new Page { Name = name, Number = number }));
         }
 
         public event EventHandler<PageEventArgs> PageRead;
-
 
         private static void RunAndWaitForProcess(Process process, ProcessPriorityClass priorityClass = ProcessPriorityClass.Normal)
         {

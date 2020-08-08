@@ -25,7 +25,7 @@ namespace CoreComicsConverter.Images
 
         public abstract void OpenComicSetPageCount();
 
-        public abstract List<(int pageNumber, int width, int height)> ParsePagesSetImageCount();
+        public abstract List<Page> ParsePagesSetImageCount();
 
         public virtual void Dispose()
         {
