@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using CoreComicsConverter.Model;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 
-namespace CoreComicsConverter.Model
+namespace CoreComicsConverter.PdfFlow
 {
     public class PdfComic : Comic
     {

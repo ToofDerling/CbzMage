@@ -47,11 +47,7 @@ namespace CoreComicsConverter.PdfFlow
 
             var pageQueue = GetPageQueue(new List<int>() { pageNumber }, pageNumber.ToString(), padLen);
 
-            using var process = GetGSProcess(switches, pdfComic.OutputDirectory);
-
-            process.OutputDataReceived += (s, e) => OutputLineRead(pageQueue, e.Data);
-
-            RunAndWaitForProcess(process, ProcessPriorityClass.Idle);
+            RunAndWaitForProcess(pdfComic, switches, pageQueue, ProcessPriorityClass.Idle);
         }
 
         public void ReadPageList(PdfComic pdfComic, PageBatch batch)
@@ -66,11 +62,7 @@ namespace CoreComicsConverter.PdfFlow
 
             var pageQueue = GetPageQueue(batch.PageNumbers, pageListId, padLen);
 
-            using var process = GetGSProcess(switches, pdfComic.OutputDirectory);
-
-            process.OutputDataReceived += (s, e) => OutputLineRead(pageQueue, e.Data);
-
-            RunAndWaitForProcess(process, ProcessPriorityClass.Idle);
+            RunAndWaitForProcess(pdfComic, switches, pageQueue, ProcessPriorityClass.Idle);
         }
 
         private static Queue<(string name, int number)> GetPageQueue(List<int> pageNumbers, string pageListId, int padLen)
@@ -102,8 +94,12 @@ namespace CoreComicsConverter.PdfFlow
 
         public event EventHandler<PageEventArgs> PageRead;
 
-        private static void RunAndWaitForProcess(Process process, ProcessPriorityClass priorityClass = ProcessPriorityClass.Normal)
+        private void RunAndWaitForProcess(PdfComic pdfComic, string switches, Queue<(string name, int number)> pageQueue, ProcessPriorityClass priorityClass = ProcessPriorityClass.Normal)
         {
+            using var process = GetGSProcess(switches, pdfComic.OutputDirectory);
+
+            process.OutputDataReceived += (s, e) => OutputLineRead(pageQueue, e.Data);
+
             process.Start();
 
             process.PriorityClass = priorityClass;

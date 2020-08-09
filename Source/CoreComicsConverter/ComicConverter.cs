@@ -1,10 +1,12 @@
-﻿using CoreComicsConverter.Extensions;
+﻿using CoreComicsConverter.DirectoryFlow;
+using CoreComicsConverter.Extensions;
 using CoreComicsConverter.Images;
 using CoreComicsConverter.Model;
 using CoreComicsConverter.PdfFlow;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -14,33 +16,17 @@ namespace CoreComicsConverter
 {
     public class ComicConverter
     {
-        public CompressCbzTask ConvertToCbz(Comic comic, CompressCbzTask compressCbzTask)
-        {
-            Console.WriteLine(comic.Path);
-
-            var pageSizes = ParseComic(comic);
-            var pageBatches = CreatePageSizesList(comic, pageSizes);
-
-            switch (comic.Type)
-            {
-                case ComicType.Pdf:
-                    return ConversionFlow((PdfComic)comic, pageBatches, compressCbzTask);
-                case ComicType.Directory:
-                    ConversionFlow((DirectoryComic)comic, pageBatches);
-                    break;
-                default:
-                    throw new ApplicationException($"Invalid type {comic.Type}");
-            }
-
-            return null;
-        }
-
         // Pdf conversion flow     
-        private CompressCbzTask ConversionFlow(PdfComic pdfComic, List<PageBatch> pageBatches, CompressCbzTask compressCbzTask)
+        public CompressCbzTask ConversionFlow(PdfComic pdfComic, CompressCbzTask compressCbzTask)
         {
-            pdfComic.CreateOutputDirectory();
+            var stopWatch = Stopwatch.StartNew();
+            Console.WriteLine(pdfComic.Path);
 
             var pdfFlow = new PdfConversionFlow();
+            var pageSizes = pdfFlow.Initialize(pdfComic, this);
+
+            var pageBatches = GetPageBatchesSortedByImageSize(pdfComic, pageSizes);
+            pdfFlow.FixLargePageSize(pageBatches);
 
             pageBatches = pdfFlow.CalculateDpi(pdfComic, pageBatches, out var allReadPages);
             VerifyPageBatches(pdfComic, allReadPages, pageBatches);
@@ -62,17 +48,51 @@ namespace CoreComicsConverter
 
             WaitForCompressPages(compressCbzTask);
 
+            StopStopwatch(stopWatch);
+
             return StartCompressPages(pdfComic);
         }
 
-        private void ConversionFlow(DirectoryComic pdfComic, List<PageBatch> imageSizesList)
+        public CompressCbzTask ConversionFlow(DirectoryComic directoryComic, CompressCbzTask compressCbzTask)
         {
-            //pdfComic.CreateOutputDirectory();
+            var stopWatch = Stopwatch.StartNew();
+            Console.WriteLine(directoryComic.Path);
+
+            var directoryFlow = new DirectoryConversionFlow();
+
+            var isDownload = directoryFlow.IsDownload(directoryComic);
+                
+            if (isDownload && !directoryFlow.VerifyDownload(directoryComic))
+            {
+                return null;
+            }
+
+            var pageParser = new DirectoryImageParser(directoryComic);
+            var pageSizes = ParseComic(directoryComic, pageParser);
+
+            var pageBatches = GetPageBatchesSortedByImageSize(directoryComic, pageSizes);
+
+            if (isDownload)
+            {
+                directoryFlow.FixDoublePageSpreads(pageBatches);
+            }
+
             //var allreadPages = CalculateDpi(pdfComic, imageSizesList);
             //CoalescePageBatches(imageSizesList);
+
+            StopStopwatch(stopWatch);
+
+            return null;
         }
 
+        public void StopStopwatch(Stopwatch stopwatch)
+        {
+            stopwatch.Stop();
+            var passed = stopwatch.Elapsed;
 
+            Console.WriteLine($"{passed.Minutes} min {passed.Seconds} sec");
+            Console.WriteLine();
+        }
 
         public void WaitForCompressPages(CompressCbzTask compressCbzTask, bool onlyCheckIfCompleted = false)
         {
@@ -95,11 +115,7 @@ namespace CoreComicsConverter
             compressCbzTask.PdfComic.CleanOutputDirectory();
             compressCbzTask.PdfComic.CbzFileCreated = true;
 
-            var oldColor = Console.ForegroundColor;
-            Console.ForegroundColor = ConsoleColor.Green;
-
-            Console.WriteLine($"FINISH {compressCbzTask.PdfComic.GetCbzName()}");
-            Console.ForegroundColor = oldColor;
+            ProgressReporter.Done($"FINISH {compressCbzTask.PdfComic.GetCbzName()}");
         }
 
         private static CompressCbzTask StartCompressPages(PdfComic pdfComic)
@@ -112,28 +128,26 @@ namespace CoreComicsConverter
             return compressCbzTask;
         }
 
-        private static List<Page> ParseComic(Comic comic)
+        public List<Page> ParseComic(Comic comic, IPageParser parser)
         {
-            using ImageParser parser = ImageParserFactory.CreateFrom(comic);
-
-            parser.OpenComicSetPageCount();
+            if (comic.PageCount == 0)
+            {
+                throw new ApplicationException("Comic pageCount is 0");
+            }
             Console.WriteLine($"{comic.PageCount} pages");
 
             var progressReporter = new ProgressReporter(comic.PageCount);
             parser.PageParsed += (s, e) => progressReporter.ShowProgress($"Parsing page {e.Page.Number}");
 
-            var pageSizes = parser.ParsePagesSetImageCount();
+            var pageSizes = parser.ParsePages();
 
             Console.WriteLine();
             Console.WriteLine($"{comic.ImageCount} images");
 
-            var parserErrors = parser.GetParserWarnings();
-            parserErrors.ForEach(warning => Console.WriteLine(warning));
-
             return pageSizes;
         }
 
-        private static List<PageBatch> CreatePageSizesList(Comic comic, List<Page> pageSizes)
+        private static List<PageBatch> GetPageBatchesSortedByImageSize(Comic comic, List<Page> pageSizes)
         {
             // Group the pages by imagesize and sort with largest size first
             var sizeLookup = pageSizes.ToLookup(p => (p.Width, p.Height)).OrderByDescending(i => i.Key.Width * i.Key.Height);
@@ -151,44 +165,12 @@ namespace CoreComicsConverter
             var pagesCount = pageBatches.Sum(i => i.PageNumbers.Count);
             if (pagesCount != comic.PageCount)
             {
-                throw new ApplicationException($"imageSizesList pagesCount is {pagesCount} should be {comic.PageCount}");
-            }
-
-            // Cannot fix a single page comic
-            if (pageSizes.Count > 1)
-            {
-                FixLargePageSize();
+                throw new ApplicationException($"{nameof(pageBatches)} pagesCount is {pagesCount} should be {comic.PageCount}");
             }
 
             return pageBatches;
-
-            void FixLargePageSize()
-            {
-                // If there's a single page much larger than the rest assume it's an error and try to fix it. 
-                var largest = pageBatches[0];
-                if (largest.PageNumbers.Count == 1)
-                {
-                    var secondLargest = pageBatches[1];
-                    if (largest.Width > secondLargest.Width * 2 && largest.Height > secondLargest.Height * 2)
-                    {
-                        var oldHeight = largest.Height;
-                        largest.Height = secondLargest.Height;
-
-                        var factor = (double)oldHeight / largest.Height;
-
-                        var oldWidth = largest.Width;
-                        var newWidth = oldWidth / factor;
-                        largest.Width = Convert.ToInt32(newWidth);
-
-                        var oldColor = Console.ForegroundColor;
-                        Console.ForegroundColor = ConsoleColor.Yellow;
-                        Console.WriteLine($"Fixed page {largest.FirstPage}: {oldWidth} x {oldHeight} -> {largest.Width} x {largest.Height}");
-                        Console.ForegroundColor = oldColor;
-                    }
-                }
-            }
         }
-     
+
         private static void VerifyPageBatches(Comic comic, ConcurrentQueue<Page> allReadPages, params List<PageBatch>[] pageBatches)
         {
             var pagesCount = pageBatches.Sum(batch => batch.Sum(i => i.PageNumbers.Count));

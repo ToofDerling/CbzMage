@@ -1,11 +1,13 @@
-using CoreComicsConverter.Images;
-using CoreComicsConverter.Model;
+using CoreComicsConverter.DirectoryFlow;
+using CoreComicsConverter.Extensions;
 using CoreComicsConverter.PdfFlow;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
+using System.Runtime.InteropServices.WindowsRuntime;
 
 namespace CoreComicsConverter
 {
@@ -13,15 +15,15 @@ namespace CoreComicsConverter
     {
 
 #if DEBUG
-        //private const string _testPdf = @"D:\Data\Pdf\Test\Hawkworld New Edition - Timothy Truman";
-        private const string _testPdf = @"D:\Data\Pdf\Test\";
+        private const string _testPdf = @"D:\Data\Pdf\Test\Hawkworld New Edition";
+        //private const string _testPdf = @"D:\Data\Pdf\Test\";
 #else
         private const string _testPdf = null;
 #endif
 
         public static void Main(string[] args)
         {
-            
+
             //var comic = new DirectoryComic(_testPdf);
             ////pdfComic.ExtractPages(_testPdf);
 
@@ -30,45 +32,107 @@ namespace CoreComicsConverter
 
             //var cbzConverter = new ArchiveConverter();
             //cbzConverter.ConvertToPdf(comic);
-         
-            var pdfList = InitializePdfPath(args);
 
-            if (pdfList.Any())
+            var path = GetPath(args);
+            if (path == null || !Run(path))
             {
-                CompressCbzTask compressCbzTask = null;
-                var converter = new ComicConverter();
-
-                pdfList.ForEach(pdf =>
-                {
-                    compressCbzTask = ConvertPdf(pdf, converter, compressCbzTask);
-                });
-
-                converter.WaitForCompressPages(compressCbzTask);
-            }
-            else
-            {
-                Console.WriteLine("CoreComicsConverter <directory|pdf_file>");
+                Console.WriteLine("CoreComicsConverter <directory|comic>");
+                return;
             }
 
+            converter.WaitForCompressPages(compressTask);
             Console.ReadLine();
         }
 
-        private static CompressCbzTask ConvertPdf(PdfComic pdfComic, ComicConverter converter, CompressCbzTask compressPdfTask)
+        private static readonly ComicConverter converter = new ComicConverter();
+
+        private static CompressCbzTask compressTask = null;
+
+        private static bool Convert(List<PdfComic> pdfComics)
         {
-            var stopWatch = Stopwatch.StartNew();
-
-            compressPdfTask = converter.ConvertToCbz(pdfComic, compressPdfTask);
-
-            stopWatch.Stop();
-            var passed = stopWatch.Elapsed;
-
-            Console.WriteLine($"{passed.Minutes} min {passed.Seconds} sec");
-            Console.WriteLine();
-
-            return compressPdfTask;
+            pdfComics.ForEach(comic => { compressTask = converter.ConversionFlow(comic, compressTask); });
+            return true;
         }
 
-        private static List<PdfComic> InitializePdfPath(string[] args)
+        private static bool Convert(List<DirectoryComic> directoryComics)
+        {
+            directoryComics.ForEach(comic => { compressTask = converter.ConversionFlow(comic, compressTask); });
+            return true;
+        }
+
+        //private static void Convert(List<PdfComic> comicList)
+        //{
+        //    comicList.ForEach(comic => { compressTask = converter.ConversionFlow(comic, compressTask); });
+        //}
+
+        private static bool Run(string path)
+        {
+            var directory = new DirectoryInfo(path);
+            if (directory.Exists)
+            {
+                return RunDirectory(directory);
+
+            }
+            else if (File.Exists(path))
+            {
+                return RunFile(path);
+            }
+
+            // Nothing to do
+            return false;
+        }
+
+        private static bool RunDirectory(DirectoryInfo directory)
+        {
+            var entries = directory.GetFileSystemInfos();
+            if (entries.Length == 0)
+            {
+                // Nothing to do
+                return false;
+            }
+
+            if (entries.All(e => e.IsDirectory()))
+            {
+                //TODO
+                return false;
+            }
+
+            var files = entries.Select(e => e.FullName).ToArray();
+
+            if (FilesArePdfs(files))
+            {
+                return Convert(PdfComic.List(files));
+            }
+
+            if (FilesAreImages(files))
+            {
+                return Convert(DirectoryComic.List(directory.FullName, files));
+            }
+
+            return false;
+        }
+
+        private static bool RunFile(string file)
+        {
+            if (FilesArePdfs(file))
+            {
+                return Convert(PdfComic.List(file));
+            }
+
+            return false;
+        }
+
+        private static bool FilesArePdfs(params string[] files)
+        {
+            return files.All(f => f.EndsWithIgnoreCase(".pdf"));
+        }
+
+        private static bool FilesAreImages(string[] files)
+        {
+            return files.All(f => f.EndsWithIgnoreCase(".png")) || files.All(f => f.EndsWithIgnoreCase(".jpg")) || files.All(f => f.EndsWithIgnoreCase(".jpeg"));
+        }
+
+        private static string GetPath(string[] args)
         {
             var path = (string)null;
 
@@ -81,24 +145,7 @@ namespace CoreComicsConverter
                 path = args[0];
             }
 
-            if (!string.IsNullOrEmpty(path))
-            {
-                if (Directory.Exists(path))
-                {
-                    var files = Directory.GetFiles(path, "*.pdf"); // Search pattern is case insensitive
-                    if (files.Length > 0)
-                    {
-                        return PdfComic.List(files.ToArray());
-                    }
-                }
-                else if (File.Exists(path) && path.EndsWith(".pdf", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    return PdfComic.List(path);
-                }
-            }
-
-            // Nothing to do
-            return PdfComic.List();
+            return !string.IsNullOrEmpty(path) ? path : null;
         }
     }
 }

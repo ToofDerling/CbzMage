@@ -18,5 +18,9 @@ namespace CoreComicsConverter.Model
         public int FirstPage => PageNumbers == null ? -1 : PageNumbers.First();
 
         public int LastPage => PageNumbers == null ? -1 : PageNumbers.Last();
+
+        public int NewWidth { get; set; }
+
+        public int NewHeight { get; set; }
     }
 }

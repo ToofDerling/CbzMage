@@ -1,5 +1,6 @@
 ﻿using CoreComicsConverter.Extensions;
 using CoreComicsConverter.Model;
+using ImageMagick;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -11,21 +12,68 @@ namespace CoreComicsConverter.PdfFlow
 {
     public class PdfConversionFlow
     {
-        public List<PageBatch> CalculateDpi(PdfComic pdfComic, List<PageBatch> imageSizesList, out ConcurrentQueue<Page> allReadPages)
+        public List<Page> Initialize(PdfComic pdfComic, ComicConverter comicConverter)
         {
-            Console.WriteLine($"Calculating dpi for {imageSizesList.Count} imagesizes");
+            pdfComic.CreateOutputDirectory();
+
+            List<Page> pageSizes;
+            using (var parser = new PdfImageParser(pdfComic))
+            {
+                pageSizes = comicConverter.ParseComic(pdfComic, parser);
+
+                parser.GetParserWarnings().ForEach(warning => ProgressReporter.Warning(warning));
+            }
+
+            return pageSizes;
+        }
+
+        public void FixLargePageSize(List<PageBatch> pageBatches)
+        {
+            // Cannot fix a single page comic :)
+            if (pageBatches.Count == 1 && pageBatches[0].PageNumbers.Count == 1)
+            {
+                return;
+            }
+
+            // If there's a single page much larger than the rest assume it's an error and try to fix it. 
+            var largest = pageBatches[0];
+
+            if (largest.PageNumbers.Count == 1)
+            {
+                var secondLargest = pageBatches[1];
+
+                if (largest.Width > secondLargest.Width * 2 && largest.Height > secondLargest.Height * 2)
+                {
+                    var oldHeight = largest.Height;
+                    largest.Height = secondLargest.Height;
+
+                    var factor = (double)oldHeight / largest.Height;
+
+                    var oldWidth = largest.Width;
+                    var newWidth = oldWidth / factor;
+
+                    largest.Width = Convert.ToInt32(newWidth);
+
+                    ProgressReporter.Warning($"Fixed page {largest.FirstPage}: {oldWidth} x {oldHeight} -> {largest.Width} x {largest.Height}");
+                }
+            }
+        }
+
+        public List<PageBatch> CalculateDpi(PdfComic pdfComic, List<PageBatch> pageBatches, out ConcurrentQueue<Page> allReadPages)
+        {
+            Console.WriteLine($"Calculating dpi for {pageBatches.Count} imagesizes");
 
             var readPages = new ConcurrentQueue<Page>();
 
-            var imageSizesQueue = new ConcurrentQueue<PageBatch>(imageSizesList);
+            var queue = new ConcurrentQueue<PageBatch>(pageBatches);
 
             var readUsingMinimumDpi = false;
 
             Parallel.For(0, Settings.ParallelThreads, (index, state) =>
             {
-                while (!imageSizesQueue.IsEmpty)
+                while (!queue.IsEmpty)
                 {
-                    if (imageSizesQueue.TryDequeue(out var imageSize))
+                    if (queue.TryDequeue(out var imageSize))
                     {
                         if (readUsingMinimumDpi || imageSize.Width == 0)
                         {
@@ -39,7 +87,7 @@ namespace CoreComicsConverter.PdfFlow
                 }
             });
 
-            foreach (var imageSize in imageSizesList)
+            foreach (var imageSize in pageBatches)
             {
                 if (imageSize.Dpi < Settings.MinimumDpi)
                 {
@@ -52,7 +100,7 @@ namespace CoreComicsConverter.PdfFlow
             Console.WriteLine($"Read pages: {allReadPages.Count}");
 
             // Trim image sizes that have been read fully
-            return imageSizesList.Where(i => i.PageNumbers.Count > 0).AsList();
+            return pageBatches.Where(i => i.PageNumbers.Count > 0).AsList();
         }
 
         private static bool CalculateDpiForBatch(PdfComic pdfComic, PageBatch batch, ConcurrentQueue<Page> allReadPages)
@@ -214,12 +262,7 @@ namespace CoreComicsConverter.PdfFlow
             {
                 while (allReadPages.TryDequeue(out var page))
                 {
-                    var pngPath = Path.Combine(pdfComic.OutputDirectory, page.Name);
-
-                    var jpg = pdfComic.GetJpgPageString(page.Number);
-                    var jpgPath = Path.Combine(pdfComic.OutputDirectory, jpg);
-
-                    pageConverter.ConvertPage(pngPath, jpgPath);
+                    var jpg = ConvertPage(pdfComic, page);
 
                     progressReporter.ShowProgress($"Converted {jpg}");
                 }
@@ -231,6 +274,26 @@ namespace CoreComicsConverter.PdfFlow
             {
                 throw new ApplicationException($"{nameof(allReadPages)} is {allReadPages.Count} should be 0");
             }
+        }
+
+        private static string ConvertPage(PdfComic pdfComic, Page page)
+        {
+            var pngPath = Path.Combine(pdfComic.OutputDirectory, page.Name);
+
+            var jpg = pdfComic.GetJpgPageString(page.Number);
+            var jpgPath = Path.Combine(pdfComic.OutputDirectory, jpg);
+
+            using var image = new MagickImage(pngPath)
+            {
+                Format = MagickFormat.Jpg,
+                Interlace = Interlace.Plane,
+                Quality = Settings.JpegQuality
+            };
+
+            image.Write(jpgPath);
+            File.Delete(pngPath);
+
+            return jpg;
         }
     }
 }

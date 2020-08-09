@@ -22,7 +22,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="Extensions\StringExtensions.cs" />
     <Compile Remove="PageCompressor.cs" />
     <Compile Remove="PageReadHandler.cs" />
   </ItemGroup>

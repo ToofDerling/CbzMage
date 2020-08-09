@@ -1,28 +1,26 @@
-﻿using CoreComicsConverter.Extensions;
+﻿using CoreComicsConverter.DirectoryFlow;
+using CoreComicsConverter.Extensions;
 using CoreComicsConverter.Model;
 using ImageMagick;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace CoreComicsConverter.Images
 {
-    public class DirectoryImageParser : ImageParser
+    public class DirectoryImageParser : IPageParser
     {
         private ConcurrentQueue<Page> _pageQueue;
 
-        public DirectoryImageParser(Comic comic) : base(comic)
-        {
-        }
+        private readonly DirectoryComic _comic;
 
-        public override event EventHandler<PageEventArgs> PageParsed;
-
-        public override void OpenComicSetPageCount()
+        public DirectoryImageParser(DirectoryComic comic)
         {
-            var sortedFiles = Directory.EnumerateFiles(_comic.Path).OrderBy(path => path.ToString());
+            _comic = comic;
+
+            var sortedFiles = comic.Files.OrderBy(path => path.ToString());
 
             _pageQueue = new ConcurrentQueue<Page>();
             var pageNumber = 1;
@@ -36,7 +34,9 @@ namespace CoreComicsConverter.Images
             _comic.PageCount = _pageQueue.Count;
         }
 
-        public override List<Page> ParsePagesSetImageCount()
+        public event EventHandler<PageEventArgs> PageParsed;
+
+        public List<Page> ParsePages()
         {
             var pageSizes = new ConcurrentBag<Page>();
 

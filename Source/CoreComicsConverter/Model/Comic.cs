@@ -31,5 +31,10 @@ namespace CoreComicsConverter.Model
             Type = type;
             Path = path;
         }
+
+        public static List<Comic> List()
+        {
+            return new List<Comic>();
+        }
     }
 }

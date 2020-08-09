@@ -1,5 +1,4 @@
-﻿using CoreComicsConverter.Model;
-using ImageMagick;
+﻿using ImageMagick;
 using System;
 using System.IO;
 

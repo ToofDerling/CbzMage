@@ -42,5 +42,33 @@ namespace CoreComicsConverter
                 Console.Write(message);
             }
         }
+
+        public static void Done(string message)
+        {
+            Show(message, ConsoleColor.Green);
+        }
+
+        public static void Info(string message)
+        {
+            Console.WriteLine(message);
+        }
+
+        public static void Warning(string message)
+        {
+            Show(message, ConsoleColor.Yellow);
+        }
+
+        public static void Error(string message)
+        {
+            Show(message, ConsoleColor.Red);
+        }
+
+        private static void Show(string message, ConsoleColor color)
+        {
+            var oldColor = Console.ForegroundColor;
+            Console.ForegroundColor = color;
+            Console.WriteLine(message);
+            Console.ForegroundColor = oldColor;
+        }
     }
 }
