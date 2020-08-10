@@ -9,7 +9,7 @@ using System.Collections.Generic;
 
 namespace CoreComicsConverter.PdfFlow
 {
-    public class PdfImageParser : IEventListener, IPageParser, IDisposable
+    public class PdfImageParser : PageParser, IEventListener, IDisposable
     {
         private Dictionary<int, Page> _imageMap;
 
@@ -40,9 +40,9 @@ namespace CoreComicsConverter.PdfFlow
             _parserWarnings = new List<string>();
         }
 
-        public event EventHandler<PageEventArgs> PageParsed;
+        public override event EventHandler<PageEventArgs> PageParsed;
 
-        public List<Page> ParsePages()
+        protected override List<Page> Parse()
         {
             _imageMap = new Dictionary<int, Page>();
             

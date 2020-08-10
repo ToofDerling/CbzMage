@@ -1,5 +1,4 @@
-﻿using CoreComicsConverter.DirectoryFlow;
-using CoreComicsConverter.Extensions;
+﻿using CoreComicsConverter.Extensions;
 using CoreComicsConverter.Model;
 using ImageMagick;
 using System;
@@ -8,9 +7,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CoreComicsConverter.Images
+namespace CoreComicsConverter.DirectoryFlow
 {
-    public class DirectoryImageParser : IPageParser
+    public class DirectoryImageParser : PageParser
     {
         private ConcurrentQueue<Page> _pageQueue;
 
@@ -34,9 +33,9 @@ namespace CoreComicsConverter.Images
             _comic.PageCount = _pageQueue.Count;
         }
 
-        public event EventHandler<PageEventArgs> PageParsed;
+        public override event EventHandler<PageEventArgs> PageParsed;
 
-        public List<Page> ParsePages()
+        protected override List<Page> Parse()
         {
             var pageSizes = new ConcurrentBag<Page>();
 

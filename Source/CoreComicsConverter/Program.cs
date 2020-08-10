@@ -12,8 +12,8 @@ namespace CoreComicsConverter
     {
 
 #if DEBUG
-        private const string _testPdf = @"D:\Data\Pdf\Test\Voices of a Distant Star - Makoto Shinkai and Mizu Sahara";
-        //private const string _testPdf = @"D:\Data\Pdf\Test\Hawkworld New Edition";
+        //private const string _testPdf = @"D:\Data\Pdf\Test\Voices of a Distant Star - Makoto Shinkai and Mizu Sahara";
+        private const string _testPdf = @"D:\Data\Pdf\Test\Hawkworld New Edition";
         //private const string _testPdf = @"D:\Data\Pdf\Test\";
 #else
         private const string _testPdf = null;
@@ -32,29 +32,29 @@ namespace CoreComicsConverter
             //cbzConverter.ConvertToPdf(comic);
 
             var path = GetPath(args);
-            if (path == null || !Run(path))
+            if (path == null || !StartConvert(path))
             {
                 Console.WriteLine("CoreComicsConverter <directory|comic>");
                 return;
             }
 
-            converter.WaitForCompressPages(compressTask);
+            converter.WaitForOutputFile(outputFileTask);
             Console.ReadLine();
         }
 
         private static readonly ComicConverter converter = new ComicConverter();
 
-        private static CompressCbzTask compressTask = null;
+        private static CreateOutputFileTask outputFileTask = null;
 
         private static bool Convert(List<PdfComic> pdfComics)
         {
-            pdfComics.ForEach(comic => { compressTask = converter.ConversionFlow(comic, compressTask); });
+            pdfComics.ForEach(comic => { outputFileTask = converter.ConversionFlow(comic, outputFileTask); });
             return true;
         }
 
         private static bool Convert(List<DirectoryComic> directoryComics)
         {
-            directoryComics.ForEach(comic => { compressTask = converter.ConversionFlow(comic, compressTask); });
+            directoryComics.ForEach(comic => { outputFileTask = converter.ConversionFlow(comic, outputFileTask); });
             return true;
         }
 
@@ -63,24 +63,24 @@ namespace CoreComicsConverter
         //    comicList.ForEach(comic => { compressTask = converter.ConversionFlow(comic, compressTask); });
         //}
 
-        private static bool Run(string path)
+        private static bool StartConvert(string path)
         {
             var directory = new DirectoryInfo(path);
             if (directory.Exists)
             {
-                return RunDirectory(directory);
+                return StartConvertDirectory(directory);
 
             }
             else if (File.Exists(path))
             {
-                return RunFile(path);
+                return StartConvertFile(path);
             }
 
             // Nothing to do
             return false;
         }
 
-        private static bool RunDirectory(DirectoryInfo directory)
+        private static bool StartConvertDirectory(DirectoryInfo directory)
         {
             var entries = directory.GetFileSystemInfos();
             if (entries.Length == 0)
@@ -110,7 +110,7 @@ namespace CoreComicsConverter
             return false;
         }
 
-        private static bool RunFile(string file)
+        private static bool StartConvertFile(string file)
         {
             if (FilesArePdfs(file))
             {

@@ -1,8 +1,8 @@
 ﻿using CoreComicsConverter.DirectoryFlow;
 using CoreComicsConverter.Extensions;
-using CoreComicsConverter.Images;
 using CoreComicsConverter.Model;
 using CoreComicsConverter.PdfFlow;
+using ImageMagick;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -16,136 +16,129 @@ namespace CoreComicsConverter
 {
     public class ComicConverter
     {
+        private readonly Stopwatch _stopwatch = new Stopwatch();
+
         // Pdf conversion flow     
-        public CompressCbzTask ConversionFlow(PdfComic pdfComic, CompressCbzTask compressCbzTask)
+        public CreateOutputFileTask ConversionFlow(PdfComic pdfComic, CreateOutputFileTask outputFileTask)
         {
-            var stopWatch = Stopwatch.StartNew();
-            Console.WriteLine(pdfComic.Path);
+            StartConversion(pdfComic);
 
             var pdfFlow = new PdfConversionFlow();
-            var pageSizes = pdfFlow.Initialize(pdfComic, this);
+
+            var pageSizes = pdfFlow.ParseImages(pdfComic);
 
             var pageBatches = GetPageBatchesSortedByImageSize(pdfComic, pageSizes);
             pdfFlow.FixLargePageSize(pageBatches);
 
-            pageBatches = pdfFlow.CalculateDpi(pdfComic, pageBatches, out var allReadPages);
-            VerifyPageBatches(pdfComic, allReadPages, pageBatches);
+            pageBatches = pdfFlow.CalculateDpi(pdfComic, pageBatches, out var readyPages);
+            VerifyPageBatches(pdfComic, readyPages, pageBatches);
 
             pageBatches = pdfFlow.CoalescePageBatches(pageBatches);
-            VerifyPageBatches(pdfComic, allReadPages, pageBatches);
+            VerifyPageBatches(pdfComic, readyPages, pageBatches);
 
             var chunkedPageBatches = pdfFlow.ChunkPageBatches(pageBatches);
-            VerifyPageBatches(pdfComic, allReadPages, chunkedPageBatches);
+            VerifyPageBatches(pdfComic, readyPages, chunkedPageBatches);
 
-            WaitForCompressPages(compressCbzTask, onlyCheckIfCompleted: true);
+            WaitForOutputFile(outputFileTask, onlyCheckIfCompleted: true);
 
-            pdfFlow.ReadPages(pdfComic, chunkedPageBatches, allReadPages);
-            VerifyPageBatches(pdfComic, allReadPages, chunkedPageBatches);
+            pdfFlow.ReadPages(pdfComic, chunkedPageBatches, readyPages);
+            VerifyPageBatches(pdfComic, readyPages, chunkedPageBatches);
 
-            WaitForCompressPages(compressCbzTask, onlyCheckIfCompleted: true);
+            WaitForOutputFile(outputFileTask, onlyCheckIfCompleted: true);
 
-            pdfFlow.ConvertPages(pdfComic, allReadPages);
+            ConvertPages(pdfComic, readyPages);
 
-            WaitForCompressPages(compressCbzTask);
+            StopConversion();
 
-            StopStopwatch(stopWatch);
-
-            return StartCompressPages(pdfComic);
+            WaitForOutputFile(outputFileTask);
+            return StartOutputFileCreation(pdfComic);
         }
 
-        public CompressCbzTask ConversionFlow(DirectoryComic directoryComic, CompressCbzTask compressCbzTask)
+        // Directory conversion flow
+        public CreateOutputFileTask ConversionFlow(DirectoryComic directoryComic, CreateOutputFileTask outputFileTask)
         {
-            var stopWatch = Stopwatch.StartNew();
-            Console.WriteLine(directoryComic.Path);
+            StartConversion(directoryComic);
 
             var directoryFlow = new DirectoryConversionFlow();
 
             var isDownload = directoryFlow.IsDownload(directoryComic);
-                
             if (isDownload && !directoryFlow.VerifyDownload(directoryComic))
             {
                 return null;
             }
 
-            var pageParser = new DirectoryImageParser(directoryComic);
-            var pageSizes = ParseComic(directoryComic, pageParser);
+            var pageSizes = directoryFlow.ParseImages(directoryComic);
 
             var pageBatches = GetPageBatchesSortedByImageSize(directoryComic, pageSizes);
-
             if (isDownload)
             {
                 directoryFlow.FixDoublePageSpreads(pageBatches);
             }
 
-            //var allreadPages = CalculateDpi(pdfComic, imageSizesList);
-            //CoalescePageBatches(imageSizesList);
+            var readyPages = directoryFlow.GetPagesToConvert(pageBatches);
+            if (readyPages.Count > 0)
+            {
+                WaitForOutputFile(outputFileTask, onlyCheckIfCompleted: true);
 
-            StopStopwatch(stopWatch);
+                ConvertPages(directoryComic, readyPages);
+            }
 
-            return null;
+            StopConversion();
+
+            WaitForOutputFile(outputFileTask);
+            return StartOutputFileCreation(directoryComic);
         }
 
-        public void StopStopwatch(Stopwatch stopwatch)
+        public void StartConversion(Comic comic)
         {
-            stopwatch.Stop();
-            var passed = stopwatch.Elapsed;
+            _stopwatch.Restart();
+            Console.WriteLine(comic.Path);
+        }
+
+        public void StopConversion()
+        {
+            _stopwatch.Stop();
+            var passed = _stopwatch.Elapsed;
 
             Console.WriteLine($"{passed.Minutes} min {passed.Seconds} sec");
             Console.WriteLine();
         }
 
-        public void WaitForCompressPages(CompressCbzTask compressCbzTask, bool onlyCheckIfCompleted = false)
+        public void WaitForOutputFile(CreateOutputFileTask outputFileTask, bool onlyCheckIfCompleted = false)
         {
-            if (compressCbzTask == null || compressCbzTask.PdfComic.CbzFileCreated)
+            if (outputFileTask == null || outputFileTask.Comic.OutputFileCreated)
             {
                 return;
             }
 
-            if (!compressCbzTask.IsCompleted)
+            if (!outputFileTask.IsCompleted)
             {
                 if (onlyCheckIfCompleted)
                 {
                     return;
                 }
 
-                Console.WriteLine($"WAIT {compressCbzTask.PdfComic.GetCbzName()}");
-                compressCbzTask.Wait();
+                Console.WriteLine($"WAIT {outputFileTask.Comic.OutputFile}");
+                outputFileTask.Wait();
             }
 
-            compressCbzTask.PdfComic.CleanOutputDirectory();
-            compressCbzTask.PdfComic.CbzFileCreated = true;
+            outputFileTask.Comic.CleanOutputDirectory();
+            outputFileTask.Comic.OutputFileCreated = true;
 
-            ProgressReporter.Done($"FINISH {compressCbzTask.PdfComic.GetCbzName()}");
+            ProgressReporter.Done($"FINISH {outputFileTask.Comic.OutputFile}");
         }
 
-        private static CompressCbzTask StartCompressPages(PdfComic pdfComic)
+        private static CreateOutputFileTask StartOutputFileCreation(Comic comic)
         {
-            var compressCbzTask = new CompressCbzTask(pdfComic);
+            var outputFileTask = new CreateOutputFileTask(comic);
 
-            Console.WriteLine($"START {compressCbzTask.PdfComic.GetCbzName()}");
-            compressCbzTask.Start();
+            Console.WriteLine($"START {outputFileTask.Comic.OutputFile}");
+            outputFileTask.Start();
 
-            return compressCbzTask;
+            return outputFileTask;
         }
 
-        public List<Page> ParseComic(Comic comic, IPageParser parser)
-        {
-            if (comic.PageCount == 0)
-            {
-                throw new ApplicationException("Comic pageCount is 0");
-            }
-            Console.WriteLine($"{comic.PageCount} pages");
 
-            var progressReporter = new ProgressReporter(comic.PageCount);
-            parser.PageParsed += (s, e) => progressReporter.ShowProgress($"Parsing page {e.Page.Number}");
-
-            var pageSizes = parser.ParsePages();
-
-            Console.WriteLine();
-            Console.WriteLine($"{comic.ImageCount} images");
-
-            return pageSizes;
-        }
 
         private static List<PageBatch> GetPageBatchesSortedByImageSize(Comic comic, List<Page> pageSizes)
         {
@@ -170,6 +163,52 @@ namespace CoreComicsConverter
 
             return pageBatches;
         }
+
+        private static void ConvertPages(Comic comic, ConcurrentQueue<Page> readyPages)
+        {
+            var progressReporter = new ProgressReporter(readyPages.Count);
+
+            Parallel.For(0, Settings.ParallelThreads, (index, state) =>
+            {
+                while (readyPages.TryDequeue(out var page))
+                {
+                    var jpg = ConvertPage(comic, page);
+
+                    progressReporter.ShowProgress($"Converted {jpg}");
+                }
+            });
+
+            Console.WriteLine();
+
+            if (readyPages.Count > 0)
+            {
+                throw new ApplicationException($"{nameof(readyPages)} is {readyPages.Count} should be 0");
+            }
+        }
+
+        private static string ConvertPage(Comic comic, Page page)
+        {
+            using var image = new MagickImage(page.Path)
+            {
+                Format = MagickFormat.Jpg,
+                Interlace = Interlace.Plane,
+                Quality = Settings.JpegQuality
+            };
+
+            var jpg = comic.GetJpgPageString(page.Number);
+            var jpgPath = Path.Combine(comic.OutputDirectory, jpg);
+
+            if (page.NewWidth > 0 && page.NewHeight > 0)
+            {
+                image.Resize(page.NewWidth, page.NewHeight);
+            }
+
+            image.Write(jpgPath);
+            File.Delete(page.Path);
+
+            return jpg;
+        }
+
 
         private static void VerifyPageBatches(Comic comic, ConcurrentQueue<Page> allReadPages, params List<PageBatch>[] pageBatches)
         {
@@ -212,35 +251,6 @@ namespace CoreComicsConverter
             Console.WriteLine(sb);
 
             return pageLists;
-        }
-
-        private static void ConvertPages(PdfComic pdfComic, ConcurrentQueue<Page> allReadPages)
-        {
-            var progressReporter = new ProgressReporter(pdfComic.PageCount);
-
-            var pageConverter = new PageConverter();
-
-            Parallel.For(0, Settings.ParallelThreads, (index, state) =>
-            {
-                while (allReadPages.TryDequeue(out var page))
-                {
-                    var pngPath = Path.Combine(pdfComic.OutputDirectory, page.Name);
-
-                    var jpg = pdfComic.GetJpgPageString(page.Number);
-                    var jpgPath = Path.Combine(pdfComic.OutputDirectory, jpg);
-
-                    pageConverter.ConvertPage(pngPath, jpgPath);
-
-                    progressReporter.ShowProgress($"Converted {jpg}");
-                }
-            });
-
-            Console.WriteLine();
-
-            if (allReadPages.Count > 0)
-            {
-                throw new ApplicationException($"{nameof(allReadPages)} is {allReadPages.Count} should be 0");
-            }
         }
     }
 }

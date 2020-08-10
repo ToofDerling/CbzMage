@@ -33,6 +33,14 @@ namespace CoreComicsConverter.DirectoryFlow
             return true;
         }
 
+        public List<Page> ParseImages(DirectoryComic comic)
+        {
+            var pageParser = new DirectoryImageParser(comic);
+            
+            var pageSizes = pageParser.ParseImages(comic);
+            return pageSizes;
+        }
+
         public void FixDoublePageSpreads(List<PageBatch> pageBatches)
         {
             if (pageBatches.Count == 1)

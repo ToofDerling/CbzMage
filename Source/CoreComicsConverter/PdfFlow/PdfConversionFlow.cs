@@ -12,14 +12,14 @@ namespace CoreComicsConverter.PdfFlow
 {
     public class PdfConversionFlow
     {
-        public List<Page> Initialize(PdfComic pdfComic, ComicConverter comicConverter)
+        public List<Page> ParseImages(PdfComic pdfComic)
         {
             pdfComic.CreateOutputDirectory();
 
             List<Page> pageSizes;
             using (var parser = new PdfImageParser(pdfComic))
             {
-                pageSizes = comicConverter.ParseComic(pdfComic, parser);
+                pageSizes = parser.ParseImages(pdfComic);
 
                 parser.GetParserWarnings().ForEach(warning => ProgressReporter.Warning(warning));
             }
@@ -59,11 +59,11 @@ namespace CoreComicsConverter.PdfFlow
             }
         }
 
-        public List<PageBatch> CalculateDpi(PdfComic pdfComic, List<PageBatch> pageBatches, out ConcurrentQueue<Page> allReadPages)
+        public List<PageBatch> CalculateDpi(PdfComic pdfComic, List<PageBatch> pageBatches, out ConcurrentQueue<Page> readyPages)
         {
             Console.WriteLine($"Calculating dpi for {pageBatches.Count} imagesizes");
 
-            var readPages = new ConcurrentQueue<Page>();
+            var readyPagesBag = new ConcurrentBag<Page>();
 
             var queue = new ConcurrentQueue<PageBatch>(pageBatches);
 
@@ -81,7 +81,7 @@ namespace CoreComicsConverter.PdfFlow
                         }
                         else
                         {
-                            readUsingMinimumDpi = CalculateDpiForBatch(pdfComic, imageSize, readPages);
+                            readUsingMinimumDpi = CalculateDpiForBatch(pdfComic, imageSize, readyPagesBag);
                         }
                     }
                 }
@@ -95,15 +95,15 @@ namespace CoreComicsConverter.PdfFlow
                 }
             }
 
-            allReadPages = readPages;
+            readyPages = new ConcurrentQueue<Page>(readyPagesBag);
 
-            Console.WriteLine($"Read pages: {allReadPages.Count}");
+            Console.WriteLine($"Read pages: {readyPages.Count}");
 
             // Trim image sizes that have been read fully
             return pageBatches.Where(i => i.Pages.Count > 0).AsList();
         }
 
-        private static bool CalculateDpiForBatch(PdfComic pdfComic, PageBatch batch, ConcurrentQueue<Page> allReadPages)
+        private static bool CalculateDpiForBatch(PdfComic pdfComic, PageBatch batch, ConcurrentBag<Page> readyPagesBag)
         {
             var readUsingMinimumDpi = false;
 
@@ -116,7 +116,7 @@ namespace CoreComicsConverter.PdfFlow
             Console.WriteLine($"{batch.Width} x {batch.Height} -> {calculatedDpi} ({page.Width} x {page.Height})");
 
             // Ensure that page read during calculation won't be read again.
-            allReadPages.Enqueue(page);
+            readyPagesBag.Add(page);
             batch.Pages.Remove(page);
 
             if (calculatedDpi > Settings.MinimumDpi)
@@ -224,9 +224,9 @@ namespace CoreComicsConverter.PdfFlow
             }
         }
 
-        public void ReadPages(PdfComic pdfComic, List<PageBatch>[] pageLists, ConcurrentQueue<Page> allReadPages)
+        public void ReadPages(PdfComic pdfComic, List<PageBatch>[] pageLists, ConcurrentQueue<Page> readyPages)
         {
-            var progressReporter = new ProgressReporter(pdfComic.PageCount - allReadPages.Count);
+            var progressReporter = new ProgressReporter(pdfComic.PageCount - readyPages.Count);
 
             Parallel.For(0, Settings.ParallelThreads, (index, state) =>
             {
@@ -239,7 +239,7 @@ namespace CoreComicsConverter.PdfFlow
                     var page = e.Page;
                     page.Path = Path.Combine(pdfComic.OutputDirectory, page.Name);
 
-                    allReadPages.Enqueue(page);
+                    readyPages.Enqueue(page);
                     progressReporter.ShowProgress($"Read {page.Name}");
                 };
 
@@ -251,46 +251,6 @@ namespace CoreComicsConverter.PdfFlow
             });
 
             Console.WriteLine();
-        }
-
-        public void ConvertPages(PdfComic pdfComic, ConcurrentQueue<Page> allReadPages)
-        {
-            var progressReporter = new ProgressReporter(pdfComic.PageCount);
-
-            Parallel.For(0, Settings.ParallelThreads, (index, state) =>
-            {
-                while (allReadPages.TryDequeue(out var page))
-                {
-                    var jpg = ConvertPage(pdfComic, page);
-
-                    progressReporter.ShowProgress($"Converted {jpg}");
-                }
-            });
-
-            Console.WriteLine();
-
-            if (allReadPages.Count > 0)
-            {
-                throw new ApplicationException($"{nameof(allReadPages)} is {allReadPages.Count} should be 0");
-            }
-        }
-
-        private static string ConvertPage(PdfComic comic, Page page)
-        {
-            using var image = new MagickImage(page.Path)
-            {
-                Format = MagickFormat.Jpg,
-                Interlace = Interlace.Plane,
-                Quality = Settings.JpegQuality
-            };
-
-            var jpg = comic.GetJpgPageString(page.Number);
-            var jpgPath = Path.Combine(comic.OutputDirectory, jpg);
-
-            image.Write(jpgPath);
-            File.Delete(page.Path);
-
-            return jpg;
         }
     }
 }
