@@ -41,7 +41,7 @@ namespace CoreComicsConverter.DirectoryFlow
                 return;
             }
 
-            var sorted = pageBatches.OrderByDescending(p => p.PageNumbers.Count);
+            var sorted = pageBatches.OrderByDescending(p => p.Pages.Count);
 
             var mostOfThisSize = sorted.First();
 
@@ -57,7 +57,7 @@ namespace CoreComicsConverter.DirectoryFlow
                         batch.NewWidth = doublePageSize.width;
                         batch.NewHeight = doublePageSize.height;
 
-                        ProgressReporter.Warning($"Fixed {batch.PageNumbers.Count} doublepage spreads: {batch.Width} x {batch.Height} -> {batch.NewWidth} x {batch.NewHeight}");
+                        ProgressReporter.Warning($"Fixed {batch.Pages.Count} doublepage spreads: {batch.Width} x {batch.Height} -> {batch.NewWidth} x {batch.NewHeight}");
                     }
                 }
 
@@ -77,7 +77,7 @@ namespace CoreComicsConverter.DirectoryFlow
 
             foreach (var batch in batches)
             { 
-                
+             //   if (batch.Path)
             }
 
             return queue;

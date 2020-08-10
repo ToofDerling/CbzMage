@@ -1,7 +1,9 @@
-﻿using CoreComicsConverter.Model;
+﻿using CoreComicsConverter.Extensions;
+using CoreComicsConverter.Model;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 
 namespace CoreComicsConverter.PdfFlow
@@ -29,11 +31,14 @@ namespace CoreComicsConverter.PdfFlow
             return string.Join(' ', args);
         }
 
-        private static string CreatePageList(List<int> pageNumbers)
+        private static string CreatePageList(IEnumerable<int> pageNumbers)
         {
             var sb = new StringBuilder();
 
-            pageNumbers.ForEach(p => sb.Append(p).Append(','));
+            foreach (var p in pageNumbers)
+            {
+                sb.Append(p).Append(',');
+            }
             sb.Remove(sb.Length - 1, 1);
 
             return sb.ToString();
@@ -52,7 +57,9 @@ namespace CoreComicsConverter.PdfFlow
 
         public void ReadPageList(PdfComic pdfComic, PageBatch batch)
         {
-            var pageList = CreatePageList(batch.PageNumbers);
+            var pageNumbers = batch.Pages.Select(p => p.Number).AsList();
+
+            var pageList = CreatePageList(pageNumbers);
 
             var padLen = pdfComic.PageCountLength;
 
@@ -60,12 +67,12 @@ namespace CoreComicsConverter.PdfFlow
 
             var switches = GetSwitches(pdfComic, batch.Dpi, pageList, $"{pageListId}-%0{padLen}d.png");
 
-            var pageQueue = GetPageQueue(batch.PageNumbers, pageListId, padLen);
+            var pageQueue = GetPageQueue(pageNumbers, pageListId, padLen);
 
             RunAndWaitForProcess(pdfComic, switches, pageQueue, ProcessPriorityClass.Idle);
         }
 
-        private static Queue<(string name, int number)> GetPageQueue(List<int> pageNumbers, string pageListId, int padLen)
+        private static Queue<(string name, int number)> GetPageQueue(IEnumerable<int> pageNumbers, string pageListId, int padLen)
         {
             var pageQueue = new Queue<(string name, int number)>();
 

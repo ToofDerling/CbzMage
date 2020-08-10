@@ -159,10 +159,10 @@ namespace CoreComicsConverter
             {
                 var pageNumbers = size.Select(s => s.Number).AsList();
 
-                pageBatches.Add(new PageBatch { Width = size.Key.Width, Height = size.Key.Height, PageNumbers = pageNumbers });
+                pageBatches.Add(new PageBatch { Width = size.Key.Width, Height = size.Key.Height, Pages = size.AsList() });
             }
 
-            var pagesCount = pageBatches.Sum(i => i.PageNumbers.Count);
+            var pagesCount = pageBatches.Sum(i => i.Pages.Count);
             if (pagesCount != comic.PageCount)
             {
                 throw new ApplicationException($"{nameof(pageBatches)} pagesCount is {pagesCount} should be {comic.PageCount}");
@@ -173,7 +173,7 @@ namespace CoreComicsConverter
 
         private static void VerifyPageBatches(Comic comic, ConcurrentQueue<Page> allReadPages, params List<PageBatch>[] pageBatches)
         {
-            var pagesCount = pageBatches.Sum(batch => batch.Sum(i => i.PageNumbers.Count));
+            var pagesCount = pageBatches.Sum(batch => batch.Sum(i => i.Pages.Count));
             if (allReadPages.Count + pagesCount != comic.PageCount)
             {
                 throw new ApplicationException($"{nameof(pageBatches)} pages is {pagesCount} should be {comic.PageCount - allReadPages.Count}");

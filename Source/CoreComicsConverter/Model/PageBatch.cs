@@ -3,8 +3,12 @@ using System.Linq;
 
 namespace CoreComicsConverter.Model
 {
-    public class PageBatch : Page
+    public class PageBatch 
     {
+        public int Width { get; set; }
+
+        public int Height { get; set; }
+
         /// <summary>
         /// Used by Pdf flow when reading pages using Ghostscript.
         /// </summary>
@@ -13,11 +17,11 @@ namespace CoreComicsConverter.Model
         /// <summary>
         /// The pages with this imagesize
         /// </summary>
-        public List<int> PageNumbers { get; set; }
+        public List<Page> Pages { get; set; }
 
-        public int FirstPage => PageNumbers == null ? -1 : PageNumbers.First();
+        public int FirstPage => Pages == null ? -1 : Pages.First().Number;
 
-        public int LastPage => PageNumbers == null ? -1 : PageNumbers.Last();
+        public int LastPage => Pages == null ? -1 : Pages.Last().Number;
 
         public int NewWidth { get; set; }
 

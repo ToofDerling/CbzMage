@@ -1,4 +1,5 @@
-﻿using ImageMagick;
+﻿using CoreComicsConverter.Model;
+using ImageMagick;
 using System;
 using System.IO;
 
@@ -10,17 +11,13 @@ namespace CoreComicsConverter.PdfFlow
 
         private readonly PdfComic _pdfComic;
 
-        private readonly (int number, int width, int height) _page;
+        private readonly Page _page;
 
-        private string _currentPage;
-
-        private (int width, int height) _currentImageSize;
-
-        public DpiCalculator(PdfComic pdfComic, (int number, int width, int height) page)
+        public DpiCalculator(PdfComic pdfComic, PageBatch batch, Page page)
         {
             _page = page;
 
-            _wantedImageWidth = _page.width;
+            _wantedImageWidth = batch.Width;
 
             _pdfComic = pdfComic;
         }
@@ -37,16 +34,6 @@ namespace CoreComicsConverter.PdfFlow
             }
 
             return dpi;
-        }
-
-        public string GetCurrentPage()
-        {
-            return _currentPage;
-        }
-
-        public (int width, int height) GetCurrentImageSize()
-        {
-            return _currentImageSize;
         }
 
         private int GoingUp(int dpi, int width, int wantedWidth)
@@ -116,19 +103,21 @@ namespace CoreComicsConverter.PdfFlow
         {
             var pageMachine = new GhostscriptPageMachine();
 
-            pageMachine.ReadPage(_pdfComic, _page.number, dpi);
+            pageMachine.ReadPage(_pdfComic, _page.Number, dpi);
 
-            _pdfComic.GetPngPageString(1);
-
-            _currentPage = _pdfComic.GetSinglePagePngString(_page.number);
-            var pagePath = Path.Combine(_pdfComic.OutputDirectory, _currentPage);
+            if (string.IsNullOrEmpty(_page.Path))
+            {
+                _page.Name = _pdfComic.GetSinglePagePngString(_page.Number);
+                _page.Path = Path.Combine(_pdfComic.OutputDirectory, _page.Name);
+            }
 
             using var image = new MagickImage();
+            image.Ping(_page.Path);
 
-            image.Ping(pagePath);
-            _currentImageSize = (image.Width, image.Height);
+            _page.Width = image.Width;
+            _page.Height = image.Height;
 
-            return _currentImageSize.width;
+            return _page.Width;
         }
     }
 }
