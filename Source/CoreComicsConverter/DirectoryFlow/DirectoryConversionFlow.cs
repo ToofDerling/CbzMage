@@ -1,36 +1,35 @@
 ﻿using CoreComicsConverter.Cmxlgy;
+using CoreComicsConverter.Extensions;
 using CoreComicsConverter.Model;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 namespace CoreComicsConverter.DirectoryFlow
 {
-    class DirectoryConversionFlow
+    public class DirectoryConversionFlow
     {
         public bool IsDownload(DirectoryComic comic)
         {
-            var isDownload = CmxlgyTools.IsDownload(comic.Files);
-
-            if (isDownload)
-            {
-                ProgressReporter.Info("This is assumed to be a Cmxlgy download");
-            }
-
-            return isDownload;
+            return  CmxlgyTools.IsDownload(comic.Files);
         }
 
         public bool VerifyDownload(DirectoryComic comic)
         {
-            var pageMissing = CmxlgyTools.VerifyDownloadFiles(comic.Files, out var _);
-            if (pageMissing > -1)
-            {
-                ProgressReporter.Error($"Page {pageMissing} is missing");
-                return false;
+            var pagesMissing = CmxlgyTools.GetPagesMissing(comic.Files, out var isMangaDownload);
 
+            var manga = isMangaDownload ? "manga " : string.Empty;
+            ProgressReporter.Info($"This looks like a Cmxlgy {manga}download");
+
+            if (pagesMissing.Any())
+            {
+                var missing = string.Join(',', pagesMissing.OrderBy(p => p).Select(p => p.ToString()));
+
+                ProgressReporter.Error($"Pages {missing} is missing");
+                return false;
             }
+
             return true;
         }
 
@@ -61,7 +60,7 @@ namespace CoreComicsConverter.DirectoryFlow
                     }
                 }
 
-                bool CheckSize(int large, int small, int other, int against)
+                static bool CheckSize(int large, int small, int other, int against)
                 {
                     var factor = (double)large / small;
                     var compare = Convert.ToInt32(other * factor);
@@ -70,17 +69,29 @@ namespace CoreComicsConverter.DirectoryFlow
             }
         }
 
-
         public ConcurrentQueue<Page> GetPagesToConvert(List<PageBatch> batches)
         {
-            var queue = new ConcurrentQueue<Page>();
+            var list = new List<Page>();
 
             foreach (var batch in batches)
-            { 
-             //   if (batch.Path)
+            {
+                if (batch.NewWidth > 0 && batch.NewHeight > 0)
+                {
+                    foreach (var page in batch.Pages)
+                    {
+                        page.NewWidth = batch.NewWidth;
+                        page.NewHeight = batch.NewHeight;
+                    }
+
+                    list.AddRange(batch.Pages);
+                }
+                else
+                {
+                    list.AddRange(batch.Pages.Where(p => p.Path.EndsWithIgnoreCase(".png")));
+                }
             }
 
-            return queue;
+            return new ConcurrentQueue<Page>(list);
         }
     }
 }

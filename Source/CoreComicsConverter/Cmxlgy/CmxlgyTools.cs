@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using CoreComicsConverter.Extensions;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -6,33 +8,6 @@ namespace CoreComicsConverter.Cmxlgy
 {
     public class CmxlgyTools
     {
-        public static int VerifyDownloadFiles(string[] files, out int pageCount)
-        {
-            var expected = 0;
-
-            pageCount = GetDownloadPageCount(files);
-            if (files.Length == pageCount + 1)
-            {
-                return -1;
-            }
-
-            foreach (var file in files)
-            {
-                var actual = GetDownloadPageNumber(file);
-                if (actual != expected)
-                {
-                    //Did we skip ony page, like in most manga downloads
-                    expected++;
-                    if (actual != expected)
-                    {
-                        return expected;
-                    }
-                }
-                expected++;
-            }
-            return -1;
-        }
-
         //Terminology: Download is a comic downloaded using browser extension
         //Backup is a cbz archive downloaded from the backups page
 
@@ -69,10 +44,15 @@ namespace CoreComicsConverter.Cmxlgy
             return number;
         }
 
-        public static int GetDownloadPageCount(string[] pages)
+        public static List<int> GetPagesMissing(string[] pages, out bool isMangaDownload)
         {
             var consecutivePages = 0;
             var pagesSkippingOnePage = 0;
+
+            var pageRangesMissing = new List<int>();
+            var singlePagesMissing = new List<int>();
+
+            isMangaDownload = false;
 
             for (var i = 1; i < pages.Length; i++)
             {
@@ -86,19 +66,39 @@ namespace CoreComicsConverter.Cmxlgy
                         break;
                     case 2:
                         pagesSkippingOnePage++;
+                        singlePagesMissing.Add(prevPageNumber + 1);
                         break;
                     default:
-                        return pages.Length;
+                        for (int missing = prevPageNumber + 1; missing <= pageNumber - 1; missing++)
+                        {
+                            pageRangesMissing.Add(missing);
+                        }
+                        break;
                 }
             }
 
             if (pagesSkippingOnePage > consecutivePages)
             {
-                var pageCount = GetDownloadPageNumber(pages.Last());
-                return pageCount;
+                isMangaDownload = true;
+
+                if (pageRangesMissing.Any())
+                {
+                    var lastPageNumber = GetDownloadPageNumber(pages.Last());
+
+                    for (var shouldExist = singlePagesMissing.First() + 1; shouldExist < lastPageNumber; shouldExist += 2)
+                    {
+                        if (pageRangesMissing.Contains(shouldExist) && pageRangesMissing.Contains(shouldExist - 1) && pageRangesMissing.Contains(shouldExist + 1))
+                        {
+                            pageRangesMissing.Remove(shouldExist - 1);
+                            pageRangesMissing.Remove(shouldExist + 1);
+                        }
+                    }
+                }
+
+                singlePagesMissing.Clear();
             }
 
-            return pages.Length;
+            return singlePagesMissing.Concat(pageRangesMissing).AsList();
         }
 
         //public static bool IsBackup(string name)
