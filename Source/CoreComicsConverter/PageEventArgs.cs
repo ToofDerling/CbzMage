@@ -5,11 +5,11 @@ namespace CoreComicsConverter
 {
     public class PageEventArgs : EventArgs
     {
-        public PageEventArgs(Page page)
+        public PageEventArgs(ComicPage page)
         {
             Page = page;
         }
 
-        public Page Page { get; private set; }
+        public ComicPage Page { get; private set; }
     }
 }

@@ -12,7 +12,7 @@ namespace CoreComicsConverter.DirectoryFlow
     {
         public bool IsDownload(DirectoryComic comic)
         {
-            return  CmxlgyTools.IsDownload(comic.Files);
+            return CmxlgyTools.IsDownload(comic.Files);
         }
 
         public bool VerifyDownload(DirectoryComic comic)
@@ -22,26 +22,28 @@ namespace CoreComicsConverter.DirectoryFlow
             var manga = isMangaDownload ? "manga " : string.Empty;
             ProgressReporter.Info($"This looks like a Cmxlgy {manga}download");
 
-            if (pagesMissing.Any())
+            if (pagesMissing.Count > 0)
             {
                 var missing = string.Join(',', pagesMissing.OrderBy(p => p).Select(p => p.ToString()));
 
                 ProgressReporter.Error($"Pages {missing} is missing");
                 return false;
             }
-
             return true;
         }
 
-        public List<Page> ParseImages(DirectoryComic comic)
+        public List<ComicPage> ParseImages(DirectoryComic comic)
         {
             var pageParser = new DirectoryImageParser(comic);
-            
+
             var pageSizes = pageParser.ParseImages(comic);
+
+            comic.PageCount = pageSizes.Count;
+
             return pageSizes;
         }
 
-        public void FixDoublePageSpreads(List<PageBatch> pageBatches)
+        public void FixDoublePageSpreads(List<ComicPageBatch> pageBatches)
         {
             if (pageBatches.Count == 1)
             {
@@ -52,17 +54,16 @@ namespace CoreComicsConverter.DirectoryFlow
 
             var mostOfThisSize = sorted.First();
 
-            (int width, int height) doublePageSize = (mostOfThisSize.Width * 2, mostOfThisSize.Height);
+            (int width, int height) = (mostOfThisSize.Width * 2, mostOfThisSize.Height);
 
             foreach (var batch in sorted.Skip(1))
             {
                 if (batch.Height < mostOfThisSize.Height)
                 {
-                    if (CheckSize(doublePageSize.height, batch.Height, batch.Width, doublePageSize.width)
-                        || CheckSize(doublePageSize.width, batch.Width, batch.Height, doublePageSize.height))
+                    if (CheckSize(height, batch.Height, batch.Width, width) || CheckSize(width, batch.Width, batch.Height, height))
                     {
-                        batch.NewWidth = doublePageSize.width;
-                        batch.NewHeight = doublePageSize.height;
+                        batch.NewWidth = width;
+                        batch.NewHeight = height;
 
                         ProgressReporter.Warning($"Fixed {batch.Pages.Count} doublepage spreads: {batch.Width} x {batch.Height} -> {batch.NewWidth} x {batch.NewHeight}");
                     }
@@ -77,9 +78,9 @@ namespace CoreComicsConverter.DirectoryFlow
             }
         }
 
-        public ConcurrentQueue<Page> GetPagesToConvert(List<PageBatch> batches)
+        public ConcurrentQueue<ComicPage> GetPagesToConvert(List<ComicPageBatch> batches)
         {
-            var list = new List<Page>();
+            var list = new List<ComicPage>();
 
             foreach (var batch in batches)
             {
@@ -92,14 +93,18 @@ namespace CoreComicsConverter.DirectoryFlow
                     }
 
                     list.AddRange(batch.Pages);
+                    batch.Pages.Clear();
                 }
                 else
                 {
-                    list.AddRange(batch.Pages.Where(p => p.Path.EndsWithIgnoreCase(".png")));
+                    var range = batch.Pages.Where(p => p.Path.EndsWithIgnoreCase(".png"));
+                    list.AddRange(range);
+
+                    batch.Pages = batch.Pages.Except(range).AsList();
                 }
             }
 
-            return new ConcurrentQueue<Page>(list);
+            return new ConcurrentQueue<ComicPage>(list);
         }
     }
 }

@@ -1,6 +1,8 @@
-﻿namespace CoreComicsConverter.Model
+﻿using ImageMagick;
+
+namespace CoreComicsConverter.Model
 {
-    public class Page
+    public class ComicPage
     {
         public string Name { get; set; }
 
@@ -15,5 +17,14 @@
         public int NewHeight { get; set; }
 
         public string Path { get; set; }
+
+        public void Ping()
+        {
+            using var image = new MagickImage();
+            image.Ping(Path);
+
+            Width = image.Width;
+            Height = image.Height;
+        }
     }
 }

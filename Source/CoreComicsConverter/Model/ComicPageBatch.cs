@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace CoreComicsConverter.Model
 {
-    public class PageBatch 
+    public class ComicPageBatch 
     {
         public int Width { get; set; }
 
@@ -17,7 +17,7 @@ namespace CoreComicsConverter.Model
         /// <summary>
         /// The pages with this imagesize
         /// </summary>
-        public List<Page> Pages { get; set; }
+        public List<ComicPage> Pages { get; set; }
 
         public int FirstPage => Pages == null ? -1 : Pages.First().Number;
 

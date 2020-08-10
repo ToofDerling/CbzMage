@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace CoreComicsConverter
@@ -21,7 +20,7 @@ namespace CoreComicsConverter
         // Pdf conversion flow     
         public CreateOutputFileTask ConversionFlow(PdfComic pdfComic, CreateOutputFileTask outputFileTask)
         {
-            StartConversion(pdfComic);
+            ConversionBegin(pdfComic);
 
             var pdfFlow = new PdfConversionFlow();
 
@@ -48,7 +47,7 @@ namespace CoreComicsConverter
 
             ConvertPages(pdfComic, readyPages);
 
-            StopConversion();
+            ConversionEnd();
 
             WaitForOutputFile(outputFileTask);
             return StartOutputFileCreation(pdfComic);
@@ -57,7 +56,7 @@ namespace CoreComicsConverter
         // Directory conversion flow
         public CreateOutputFileTask ConversionFlow(DirectoryComic directoryComic, CreateOutputFileTask outputFileTask)
         {
-            StartConversion(directoryComic);
+            ConversionBegin(directoryComic);
 
             var directoryFlow = new DirectoryConversionFlow();
 
@@ -76,6 +75,8 @@ namespace CoreComicsConverter
             }
 
             var readyPages = directoryFlow.GetPagesToConvert(pageBatches);
+            VerifyPageBatches(directoryComic, readyPages, pageBatches);
+
             if (readyPages.Count > 0)
             {
                 WaitForOutputFile(outputFileTask, onlyCheckIfCompleted: true);
@@ -83,19 +84,19 @@ namespace CoreComicsConverter
                 ConvertPages(directoryComic, readyPages);
             }
 
-            StopConversion();
+            ConversionEnd();
 
             WaitForOutputFile(outputFileTask);
             return StartOutputFileCreation(directoryComic);
         }
 
-        public void StartConversion(Comic comic)
+        public void ConversionBegin(Comic comic)
         {
             _stopwatch.Restart();
             Console.WriteLine(comic.Path);
         }
 
-        public void StopConversion()
+        public void ConversionEnd()
         {
             _stopwatch.Stop();
             var passed = _stopwatch.Elapsed;
@@ -138,21 +139,19 @@ namespace CoreComicsConverter
             return outputFileTask;
         }
 
-
-
-        private static List<PageBatch> GetPageBatchesSortedByImageSize(Comic comic, List<Page> pageSizes)
+        private static List<ComicPageBatch> GetPageBatchesSortedByImageSize(Comic comic, List<ComicPage> pageSizes)
         {
             // Group the pages by imagesize and sort with largest size first
             var sizeLookup = pageSizes.ToLookup(p => (p.Width, p.Height)).OrderByDescending(i => i.Key.Width * i.Key.Height);
 
-            var pageBatches = new List<PageBatch>();
+            var pageBatches = new List<ComicPageBatch>();
 
             // Flatten the lookup
             foreach (var size in sizeLookup)
             {
                 var pageNumbers = size.Select(s => s.Number).AsList();
 
-                pageBatches.Add(new PageBatch { Width = size.Key.Width, Height = size.Key.Height, Pages = size.AsList() });
+                pageBatches.Add(new ComicPageBatch { Width = size.Key.Width, Height = size.Key.Height, Pages = size.AsList() });
             }
 
             var pagesCount = pageBatches.Sum(i => i.Pages.Count);
@@ -164,7 +163,7 @@ namespace CoreComicsConverter
             return pageBatches;
         }
 
-        private static void ConvertPages(Comic comic, ConcurrentQueue<Page> readyPages)
+        private static void ConvertPages(Comic comic, ConcurrentQueue<ComicPage> readyPages)
         {
             var progressReporter = new ProgressReporter(readyPages.Count);
 
@@ -186,7 +185,7 @@ namespace CoreComicsConverter
             }
         }
 
-        private static string ConvertPage(Comic comic, Page page)
+        private static string ConvertPage(Comic comic, ComicPage page)
         {
             using var image = new MagickImage(page.Path)
             {
@@ -209,48 +208,14 @@ namespace CoreComicsConverter
             return jpg;
         }
 
-
-        private static void VerifyPageBatches(Comic comic, ConcurrentQueue<Page> allReadPages, params List<PageBatch>[] pageBatches)
+        private static void VerifyPageBatches(Comic comic, ConcurrentQueue<ComicPage> readyPages, params List<ComicPageBatch>[] pageBatches)
         {
             var pagesCount = pageBatches.Sum(batch => batch.Sum(i => i.Pages.Count));
-            if (allReadPages.Count + pagesCount != comic.PageCount)
+
+            if (readyPages.Count + pagesCount != comic.PageCount)
             {
-                throw new ApplicationException($"{nameof(pageBatches)} pages is {pagesCount} should be {comic.PageCount - allReadPages.Count}");
+                throw new ApplicationException($"{nameof(pageBatches)} pages is {pagesCount} should be {comic.PageCount - readyPages.Count}");
             }
-        }
-
-        private static int ParseImageSizes(List<(int width, int height, int count)> sortedImageSizes)
-        {
-            var mostOfThisSize = sortedImageSizes.First();
-
-            var largestSizes = sortedImageSizes.Where(x => x.width >= mostOfThisSize.width && x.width - mostOfThisSize.width <= 50).OrderByDescending(x => x.width);
-            var largestSize = largestSizes.First();
-
-            var largestSizesByCount = largestSizes.OrderByDescending(x => x.count);
-            var largestSizeWithLargestCount = largestSizesByCount.First(x => x.width == largestSize.width);
-
-            var padLen = mostOfThisSize.count.ToString().Length;
-
-            foreach (var (width, height, count) in largestSizesByCount.TakeWhile(x => x.count >= largestSizeWithLargestCount.count))
-            {
-                Console.WriteLine($" {count.ToString().PadLeft(padLen, ' ')} {width} x {height}");
-            }
-
-            return largestSize.width;
-        }
-
-        private static List<int>[] CreatePageLists(PdfComic pdfComic)
-        {
-            var pageChunker = new PageChunker();
-            var pageLists = pageChunker.CreatePageLists(pdfComic.PageCount, 2, Settings.ParallelThreads);
-
-            var sb = new StringBuilder();
-            sb.Append(Settings.ParallelThreads).Append(" page threads: ");
-
-            Array.ForEach(pageLists, p => sb.Append(p.Count).Append(' '));
-            Console.WriteLine(sb);
-
-            return pageLists;
         }
     }
 }

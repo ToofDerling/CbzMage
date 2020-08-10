@@ -8,9 +8,9 @@ namespace CoreComicsConverter
     {
         public abstract event EventHandler<PageEventArgs> PageParsed;
 
-        protected abstract List<Page> Parse();
+        protected abstract List<ComicPage> Parse();
 
-        public List<Page> ParseImages(Comic comic)
+        public List<ComicPage> ParseImages(Comic comic)
         {
             if (comic.PageCount == 0)
             {
@@ -28,6 +28,5 @@ namespace CoreComicsConverter
 
             return pageSizes;
         }
-
     }
 }

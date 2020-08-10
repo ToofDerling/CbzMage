@@ -11,7 +11,7 @@ namespace CoreComicsConverter.PdfFlow
 {
     public class PdfImageParser : PageParser, IEventListener, IDisposable
     {
-        private Dictionary<int, Page> _imageMap;
+        private Dictionary<int, ComicPage> _imageMap;
 
         private int _pageNumber;
         private int _imageCount;
@@ -42,9 +42,9 @@ namespace CoreComicsConverter.PdfFlow
 
         public override event EventHandler<PageEventArgs> PageParsed;
 
-        protected override List<Page> Parse()
+        protected override List<ComicPage> Parse()
         {
-            _imageMap = new Dictionary<int, Page>();
+            _imageMap = new Dictionary<int, ComicPage>();
             
             var pdfDocParser = new PdfDocumentContentParser(_pdfDoc);
 
@@ -55,10 +55,10 @@ namespace CoreComicsConverter.PdfFlow
                 // Handle pages with no images
                 if (!_imageMap.TryGetValue(_pageNumber, out var _))
                 {
-                    _imageMap[_pageNumber] = new Page { Number = _pageNumber };
+                    _imageMap[_pageNumber] = new ComicPage { Number = _pageNumber };
                 }
 
-                PageParsed?.Invoke(this, new PageEventArgs(new Page { Number = _pageNumber }));
+                PageParsed?.Invoke(this, new PageEventArgs(new ComicPage { Number = _pageNumber }));
             }
 
             _pdfComic.ImageCount = _imageCount;
@@ -94,7 +94,7 @@ namespace CoreComicsConverter.PdfFlow
                 }
                 else
                 {
-                    _imageMap[_pageNumber] = new Page { Number = _pageNumber, Width = newWidth, Height = newHeight };
+                    _imageMap[_pageNumber] = new ComicPage { Number = _pageNumber, Width = newWidth, Height = newHeight };
                 }
 
                 _imageCount++;

@@ -27,6 +27,7 @@ namespace CoreComicsConverter.PdfFlow
         public void ExtractPages(string cbzFile)
         {
             CleanOutputDirectory();
+
             ZipFile.ExtractToDirectory(cbzFile, OutputDirectory);
         }
 

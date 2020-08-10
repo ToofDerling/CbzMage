@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace CoreComicsConverter.Cmxlgy
 {
-    public class CmxlgyTools
+    public static class CmxlgyTools
     {
         //Terminology: Download is a comic downloaded using browser extension
         //Backup is a cbz archive downloaded from the backups page
@@ -100,71 +100,5 @@ namespace CoreComicsConverter.Cmxlgy
 
             return singlePagesMissing.Concat(pageRangesMissing).AsList();
         }
-
-        //public static bool IsBackup(string name)
-        //{
-        //    if (name.IndexOf("--.cbz") != -1)
-        //    {
-        //        return false;
-        //    }
-
-        //    if (name.IndexOf('-') != -1)
-        //    {
-        //        if (name.IndexOf(' ') == -1)
-        //        {
-        //            return true;
-        //        }
-
-        //        // Handle "2014 - Name-of-book.cbz"
-        //        var tokens = name.Split(new[] { " - " }, StringSplitOptions.None);
-        //        if (tokens.Length == 2 && int.TryParse(tokens[0], out var _))
-        //        {
-        //            return IsBackup(tokens[1]);
-        //        }
-        //    }
-
-        //    return false;
-        //}
-
-        //public static string TrimBackup(string name)
-        //{
-        //    var ext = Path.GetExtension(name);
-        //    name = Path.GetFileNameWithoutExtension(name);
-
-        //    var addReadMarker = false;
-
-        //    if (name.EndsWith("--"))
-        //    {
-        //        addReadMarker = true;
-        //        name = name.Substring(0, name.Length - 2);
-        //    }
-
-        //    name = name.Replace("--", "-");
-        //    name = name.Replace("-", " ");
-        //    name = name.Replace("   ", " - "); // !!! See special case in IsBackup
-        //    name = name.Replace(" Vol ", " Vol. ");
-        //    if (name.StartsWith("Vol "))
-        //    {
-        //        name = name.Replace("Vol ", "Vol. ");
-        //    }
-
-        //    var words = name.Split(' ');
-        //    var hasVol = words.Length > 1 && words[words.Length - 2] == "Vol.";
-        //    if (!hasVol)
-        //    {
-        //        var lastWord = words[words.Length - 1];
-        //        if (int.TryParse(lastWord, out var number) && number > 999) // Don't want to remove Call-of-The-Suicide-Forest-2
-        //        {
-        //            name = string.Join(" ", words, 0, words.Length - 1);
-        //        }
-        //    }
-
-        //    if (addReadMarker)
-        //    {
-        //        name = $"{name}--";
-        //    }
-
-        //    return name + ext;
-        //}
     }
 }

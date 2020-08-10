@@ -1,6 +1,5 @@
 ﻿using CoreComicsConverter.Extensions;
 using CoreComicsConverter.Model;
-using ImageMagick;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -11,7 +10,7 @@ namespace CoreComicsConverter.DirectoryFlow
 {
     public class DirectoryImageParser : PageParser
     {
-        private ConcurrentQueue<Page> _pageQueue;
+        private ConcurrentQueue<ComicPage> _pageQueue;
 
         private readonly DirectoryComic _comic;
 
@@ -21,12 +20,12 @@ namespace CoreComicsConverter.DirectoryFlow
 
             var sortedFiles = comic.Files.OrderBy(path => path.ToString());
 
-            _pageQueue = new ConcurrentQueue<Page>();
+            _pageQueue = new ConcurrentQueue<ComicPage>();
             var pageNumber = 1;
 
             foreach (var file in sortedFiles)
             {
-                _pageQueue.Enqueue(new Page { Number = pageNumber, Path = file });
+                _pageQueue.Enqueue(new ComicPage { Number = pageNumber, Path = file });
                 pageNumber++;
             }
 
@@ -35,9 +34,9 @@ namespace CoreComicsConverter.DirectoryFlow
 
         public override event EventHandler<PageEventArgs> PageParsed;
 
-        protected override List<Page> Parse()
+        protected override List<ComicPage> Parse()
         {
-            var pageSizes = new ConcurrentBag<Page>();
+            var pageSizes = new ConcurrentBag<ComicPage>();
 
             Parallel.For(0, Settings.ParallelThreads, (index, state) =>
             {
@@ -45,17 +44,10 @@ namespace CoreComicsConverter.DirectoryFlow
                 {
                     if (_pageQueue.TryDequeue(out var page))
                     {
-                        using (var image = new MagickImage())
-                        {
-                            image.Ping(page.Path);
+                        page.Ping();
+                        pageSizes.Add(page);
 
-                            page.Width = image.Width;
-                            page.Height = image.Height;
-
-                            pageSizes.Add(page);
-
-                            PageParsed?.Invoke(this, new PageEventArgs(page));
-                        };
+                        PageParsed?.Invoke(this, new PageEventArgs(page));
                     }
                 }
             });

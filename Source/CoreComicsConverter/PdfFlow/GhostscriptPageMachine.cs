@@ -31,7 +31,7 @@ namespace CoreComicsConverter.PdfFlow
             return string.Join(' ', args);
         }
 
-        private static string CreatePageList(IEnumerable<int> pageNumbers)
+        private static string CreatePageList(List<int> pageNumbers)
         {
             var sb = new StringBuilder();
 
@@ -55,7 +55,7 @@ namespace CoreComicsConverter.PdfFlow
             RunAndWaitForProcess(pdfComic, switches, pageQueue, ProcessPriorityClass.Idle);
         }
 
-        public void ReadPageList(PdfComic pdfComic, PageBatch batch)
+        public void ReadPageList(PdfComic pdfComic, ComicPageBatch batch)
         {
             var pageNumbers = batch.Pages.Select(p => p.Number).AsList();
 
@@ -96,7 +96,7 @@ namespace CoreComicsConverter.PdfFlow
 
             var (name, number) = pageQueue.Dequeue();
 
-            PageRead?.Invoke(this, new PageEventArgs(new Page { Name = name, Number = number }));
+            PageRead?.Invoke(this, new PageEventArgs(new ComicPage { Name = name, Number = number }));
         }
 
         public event EventHandler<PageEventArgs> PageRead;

@@ -1,5 +1,4 @@
 ﻿using CoreComicsConverter.Model;
-using ImageMagick;
 using System;
 using System.IO;
 
@@ -11,9 +10,9 @@ namespace CoreComicsConverter.PdfFlow
 
         private readonly PdfComic _pdfComic;
 
-        private readonly Page _page;
+        private readonly ComicPage _page;
 
-        public DpiCalculator(PdfComic pdfComic, PageBatch batch, Page page)
+        public DpiCalculator(PdfComic pdfComic, ComicPageBatch batch, ComicPage page)
         {
             _page = page;
 
@@ -111,12 +110,7 @@ namespace CoreComicsConverter.PdfFlow
                 _page.Path = Path.Combine(_pdfComic.OutputDirectory, _page.Name);
             }
 
-            using var image = new MagickImage();
-            image.Ping(_page.Path);
-
-            _page.Width = image.Width;
-            _page.Height = image.Height;
-
+            _page.Ping();
             return _page.Width;
         }
     }
