@@ -77,7 +77,7 @@ namespace CoreComicsConverter
             var readyPages = directoryFlow.GetPagesToConvert(pageBatches);
             VerifyPageBatches(directoryComic, readyPages, pageBatches);
 
-            if (readyPages.Count > 0)
+            if (!readyPages.IsEmpty)
             {
                 WaitForOutputFile(outputFileTask, onlyCheckIfCompleted: true);
 
@@ -179,7 +179,7 @@ namespace CoreComicsConverter
 
             Console.WriteLine();
 
-            if (readyPages.Count > 0)
+            if (!readyPages.IsEmpty)
             {
                 throw new ApplicationException($"{nameof(readyPages)} is {readyPages.Count} should be 0");
             }

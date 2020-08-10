@@ -1,6 +1,5 @@
 ﻿using CoreComicsConverter.Extensions;
 using CoreComicsConverter.Model;
-using ImageMagick;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;

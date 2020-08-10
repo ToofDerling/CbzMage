@@ -44,7 +44,7 @@ namespace CoreComicsConverter
 
         private static readonly ComicConverter converter = new ComicConverter();
 
-        private static CreateOutputFileTask outputFileTask = null;
+        private static CreateOutputFileTask outputFileTask;
 
         private static bool Convert(List<PdfComic> pdfComics)
         {
