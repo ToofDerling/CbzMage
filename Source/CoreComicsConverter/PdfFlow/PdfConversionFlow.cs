@@ -116,8 +116,10 @@ namespace CoreComicsConverter.PdfFlow
 
             Console.WriteLine($"{batch.Width} x {batch.Height} -> {calculatedDpi} ({currentWidth} x {currentHeight})");
 
+            var pageName = dpiCalculator.GetCurrentPage();
+
             // Ensure that page read during calculation won't be read again.
-            allReadPages.Enqueue(new Page { Name = dpiCalculator.GetCurrentPage(), Number = pageNumber });
+            allReadPages.Enqueue(new Page { Name = pageName, Number = pageNumber, Path = Path.Combine(pdfComic.OutputDirectory, pageName) });
             batch.PageNumbers.Remove(pageNumber);
 
             if (calculatedDpi > Settings.MinimumDpi)
@@ -238,6 +240,8 @@ namespace CoreComicsConverter.PdfFlow
                 machine.PageRead += (s, e) =>
                 {
                     var page = e.Page;
+                    page.Path = Path.Combine(pdfComic.OutputDirectory, page.Name);
+
                     allReadPages.Enqueue(page);
                     progressReporter.ShowProgress($"Read {page.Name}");
                 };
@@ -256,13 +260,11 @@ namespace CoreComicsConverter.PdfFlow
         {
             var progressReporter = new ProgressReporter(pdfComic.PageCount);
 
-            var pageConverter = new PageConverter();
-
             Parallel.For(0, Settings.ParallelThreads, (index, state) =>
             {
                 while (allReadPages.TryDequeue(out var page))
                 {
-                    var jpg = ConvertPage(pdfComic, page);
+                    var jpg = ConvertPage(page);
 
                     progressReporter.ShowProgress($"Converted {jpg}");
                 }
@@ -276,24 +278,21 @@ namespace CoreComicsConverter.PdfFlow
             }
         }
 
-        private static string ConvertPage(PdfComic pdfComic, Page page)
+        private static string ConvertPage(Page page)
         {
-            var pngPath = Path.Combine(pdfComic.OutputDirectory, page.Name);
-
-            var jpg = pdfComic.GetJpgPageString(page.Number);
-            var jpgPath = Path.Combine(pdfComic.OutputDirectory, jpg);
-
-            using var image = new MagickImage(pngPath)
+            using var image = new MagickImage(page.Path)
             {
                 Format = MagickFormat.Jpg,
                 Interlace = Interlace.Plane,
                 Quality = Settings.JpegQuality
             };
 
-            image.Write(jpgPath);
-            File.Delete(pngPath);
+            var jpgPath = Path.ChangeExtension(page.Path, ".jpg");
 
-            return jpg;
+            image.Write(jpgPath);
+            File.Delete(page.Path);
+
+            return Path.GetFileName(jpgPath);
         }
     }
 }

@@ -3,11 +3,8 @@ using CoreComicsConverter.Extensions;
 using CoreComicsConverter.PdfFlow;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection.Metadata.Ecma335;
-using System.Runtime.InteropServices.WindowsRuntime;
 
 namespace CoreComicsConverter
 {
@@ -15,8 +12,8 @@ namespace CoreComicsConverter
     {
 
 #if DEBUG
-        private const string _testPdf = @"D:\Data\Pdf\Test\Hawkworld New Edition";
-        //private const string _testPdf = @"D:\Data\Pdf\Test\";
+        //private const string _testPdf = @"D:\Data\Pdf\Test\Hawkworld New Edition";
+        private const string _testPdf = @"D:\Data\Pdf\Test\";
 #else
         private const string _testPdf = null;
 #endif

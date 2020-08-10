@@ -1,6 +1,7 @@
 ﻿using CoreComicsConverter.Cmxlgy;
 using CoreComicsConverter.Model;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -67,6 +68,19 @@ namespace CoreComicsConverter.DirectoryFlow
                     return compare == against;
                 }
             }
+        }
+
+
+        public ConcurrentQueue<Page> GetPagesToConvert(List<PageBatch> batches)
+        {
+            var queue = new ConcurrentQueue<Page>();
+
+            foreach (var batch in batches)
+            { 
+                
+            }
+
+            return queue;
         }
     }
 }
