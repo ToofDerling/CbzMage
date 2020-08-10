@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -38,6 +37,21 @@ namespace CoreComicsConverter.Cmxlgy
         //Backup is a cbz archive downloaded from the backups page
 
         private static readonly Regex downloadMatcher = new Regex(@".*page\d{1,3}\.(jpe?g|png)$");
+
+        public static bool IsDownload(string[] paths)
+        {
+            int padLen = paths.Length.ToString().Length;
+            var zeros = "0".PadLeft(padLen, '0');
+            var pageZero = $"page{zeros}";
+
+            var firstFile = Path.GetFileNameWithoutExtension(paths[0]);
+            if (firstFile != pageZero)
+            {
+                return false;
+            }
+
+            return paths.Select(p => Path.GetFileName(p)).All(IsDownload);
+        }
 
         public static bool IsDownload(string pageName)
         {

@@ -11,7 +11,7 @@ namespace CoreComicsConverter.DirectoryFlow
     {
         public bool IsDownload(DirectoryComic comic)
         {
-            var isDownload= comic.Files.All(f => CmxlgyTools.IsDownload(Path.GetFileName(f)));
+            var isDownload = CmxlgyTools.IsDownload(comic.Files);
 
             if (isDownload)
             {
@@ -50,31 +50,21 @@ namespace CoreComicsConverter.DirectoryFlow
             {
                 if (batch.Height < mostOfThisSize.Height)
                 {
-                    var fixedSize = false;
-
-                    var factor = (double)doublePageSize.height / batch.Height;
-                    var newWidth = Convert.ToInt32(batch.Width * factor);
-                    if (newWidth == doublePageSize.width)
-                    {
-                        fixedSize = true;
-                    }
-                    else
-                    { 
-                        factor = (double)doublePageSize.width / batch.Width;
-                        var newHeight = Convert.ToInt32(batch.Height * factor);
-                        if (newHeight == doublePageSize.height)
-                        {
-                            fixedSize = true;
-                        }
-                    }
-
-                    if (fixedSize)
+                    if (CheckSize(doublePageSize.height, batch.Height, batch.Width, doublePageSize.width)
+                        || CheckSize(doublePageSize.width, batch.Width, batch.Height, doublePageSize.height))
                     {
                         batch.NewWidth = doublePageSize.width;
                         batch.NewHeight = doublePageSize.height;
 
                         ProgressReporter.Warning($"Fixed {batch.PageNumbers.Count} doublepage spreads: {batch.Width} x {batch.Height} -> {batch.NewWidth} x {batch.NewHeight}");
                     }
+                }
+
+                bool CheckSize(int large, int small, int other, int against)
+                {
+                    var factor = (double)large / small;
+                    var compare = Convert.ToInt32(other * factor);
+                    return compare == against;
                 }
             }
         }

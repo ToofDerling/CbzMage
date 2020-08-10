@@ -72,5 +72,12 @@ namespace CoreComicsConverter.Images
 
             return pageList;
         }
+
+        public ConcurrentQueue<Page> GetPagesToConvert(List<PageBatch> batches)
+        {
+            var queue = new ConcurrentQueue<Page>();
+
+            return queue;
+        }
     }
 }
