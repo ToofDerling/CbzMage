@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CoreComicsConverter.Helpers;
+using System;
 using System.Collections.Generic;
 
 namespace CoreComicsConverter.Model

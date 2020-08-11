@@ -1,6 +1,7 @@
 ﻿using CoreComicsConverter.Cmxlgy;
 using CoreComicsConverter.DirectoryFlow;
 using CoreComicsConverter.Extensions;
+using CoreComicsConverter.Helpers;
 using CoreComicsConverter.Model;
 using System;
 using System.Collections.Concurrent;

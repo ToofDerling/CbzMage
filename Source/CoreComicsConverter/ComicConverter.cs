@@ -1,6 +1,7 @@
 ﻿using CoreComicsConverter.CbzFlow;
 using CoreComicsConverter.DirectoryFlow;
 using CoreComicsConverter.Extensions;
+using CoreComicsConverter.Helpers;
 using CoreComicsConverter.Model;
 using CoreComicsConverter.PdfFlow;
 using ImageMagick;

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace CoreComicsConverter
+namespace CoreComicsConverter.Helpers
 {
     public class ProgressReporter
     {

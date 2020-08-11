@@ -1,5 +1,6 @@
 ﻿using CoreComicsConverter.DirectoryFlow;
 using CoreComicsConverter.Extensions;
+using CoreComicsConverter.Helpers;
 using ImageMagick;
 using iText.IO.Image;
 using iText.Kernel.Geom;
