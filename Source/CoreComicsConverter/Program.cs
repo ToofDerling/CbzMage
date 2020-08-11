@@ -31,6 +31,8 @@ namespace CoreComicsConverter
             //var cbzConverter = new ArchiveConverter();
             //cbzConverter.ConvertToPdf(comic);
 
+            var bitness = Environment.Is64BitProcess;
+
             var path = GetPath(args);
             if (path == null || !StartConvert(path))
             {

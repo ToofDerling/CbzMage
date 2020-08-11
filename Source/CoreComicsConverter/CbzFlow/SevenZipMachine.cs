@@ -1,4 +1,5 @@
 ﻿using CoreComicsConverter.Extensions;
+using CoreComicsConverter.Helpers;
 using CoreComicsConverter.Model;
 using CoreComicsConverter.PdfFlow;
 using System;
@@ -41,7 +42,7 @@ namespace CoreComicsConverter.CbzFlow
         {
             var switches = GetSwitches(comic);
 
-            RunAndWaitForProcess(comic, switches, ProcessPriorityClass.Idle);
+            ProcessHelper.RunAndWaitForProcess(switches, OutputLineRead, comic.OutputDirectory, ProcessPriorityClass.Idle);
         }
 
         public void ReadPageList(PdfComic pdfComic, ComicPageBatch batch)
@@ -58,7 +59,7 @@ namespace CoreComicsConverter.CbzFlow
 
             var pageQueue = GetPageQueue(pageNumbers, pageListId, padLen);
 
-            RunAndWaitForProcess(pdfComic, switches, ProcessPriorityClass.Idle);
+            ProcessHelper.RunAndWaitForProcess(switches, OutputLineRead, pdfComic.OutputDirectory, ProcessPriorityClass.Idle);
         }
 
         private static Queue<(string name, int number)> GetPageQueue(IEnumerable<int> pageNumbers, string pageListId, int padLen)
@@ -87,47 +88,5 @@ namespace CoreComicsConverter.CbzFlow
         }
 
         public event EventHandler<PageEventArgs> PageRead;
-
-        private void RunAndWaitForProcess(Comic pdfComic, string switches, ProcessPriorityClass priorityClass = ProcessPriorityClass.Normal)
-        {
-            using var process = GetProcess(switches, pdfComic.OutputDirectory);
-
-            process.OutputDataReceived += (s, e) => OutputLineRead(e.Data);
-
-            process.Start();
-
-            process.PriorityClass = priorityClass;
-
-            process.BeginErrorReadLine();
-            process.BeginOutputReadLine();
-
-            process.WaitForExit();
-        }
-
-        public static Process GetProcess(string args, string outputDirectory)
-        {
-            var process = new Process();
-
-            process.StartInfo.FileName = Settings.SevenZipPath;
-            process.StartInfo.Arguments = args;
-
-            process.StartInfo.WorkingDirectory = outputDirectory;
-
-            process.StartInfo.UseShellExecute = false;
-            process.StartInfo.CreateNoWindow = true;
-
-            process.StartInfo.RedirectStandardOutput = true;
-
-            process.StartInfo.RedirectStandardError = true;
-            process.ErrorDataReceived += (s, e) =>
-            {
-                if (!string.IsNullOrWhiteSpace(e.Data))
-                {
-                    Console.WriteLine(e.Data);
-                }
-            };
-
-            return process;
-        }
     }
 }
