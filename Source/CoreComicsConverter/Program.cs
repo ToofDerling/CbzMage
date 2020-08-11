@@ -1,3 +1,4 @@
+using CoreComicsConverter.CbzFlow;
 using CoreComicsConverter.DirectoryFlow;
 using CoreComicsConverter.Extensions;
 using CoreComicsConverter.PdfFlow;
@@ -21,7 +22,6 @@ namespace CoreComicsConverter
 
         public static void Main(string[] args)
         {
-
             //var comic = new DirectoryComic(_testPdf);
             ////pdfComic.ExtractPages(_testPdf);
 
@@ -58,10 +58,11 @@ namespace CoreComicsConverter
             return true;
         }
 
-        //private static void Convert(List<PdfComic> comicList)
-        //{
-        //    comicList.ForEach(comic => { compressTask = converter.ConversionFlow(comic, compressTask); });
-        //}
+        private static bool Convert(List<CbzComic> cbzComics)
+        {
+            cbzComics.ForEach(comic => { outputFileTask = converter.ConversionFlow(comic, outputFileTask); });
+            return true;
+        }
 
         private static bool StartConvert(string path)
         {
@@ -97,12 +98,17 @@ namespace CoreComicsConverter
 
             var files = entries.Select(e => e.FullName).ToArray();
 
-            if (FilesArePdfs(files))
+            if (FilesAre(".pdf", files))
             {
                 return Convert(PdfComic.List(files));
             }
-
-            if (FilesAreImages(files))
+            
+            if (FilesAre(".cbz", files))
+            {
+                return Convert(CbzComic.List(files));
+            }
+            
+            if (FilesAre(".png", files) || FilesAre(".jpg", files) || FilesAre(".jpeg", files))
             {
                 return Convert(DirectoryComic.List(directory.FullName, files));
             }
@@ -112,7 +118,15 @@ namespace CoreComicsConverter
 
         private static bool StartConvertFile(string file)
         {
-            if (FilesArePdfs(file))
+            file = Path.GetFullPath(file);
+            Console.WriteLine(file);
+
+            if (FilesAre(".pdf", file))
+            {
+                return Convert(PdfComic.List(file));
+            }
+
+            if (FilesAre(".cbz", file))
             {
                 return Convert(PdfComic.List(file));
             }
@@ -120,14 +134,9 @@ namespace CoreComicsConverter
             return false;
         }
 
-        private static bool FilesArePdfs(params string[] files)
+        private static bool FilesAre(string ext, params string[] files)
         {
-            return files.All(f => f.EndsWithIgnoreCase(".pdf"));
-        }
-
-        private static bool FilesAreImages(string[] files)
-        {
-            return files.All(f => f.EndsWithIgnoreCase(".png")) || files.All(f => f.EndsWithIgnoreCase(".jpg")) || files.All(f => f.EndsWithIgnoreCase(".jpeg"));
+            return files.All(f => f.EndsWithIgnoreCase(ext));
         }
 
         private static string GetPath(string[] args)

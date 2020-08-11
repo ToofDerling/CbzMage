@@ -23,29 +23,13 @@ namespace CoreComicsConverter.PdfFlow
         {
             return $"{pageNumber.ToString().PadLeft(PageCountLength, '0')}-{1.ToString().PadLeft(PageCountLength, '0')}.png";
         }
-        
+
         public void ExtractPages(string cbzFile)
         {
             CleanOutputDirectory();
 
             ZipFile.ExtractToDirectory(cbzFile, OutputDirectory);
         }
-
-        public override void CleanOutputDirectory()
-        {
-            if (Directory.Exists(OutputDirectory))
-            {
-                Directory.Delete(OutputDirectory, recursive: true);
-            }
-        }
-
-        public void CreateOutputDirectory()
-        {
-            CleanOutputDirectory();
-
-            Directory.CreateDirectory(OutputDirectory);
-        }
-
         public static List<PdfComic> List(params string[] paths)
         {
             return new List<PdfComic>(paths.Select(x => new PdfComic(x)));

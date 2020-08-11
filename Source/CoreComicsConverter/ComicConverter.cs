@@ -1,4 +1,5 @@
-﻿using CoreComicsConverter.DirectoryFlow;
+﻿using CoreComicsConverter.CbzFlow;
+using CoreComicsConverter.DirectoryFlow;
 using CoreComicsConverter.Extensions;
 using CoreComicsConverter.Model;
 using CoreComicsConverter.PdfFlow;
@@ -90,6 +91,17 @@ namespace CoreComicsConverter
             return StartOutputFileCreation(directoryComic);
         }
 
+        public CreateOutputFileTask ConversionFlow(CbzComic cbzComic, CreateOutputFileTask outputFileTask)
+        {
+            ConversionBegin(cbzComic);
+
+            var cbzFlow = new CbzConversionFlow();
+
+            cbzFlow.ExtractCbz(cbzComic);
+
+            WaitForOutputFile(outputFileTask);
+            return StartOutputFileCreation(cbzComic);
+        }
         public void ConversionBegin(Comic comic)
         {
             _stopwatch.Restart();

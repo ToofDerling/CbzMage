@@ -10,6 +10,17 @@ namespace CoreComicsConverter
 
         public static readonly int ParallelThreads = Environment.ProcessorCount;
 
-        public static readonly string GhostscriptPath = @"C:\Program Files\gs\gs9.52\bin\gswin64c.exe";
+        //TODO detect
+        public static readonly string GhostscriptWin = @"C:\Program Files\gs\gs9.52\bin\gswin64c.exe";
+
+        public static readonly string GhostscriptUnix = "gs";
+
+        public static readonly string GhostscriptPath = Environment.OSVersion.Platform == PlatformID.Win32NT ? GhostscriptWin : GhostscriptUnix;
+
+        public static readonly string SevenZipWin = @"C:\Program Files\7-Zip\7z.exe";
+
+        public static readonly string SevenZipLinux = @"7z";
+
+        public static readonly string SevenZipPath = Environment.OSVersion.Platform == PlatformID.Win32NT ? SevenZipWin : SevenZipLinux;
     }
 }

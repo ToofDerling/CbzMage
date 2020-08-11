@@ -56,9 +56,19 @@ namespace CoreComicsConverter.Model
             ZipFile.CreateFromDirectory(OutputDirectory, OutputFile, CompressionLevel.Optimal, includeBaseDirectory: false);
         }
 
-        public virtual void CleanOutputDirectory()
+        public void CleanOutputDirectory()
         {
-            //nop
+            if (Directory.Exists(OutputDirectory))
+            {
+                Directory.Delete(OutputDirectory, recursive: true);
+            }
+        }
+
+        public void CreateOutputDirectory()
+        {
+            CleanOutputDirectory();
+
+            Directory.CreateDirectory(OutputDirectory);
         }
 
         public static List<Comic> List()
