@@ -9,7 +9,7 @@ using System.Collections.Generic;
 
 namespace CoreComicsConverter.PdfFlow
 {
-    public class PdfImageParser : PageParser, IEventListener, IDisposable
+    public class PdfImageParser : ComicPageParser, IEventListener, IDisposable
     {
         private Dictionary<int, ComicPage> _imageMap;
 

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace CoreComicsConverter.DirectoryFlow
 {
-    public class DirectoryImageParser : PageParser
+    public class DirectoryImageParser : ComicPageParser
     {
         private ConcurrentQueue<ComicPage> _pageQueue;
 
