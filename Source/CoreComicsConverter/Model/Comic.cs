@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 
 namespace CoreComicsConverter.Model
 {
@@ -11,7 +10,7 @@ namespace CoreComicsConverter.Model
         public Comic(ComicType type, string path)
         {
             Type = type;
-            Path = path;
+            Path = System.IO.Path.GetFullPath(path);
         }
 
         public string Path { get; private set; }
@@ -48,14 +47,7 @@ namespace CoreComicsConverter.Model
             var page = pageNumber.ToString().PadLeft(PageCountLength, '0');
             return $"page-{page}.{extension}";
         }
-
-        public void CreateOutputFile()
-        {
-            File.Delete(OutputFile);
-
-            ZipFile.CreateFromDirectory(OutputDirectory, OutputFile, CompressionLevel.Optimal, includeBaseDirectory: false);
-        }
-
+        
         public void CleanOutputDirectory()
         {
             if (Directory.Exists(OutputDirectory))

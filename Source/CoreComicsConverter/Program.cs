@@ -22,17 +22,6 @@ namespace CoreComicsConverter
 
         public static void Main(string[] args)
         {
-            //var comic = new DirectoryComic(_testPdf);
-            ////pdfComic.ExtractPages(_testPdf);
-
-            //var dconverter = new PdfComicConverter();
-            //dconverter.ConvertToCbz(comic, null);
-
-            //var cbzConverter = new ArchiveConverter();
-            //cbzConverter.ConvertToPdf(comic);
-
-            var bitness = Environment.Is64BitProcess;
-
             var path = GetPath(args);
             if (path == null || !StartConvert(path))
             {
@@ -40,29 +29,26 @@ namespace CoreComicsConverter
                 return;
             }
 
-            converter.WaitForOutputFile(outputFileTask);
             Console.ReadLine();
         }
 
         private static readonly ComicConverter converter = new ComicConverter();
 
-        private static CreateOutputFileTask outputFileTask;
-
         private static bool Convert(List<PdfComic> pdfComics)
         {
-            pdfComics.ForEach(comic => { outputFileTask = converter.ConversionFlow(comic, outputFileTask); });
+            pdfComics.ForEach(comic => { converter.ConversionFlow(comic); });
             return true;
         }
 
         private static bool Convert(List<DirectoryComic> directoryComics)
         {
-            directoryComics.ForEach(comic => { outputFileTask = converter.ConversionFlow(comic, outputFileTask); });
+            directoryComics.ForEach(comic => { converter.ConversionFlow(comic); });
             return true;
         }
 
         private static bool Convert(List<CbzComic> cbzComics)
         {
-            cbzComics.ForEach(comic => { outputFileTask = converter.ConversionFlow(comic, outputFileTask); });
+            cbzComics.ForEach(comic => { converter.ConversionFlow(comic); });
             return true;
         }
 
@@ -120,9 +106,6 @@ namespace CoreComicsConverter
 
         private static bool StartConvertFile(string file)
         {
-            file = Path.GetFullPath(file);
-            Console.WriteLine(file);
-
             if (FilesAre(".pdf", file))
             {
                 return Convert(PdfComic.List(file));
@@ -130,7 +113,7 @@ namespace CoreComicsConverter
 
             if (FilesAre(".cbz", file))
             {
-                return Convert(PdfComic.List(file));
+                return Convert(CbzComic.List(file));
             }
 
             return false;

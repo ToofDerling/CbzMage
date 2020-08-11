@@ -100,7 +100,7 @@ namespace CoreComicsConverter.PdfFlow
 
         private int GetImageWidth(int dpi)
         {
-            var pageMachine = new GhostscriptPageMachine();
+            var pageMachine = new GhostscriptMachine();
 
             pageMachine.ReadPage(_pdfComic, _page.Number, dpi);
 
@@ -111,6 +111,7 @@ namespace CoreComicsConverter.PdfFlow
             }
 
             _page.Ping();
+
             return _page.Width;
         }
     }

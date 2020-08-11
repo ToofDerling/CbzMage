@@ -17,6 +17,7 @@ namespace CoreComicsConverter
 
         public static readonly string GhostscriptPath = Environment.OSVersion.Platform == PlatformID.Win32NT ? GhostscriptWin : GhostscriptUnix;
 
+        //TODO detect
         public static readonly string SevenZipWin = @"C:\Program Files\7-Zip\7z.exe";
 
         public static readonly string SevenZipLinux = @"7z";

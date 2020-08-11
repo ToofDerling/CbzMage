@@ -1,92 +1,106 @@
-﻿using CoreComicsConverter.Extensions;
-using CoreComicsConverter.Helpers;
+﻿using CoreComicsConverter.Helpers;
 using CoreComicsConverter.Model;
-using CoreComicsConverter.PdfFlow;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 
 namespace CoreComicsConverter.CbzFlow
 {
     public class SevenZipMachine
     {
-        private static string GetSwitches(Comic comic)
+        private static string GetExtractSwitches(Comic comic)
         {
             var args = new[]
             {
                 "x",
                 $"\"{comic.Path}\"",
                 $"-mmt{Settings.ParallelThreads}",
+                "-y",
                 $"-o\"{comic.OutputDirectory}\""
             };
 
             return string.Join(' ', args);
         }
 
-        private static string CreatePageList(List<int> pageNumbers)
+        private static string GetCompressSwitches(Comic comic)
         {
-            var sb = new StringBuilder();
-
-            foreach (var p in pageNumbers)
+            var args = new[]
             {
-                sb.Append(p).Append(',');
-            }
-            sb.Remove(sb.Length - 1, 1);
+                "a",
+                $"\"{comic.OutputFile}\"",
+                $"-mmt{Settings.ParallelThreads}",
+                "-y",
+                "-tzip",
+                "-mx=7",
+                "-bsp1",
+                "-bso0",
+                $"-o\"{comic.OutputDirectory}\""
+            };
 
-            return sb.ToString();
+            return string.Join(' ', args);
         }
 
         public void ExtractFile(Comic comic)
         {
-            var switches = GetSwitches(comic);
-
-            ProcessHelper.RunAndWaitForProcess(switches, OutputLineRead, comic.OutputDirectory, ProcessPriorityClass.Idle);
+            RunSevenZip(GetExtractSwitches(comic), comic.OutputDirectory, null);
         }
 
-        public void ReadPageList(PdfComic pdfComic, ComicPageBatch batch)
+        public void CompressFile(Comic comic, List<string> convertedPages)
         {
-            var pageNumbers = batch.Pages.Select(p => p.Number).AsList();
-
-            var pageList = CreatePageList(pageNumbers);
-
-            var padLen = pdfComic.PageCountLength;
-
-            var pageListId = $"{batch.FirstPage.ToString().PadLeft(padLen, '0')}-{batch.LastPage.ToString().PadLeft(padLen, '0')}";
-
-            var switches = GetSwitches(pdfComic);
-
-            var pageQueue = GetPageQueue(pageNumbers, pageListId, padLen);
-
-            ProcessHelper.RunAndWaitForProcess(switches, OutputLineRead, pdfComic.OutputDirectory, ProcessPriorityClass.Idle);
+            RunSevenZip(GetCompressSwitches(comic), comic.OutputDirectory, convertedPages);
         }
 
-        private static Queue<(string name, int number)> GetPageQueue(IEnumerable<int> pageNumbers, string pageListId, int padLen)
+        private void RunSevenZip(string switches, string workingDirectory, List<string> convertedPages)
         {
-            var pageQueue = new Queue<(string name, int number)>();
+            var sevenZipRunner = new ProcessRunner();
 
-            int gsPageNumber = 1;
-            foreach (var pageNumber in pageNumbers)
+            var reader = new OutputLinePagesReader(PageCompressed, convertedPages);
+
+            sevenZipRunner.RunAndWaitForProcess(Settings.SevenZipPath, switches, reader.ProgressLineRead, workingDirectory, ProcessPriorityClass.Idle);
+
+            var errorLines = sevenZipRunner.GetErrorLines();
+            errorLines.ForEach(line => ProgressReporter.Error(line));
+        }
+
+        private class OutputLinePagesReader
+        {
+            private List<string> _convertedPages;
+
+            private event EventHandler<PageEventArgs> _pageCompressed;
+
+            public OutputLinePagesReader(EventHandler<PageEventArgs> pageCompressed, List<string> convertedPages)
             {
-                pageQueue.Enqueue(($"{pageListId}-{gsPageNumber.ToString().PadLeft(padLen, '0')}.png", pageNumber));
+                _convertedPages = convertedPages;
 
-                gsPageNumber++;
+                _pageCompressed = pageCompressed;
             }
 
-            return pageQueue;
-        }
+            private int _startIndex;
 
-        private void OutputLineRead(string line)
-        {
-            /*if (line == null || !line.StartsWith("Page"))
+            public void ProgressLineRead(string line)
             {
-                return;
-            }*/
+                if (string.IsNullOrWhiteSpace(line))
+                {
+                    return;
+                }
 
-            PageRead?.Invoke(this, new PageEventArgs(new ComicPage { Name = line }));
+                var lastIndex = _convertedPages.FindIndex(f => line.Contains(f));
+                if (lastIndex == -1)
+                {
+                    return;
+                }
+
+                for (int i = _startIndex; i <= lastIndex; i++)
+                {
+                    var page = new ComicPage { Name = _convertedPages[i] };
+
+                    _pageCompressed?.Invoke(this, new PageEventArgs(page));
+                }
+
+                _startIndex = lastIndex + 1;
+            }
         }
 
-        public event EventHandler<PageEventArgs> PageRead;
+        public event EventHandler<PageEventArgs> PageCompressed;
     }
 }

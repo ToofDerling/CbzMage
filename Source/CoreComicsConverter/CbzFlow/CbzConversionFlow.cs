@@ -18,11 +18,10 @@ namespace CoreComicsConverter.CbzFlow
 
             var sevenZip = new SevenZipMachine();
 
-            sevenZip.PageRead += (s, e) => Console.WriteLine(e.Page.Name);
+            sevenZip.PageCompressed += (s, e) => Console.WriteLine(e.Page.Name);
 
             sevenZip.ExtractFile(cbzComic);
         }
-
 
         public bool IsDownload(DirectoryComic comic)
         {

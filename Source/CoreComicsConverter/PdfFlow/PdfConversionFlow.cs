@@ -1,4 +1,5 @@
-﻿using CoreComicsConverter.Extensions;
+﻿using CoreComicsConverter.CbzFlow;
+using CoreComicsConverter.Extensions;
 using CoreComicsConverter.Helpers;
 using CoreComicsConverter.Model;
 using System;
@@ -12,7 +13,7 @@ namespace CoreComicsConverter.PdfFlow
 {
     public class PdfConversionFlow
     {
-        public List<ComicPage> ParseImages(PdfComic pdfComic)
+        public List<ComicPage> ParseImagesSetPageCount(PdfComic pdfComic)
         {
             pdfComic.CreateOutputDirectory();
 
@@ -233,7 +234,7 @@ namespace CoreComicsConverter.PdfFlow
             {
                 var pageList = pageLists[index];
 
-                var machine = new GhostscriptPageMachine();
+                var machine = new GhostscriptMachine();
 
                 machine.PageRead += (s, e) =>
                 {
@@ -250,6 +251,21 @@ namespace CoreComicsConverter.PdfFlow
                     pageBatch.Pages.Clear();
                 }
             });
+
+            Console.WriteLine();
+        }
+
+        public void CompressPages(Comic comic, List<string> convertedPages)
+        {
+            var machine = new SevenZipMachine();
+
+            var reporter = new ProgressReporter(comic.PageCount);
+
+            machine.PageCompressed += (s, e) => reporter.ShowProgress($"Compressed {e.Page.Name}");
+
+            machine.CompressFile(comic, convertedPages);
+
+            comic.CleanOutputDirectory();
 
             Console.WriteLine();
         }

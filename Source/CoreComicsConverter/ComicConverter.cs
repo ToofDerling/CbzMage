@@ -20,13 +20,13 @@ namespace CoreComicsConverter
         private readonly Stopwatch _stopwatch = new Stopwatch();
 
         // Pdf conversion flow     
-        public CreateOutputFileTask ConversionFlow(PdfComic pdfComic, CreateOutputFileTask outputFileTask)
+        public void ConversionFlow(PdfComic pdfComic)
         {
             ConversionBegin(pdfComic);
 
             var pdfFlow = new PdfConversionFlow();
 
-            var pageSizes = pdfFlow.ParseImages(pdfComic);
+            var pageSizes = pdfFlow.ParseImagesSetPageCount(pdfComic);
 
             var pageBatches = GetPageBatchesSortedByImageSize(pdfComic, pageSizes);
             pdfFlow.FixLargePageSize(pageBatches);
@@ -40,23 +40,18 @@ namespace CoreComicsConverter
             var chunkedPageBatches = pdfFlow.ChunkPageBatches(pageBatches);
             VerifyPageBatches(pdfComic, readyPages, chunkedPageBatches);
 
-            WaitForOutputFile(outputFileTask, onlyCheckIfCompleted: true);
-
             pdfFlow.ReadPages(pdfComic, chunkedPageBatches, readyPages);
             VerifyPageBatches(pdfComic, readyPages, chunkedPageBatches);
 
-            WaitForOutputFile(outputFileTask, onlyCheckIfCompleted: true);
+            var convertedPages = ConvertPages(pdfComic, readyPages);
 
-            ConvertPages(pdfComic, readyPages);
+            pdfFlow.CompressPages(pdfComic, convertedPages);
 
             ConversionEnd();
-
-            WaitForOutputFile(outputFileTask);
-            return StartOutputFileCreation(pdfComic);
         }
 
         // Directory conversion flow
-        public CreateOutputFileTask ConversionFlow(DirectoryComic directoryComic, CreateOutputFileTask outputFileTask)
+        public void ConversionFlow(DirectoryComic directoryComic)
         {
             ConversionBegin(directoryComic);
 
@@ -65,10 +60,10 @@ namespace CoreComicsConverter
             var isDownload = directoryFlow.IsDownload(directoryComic);
             if (isDownload && !directoryFlow.VerifyDownload(directoryComic))
             {
-                return null;
+                return;
             }
 
-            var pageSizes = directoryFlow.ParseImages(directoryComic);
+            var pageSizes = directoryFlow.ParseImagesSetPageCount(directoryComic);
 
             var pageBatches = GetPageBatchesSortedByImageSize(directoryComic, pageSizes);
             if (isDownload)
@@ -81,28 +76,21 @@ namespace CoreComicsConverter
 
             if (!readyPages.IsEmpty)
             {
-                WaitForOutputFile(outputFileTask, onlyCheckIfCompleted: true);
-
                 ConvertPages(directoryComic, readyPages);
             }
 
             ConversionEnd();
-
-            WaitForOutputFile(outputFileTask);
-            return StartOutputFileCreation(directoryComic);
         }
 
-        public CreateOutputFileTask ConversionFlow(CbzComic cbzComic, CreateOutputFileTask outputFileTask)
+        public void ConversionFlow(CbzComic cbzComic)
         {
             ConversionBegin(cbzComic);
 
             var cbzFlow = new CbzConversionFlow();
 
             cbzFlow.ExtractCbz(cbzComic);
-
-            WaitForOutputFile(outputFileTask);
-            return StartOutputFileCreation(cbzComic);
         }
+
         public void ConversionBegin(Comic comic)
         {
             _stopwatch.Restart();
@@ -116,40 +104,6 @@ namespace CoreComicsConverter
 
             Console.WriteLine($"{passed.Minutes} min {passed.Seconds} sec");
             Console.WriteLine();
-        }
-
-        public void WaitForOutputFile(CreateOutputFileTask outputFileTask, bool onlyCheckIfCompleted = false)
-        {
-            if (outputFileTask == null || outputFileTask.Comic.OutputFileCreated)
-            {
-                return;
-            }
-
-            if (!outputFileTask.IsCompleted)
-            {
-                if (onlyCheckIfCompleted)
-                {
-                    return;
-                }
-
-                Console.WriteLine($"WAIT {outputFileTask.Comic.OutputFile}");
-                outputFileTask.Wait();
-            }
-
-            outputFileTask.Comic.CleanOutputDirectory();
-            outputFileTask.Comic.OutputFileCreated = true;
-
-            ProgressReporter.Done($"FINISH {outputFileTask.Comic.OutputFile}");
-        }
-
-        private static CreateOutputFileTask StartOutputFileCreation(Comic comic)
-        {
-            var outputFileTask = new CreateOutputFileTask(comic);
-
-            Console.WriteLine($"START {outputFileTask.Comic.OutputFile}");
-            outputFileTask.Start();
-
-            return outputFileTask;
         }
 
         private static List<ComicPageBatch> GetPageBatchesSortedByImageSize(Comic comic, List<ComicPage> pageSizes)
@@ -176,9 +130,11 @@ namespace CoreComicsConverter
             return pageBatches;
         }
 
-        private static void ConvertPages(Comic comic, ConcurrentQueue<ComicPage> readyPages)
+        private List<string> ConvertPages(Comic comic, ConcurrentQueue<ComicPage> readyPages)
         {
             var progressReporter = new ProgressReporter(readyPages.Count);
+
+            var convertedPages = new ConcurrentBag<string>();
 
             Parallel.For(0, Settings.ParallelThreads, (index, state) =>
             {
@@ -187,6 +143,9 @@ namespace CoreComicsConverter
                     var jpg = ConvertPage(comic, page);
 
                     progressReporter.ShowProgress($"Converted {jpg}");
+
+                    convertedPages.Add(jpg);
+
                 }
             });
 
@@ -196,6 +155,16 @@ namespace CoreComicsConverter
             {
                 throw new ApplicationException($"{nameof(readyPages)} is {readyPages.Count} should be 0");
             }
+
+            if (convertedPages.Count != comic.PageCount)
+            {
+                throw new ApplicationException($"{nameof(convertedPages)} is {convertedPages.Count} should be {comic.PageCount}");
+            }
+
+            var list = new List<string>(convertedPages);
+            list.Sort();
+
+            return list;
         }
 
         private static string ConvertPage(Comic comic, ComicPage page)

@@ -33,7 +33,7 @@ namespace CoreComicsConverter.DirectoryFlow
             return true;
         }
 
-        public List<ComicPage> ParseImages(DirectoryComic comic)
+        public List<ComicPage> ParseImagesSetPageCount(DirectoryComic comic)
         {
             var pageParser = new DirectoryImageParser(comic);
 

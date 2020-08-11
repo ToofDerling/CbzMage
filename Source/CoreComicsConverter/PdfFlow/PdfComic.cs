@@ -1,7 +1,5 @@
 ﻿using CoreComicsConverter.Model;
 using System.Collections.Generic;
-using System.IO;
-using System.IO.Compression;
 using System.Linq;
 
 namespace CoreComicsConverter.PdfFlow
@@ -23,13 +21,7 @@ namespace CoreComicsConverter.PdfFlow
         {
             return $"{pageNumber.ToString().PadLeft(PageCountLength, '0')}-{1.ToString().PadLeft(PageCountLength, '0')}.png";
         }
-
-        public void ExtractPages(string cbzFile)
-        {
-            CleanOutputDirectory();
-
-            ZipFile.ExtractToDirectory(cbzFile, OutputDirectory);
-        }
+            
         public static List<PdfComic> List(params string[] paths)
         {
             return new List<PdfComic>(paths.Select(x => new PdfComic(x)));

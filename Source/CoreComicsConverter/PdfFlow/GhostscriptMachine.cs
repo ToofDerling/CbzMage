@@ -9,7 +9,7 @@ using System.Text;
 
 namespace CoreComicsConverter.PdfFlow
 {
-    public class GhostscriptPageMachine
+    public class GhostscriptMachine
     {
         private static string GetSwitches(PdfComic pdfComic, int dpi, string pageList, string outputFile)
         {
@@ -51,9 +51,7 @@ namespace CoreComicsConverter.PdfFlow
 
             var switches = GetSwitches(pdfComic, dpi, pageNumber.ToString(), $"{pageNumber.ToString().PadLeft(padLen, '0')}-%0{padLen}d.png");
 
-            var reader = new OutputLineQueueReader(PageRead, new List<int>() { pageNumber }, pageNumber.ToString(), padLen);
-
-            ProcessHelper.RunAndWaitForProcess(switches, reader.OutputLineRead, pdfComic.OutputDirectory, ProcessPriorityClass.Idle);
+            RunGhostscript(new List<int>() { pageNumber }, pageNumber.ToString(), padLen, switches, pdfComic.OutputDirectory);
         }
 
         public void ReadPageList(PdfComic pdfComic, ComicPageBatch batch)
@@ -68,20 +66,29 @@ namespace CoreComicsConverter.PdfFlow
 
             var switches = GetSwitches(pdfComic, batch.Dpi, pageList, $"{pageListId}-%0{padLen}d.png");
 
-            var reader = new OutputLineQueueReader(PageRead, pageNumbers, pageListId, padLen);
-
-            ProcessHelper.RunAndWaitForProcess(switches, reader.OutputLineRead, pdfComic.OutputDirectory, ProcessPriorityClass.Idle);
+            RunGhostscript(pageNumbers, pageListId, padLen, switches, pdfComic.OutputDirectory);
         }
 
-        private class OutputLineQueueReader
+        private void RunGhostscript(IEnumerable<int> pageNumbers, string pageListId, int padLen, string gsSwitches, string gsWorkingDirectory)
+        {
+            var reader = new OutputLinePagesReader(PageRead, pageNumbers, pageListId, padLen);
+
+            var ghostscriptRunner = new ProcessRunner();
+            ghostscriptRunner.RunAndWaitForProcess(Settings.GhostscriptPath, gsSwitches, reader.OutputLineRead, gsWorkingDirectory, ProcessPriorityClass.Idle);
+
+            var errorLines = ghostscriptRunner.GetErrorLines();
+            errorLines.ForEach(line => ProgressReporter.Error(line));
+        }
+
+        private class OutputLinePagesReader
         {
             private Queue<(string name, int number)> _pageQueue;
 
             private EventHandler<PageEventArgs> _pageRead;
 
-            public OutputLineQueueReader(EventHandler<PageEventArgs> pageRead, IEnumerable<int> pageNumber, string pageListId, int padLen)
+            public OutputLinePagesReader(EventHandler<PageEventArgs> pageRead, IEnumerable<int> pageNumbers, string pageListId, int padLen)
             {
-                _pageQueue = GetPageQueue(pageNumber, pageListId, padLen);
+                _pageQueue = GetPageQueue(pageNumbers, pageListId, padLen);
                 _pageRead = pageRead;
             }
 
@@ -102,7 +109,7 @@ namespace CoreComicsConverter.PdfFlow
 
             public void OutputLineRead(string line)
             {
-                if (line == null || !line.StartsWith("Page"))
+                if (string.IsNullOrEmpty(line) || !line.StartsWith("Page"))
                 {
                     return;
                 }
@@ -112,7 +119,7 @@ namespace CoreComicsConverter.PdfFlow
                 _pageRead?.Invoke(this, new PageEventArgs(new ComicPage { Name = name, Number = number }));
             }
         }
-        
+
         public event EventHandler<PageEventArgs> PageRead;
     }
 }
