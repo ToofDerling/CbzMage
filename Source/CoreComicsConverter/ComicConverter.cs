@@ -102,6 +102,8 @@ namespace CoreComicsConverter
         {
             comic.CleanOutputDirectory();
 
+            ProgressReporter.Done(comic.OutputFile);
+
             _stopwatch.Stop();
             var passed = _stopwatch.Elapsed;
 
@@ -154,7 +156,7 @@ namespace CoreComicsConverter
 
                     convertedPagesBag.Add(page);
 
-                    progressReporter.ShowProgress($"Converted {jpg}");
+                    progressReporter.ShowProgress($"Converting {jpg}");
                 }
             });
 
@@ -209,7 +211,7 @@ namespace CoreComicsConverter
             var machine = new SevenZipMachine();
 
             var reporter = new ProgressReporter(comic.PageCount);
-            machine.PageCompressed += (s, e) => reporter.ShowProgress($"Compressed {e.Page.Name}");
+            machine.PageCompressed += (s, e) => reporter.ShowProgress($"Compressing {e.Page.Name}");
 
             convertedPages = convertedPages.OrderBy(p => p.Number).AsList();
             machine.CompressFile(comic, convertedPages);

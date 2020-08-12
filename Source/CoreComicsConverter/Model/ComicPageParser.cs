@@ -16,7 +16,6 @@ namespace CoreComicsConverter.Model
             {
                 throw new ApplicationException("Comic pageCount is 0");
             }
-            Console.WriteLine($"{comic.PageCount} pages");
 
             var progressReporter = new ProgressReporter(comic.PageCount);
             PageParsed += (s, e) => progressReporter.ShowProgress($"Parsing page {e.Page.Number}");
@@ -24,7 +23,8 @@ namespace CoreComicsConverter.Model
             var pageSizes = Parse();
 
             Console.WriteLine();
-            Console.WriteLine($"{comic.ImageCount} images");
+            Console.WriteLine($" {comic.PageCount} pages");
+            Console.WriteLine($" {comic.ImageCount} images");
 
             return pageSizes;
         }
