@@ -89,7 +89,7 @@ namespace CoreComicsConverter
             cbzFlow.ExtractCbz(cbzComic);
         }
 
-        public void ConversionBegin(Comic comic)
+        private  void ConversionBegin(Comic comic)
         {
             _stopwatch.Restart();
 
@@ -98,7 +98,7 @@ namespace CoreComicsConverter
             comic.CreateOutputDirectory();
         }
 
-        public void ConversionEnd(Comic comic)
+        private void ConversionEnd(Comic comic)
         {
             comic.CleanOutputDirectory();
 
@@ -135,7 +135,7 @@ namespace CoreComicsConverter
             return pageBatches;
         }
 
-        private List<ComicPage> ConvertPages(Comic comic, List<ComicPage> readyPages)
+        private static List<ComicPage> ConvertPages(Comic comic, List<ComicPage> readyPages)
         {
             var progressReporter = new ProgressReporter(readyPages.Count);
 
