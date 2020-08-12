@@ -65,7 +65,7 @@ namespace CoreComicsConverter.PdfFlow
 
             if (_imageMap.Count != _pdfComic.PageCount)
             {
-                throw new ApplicationException($"imageMap is {_imageMap.Count} should be {_pdfComic.PageCount}");
+                throw new ApplicationException($"{nameof(_imageMap)} is {_imageMap.Count} should be {_pdfComic.PageCount}");
             }
 
             return _imageMap.Values.AsList();

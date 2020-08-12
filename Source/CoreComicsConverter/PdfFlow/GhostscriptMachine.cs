@@ -49,7 +49,7 @@ namespace CoreComicsConverter.PdfFlow
         {
             var padLen = pdfComic.PageCountLength;
 
-            var switches = GetSwitches(pdfComic, dpi, pageNumber.ToString(), $"{pageNumber.ToString().PadLeft(padLen, '0')}-%0{padLen}d.png");
+            var switches = GetSwitches(pdfComic, dpi, pageNumber.ToString(), $"{pageNumber.ToString().PadLeft(padLen, '0')}-%0{padLen}d{FileExt.Png}");
 
             RunGhostscript(new List<int>() { pageNumber }, pageNumber.ToString(), padLen, switches, pdfComic.OutputDirectory);
         }
@@ -64,7 +64,7 @@ namespace CoreComicsConverter.PdfFlow
 
             var pageListId = $"{batch.FirstPage.ToString().PadLeft(padLen, '0')}-{batch.LastPage.ToString().PadLeft(padLen, '0')}";
 
-            var switches = GetSwitches(pdfComic, batch.Dpi, pageList, $"{pageListId}-%0{padLen}d.png");
+            var switches = GetSwitches(pdfComic, batch.Dpi, pageList, $"{pageListId}-%0{padLen}d{FileExt.Png}");
 
             RunGhostscript(pageNumbers, pageListId, padLen, switches, pdfComic.OutputDirectory);
         }
@@ -99,7 +99,7 @@ namespace CoreComicsConverter.PdfFlow
                 int gsPageNumber = 1;
                 foreach (var pageNumber in pageNumbers)
                 {
-                    pageQueue.Enqueue(($"{pageListId}-{gsPageNumber.ToString().PadLeft(padLen, '0')}.png", pageNumber));
+                    pageQueue.Enqueue(($"{pageListId}-{gsPageNumber.ToString().PadLeft(padLen, '0')}{FileExt.Png}", pageNumber));
 
                     gsPageNumber++;
                 }

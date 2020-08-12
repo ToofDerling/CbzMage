@@ -58,7 +58,7 @@ namespace CoreComicsConverter.DirectoryFlow
 
             if (pageSizes.Count != _comic.PageCount)
             {
-                throw new ApplicationException($"pageSizes is {pageSizes.Count} should be {_comic.PageCount}");
+                throw new ApplicationException($"{nameof(pageSizes)} is {pageSizes.Count} should be {_comic.PageCount}");
             }
 
             return pageList;

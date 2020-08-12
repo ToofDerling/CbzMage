@@ -31,23 +31,23 @@ namespace CoreComicsConverter
             var pageBatches = GetPageBatchesSortedByImageSize(pdfComic, pageSizes);
             pdfFlow.FixLargePageSize(pageBatches);
 
-            pageBatches = pdfFlow.CalculateDpi(pdfComic, pageBatches, out var readyPages);
-            VerifyPageBatches(pdfComic, readyPages, pageBatches);
+            var readPages = pdfFlow.CalculateDpi(pdfComic, pageBatches);
+            VerifyPageBatches(pdfComic, readPages, pageBatches);
 
             pageBatches = pdfFlow.CoalescePageBatches(pageBatches);
-            VerifyPageBatches(pdfComic, readyPages, pageBatches);
+            VerifyPageBatches(pdfComic, readPages, pageBatches);
 
             var chunkedPageBatches = pdfFlow.ChunkPageBatches(pageBatches);
-            VerifyPageBatches(pdfComic, readyPages, chunkedPageBatches);
+            VerifyPageBatches(pdfComic, readPages, chunkedPageBatches);
 
-            pdfFlow.ReadPages(pdfComic, chunkedPageBatches, readyPages);
-            VerifyPageBatches(pdfComic, readyPages, chunkedPageBatches);
+            pdfFlow.ReadPages(pdfComic, chunkedPageBatches, readPages);
+            VerifyPageBatches(pdfComic, readPages, chunkedPageBatches);
 
-            var convertedPages = ConvertPages(pdfComic, readyPages);
+            var convertedPages = ConvertPages(pdfComic, readPages);
+            
+            CompressPages(pdfComic, convertedPages);
 
-            pdfFlow.CompressPages(pdfComic, convertedPages);
-
-            ConversionEnd();
+            ConversionEnd(pdfComic);
         }
 
         // Directory conversion flow
@@ -56,9 +56,8 @@ namespace CoreComicsConverter
             ConversionBegin(directoryComic);
 
             var directoryFlow = new DirectoryConversionFlow();
-
-            var isDownload = directoryFlow.IsDownload(directoryComic);
-            if (isDownload && !directoryFlow.VerifyDownload(directoryComic))
+            
+            if (directoryComic.IsDownload && !directoryFlow.VerifyDownload(directoryComic))
             {
                 return;
             }
@@ -66,20 +65,19 @@ namespace CoreComicsConverter
             var pageSizes = directoryFlow.ParseImagesSetPageCount(directoryComic);
 
             var pageBatches = GetPageBatchesSortedByImageSize(directoryComic, pageSizes);
-            if (isDownload)
+            if (directoryComic.IsDownload)
             {
                 directoryFlow.FixDoublePageSpreads(pageBatches);
             }
 
-            var readyPages = directoryFlow.GetPagesToConvert(pageBatches);
-            VerifyPageBatches(directoryComic, readyPages, pageBatches);
+            var pagesToConvert = directoryFlow.GetPagesToConvert(pageBatches);
+            VerifyPageBatches(directoryComic, pagesToConvert, pageBatches);
 
-            if (!readyPages.IsEmpty)
-            {
-                ConvertPages(directoryComic, readyPages);
-            }
+            var convertedPages = ConvertPages(directoryComic, pagesToConvert);
+            
+            CompressPages(directoryComic, convertedPages);
 
-            ConversionEnd();
+            ConversionEnd(directoryComic);
         }
 
         public void ConversionFlow(CbzComic cbzComic)
@@ -94,11 +92,16 @@ namespace CoreComicsConverter
         public void ConversionBegin(Comic comic)
         {
             _stopwatch.Restart();
+
             Console.WriteLine(comic.Path);
+
+            comic.CreateOutputDirectory();
         }
 
-        public void ConversionEnd()
+        public void ConversionEnd(Comic comic)
         {
+            comic.CleanOutputDirectory();
+
             _stopwatch.Stop();
             var passed = _stopwatch.Elapsed;
 
@@ -124,34 +127,42 @@ namespace CoreComicsConverter
             var pagesCount = pageBatches.Sum(i => i.Pages.Count);
             if (pagesCount != comic.PageCount)
             {
-                throw new ApplicationException($"{nameof(pageBatches)} pagesCount is {pagesCount} should be {comic.PageCount}");
+                throw new ApplicationException($"{nameof(pageBatches)} is {pagesCount} should be {comic.PageCount}");
             }
 
             return pageBatches;
         }
 
-        private List<string> ConvertPages(Comic comic, ConcurrentQueue<ComicPage> readyPages)
+        private List<ComicPage> ConvertPages(Comic comic, List<ComicPage> readyPages)
         {
             var progressReporter = new ProgressReporter(readyPages.Count);
 
-            var convertedPages = new ConcurrentBag<string>();
+            var pagesQueue = new ConcurrentQueue<ComicPage>(readyPages);
+
+            var convertedPagesBag = new ConcurrentBag<ComicPage>();
+
+            var firstPage = readyPages[0];
+            var deleteSource = Path.GetDirectoryName(firstPage.Path) == comic.OutputDirectory;
 
             Parallel.For(0, Settings.ParallelThreads, (index, state) =>
             {
-                while (readyPages.TryDequeue(out var page))
+                while (pagesQueue.TryDequeue(out var page))
                 {
-                    var jpg = ConvertPage(comic, page);
+                    var jpg = ConvertPage(comic, page, deleteSource);
+
+                    page.Name = jpg;
+
+                    convertedPagesBag.Add(page);
 
                     progressReporter.ShowProgress($"Converted {jpg}");
-
-                    convertedPages.Add(jpg);
-
                 }
             });
 
             Console.WriteLine();
 
-            if (!readyPages.IsEmpty)
+            var convertedPages = new List<ComicPage>(convertedPagesBag);
+
+            if (!pagesQueue.IsEmpty)
             {
                 throw new ApplicationException($"{nameof(readyPages)} is {readyPages.Count} should be 0");
             }
@@ -161,13 +172,10 @@ namespace CoreComicsConverter
                 throw new ApplicationException($"{nameof(convertedPages)} is {convertedPages.Count} should be {comic.PageCount}");
             }
 
-            var list = new List<string>(convertedPages);
-            list.Sort();
-
-            return list;
+            return convertedPages;
         }
 
-        private static string ConvertPage(Comic comic, ComicPage page)
+        private static string ConvertPage(Comic comic, ComicPage page, bool deleteSource)
         {
             using var image = new MagickImage(page.Path)
             {
@@ -185,18 +193,37 @@ namespace CoreComicsConverter
             }
 
             image.Write(jpgPath);
-            File.Delete(page.Path);
+
+            if (deleteSource)
+            {
+                File.Delete(page.Path);
+            }
 
             return jpg;
         }
 
-        private static void VerifyPageBatches(Comic comic, ConcurrentQueue<ComicPage> readyPages, params List<ComicPageBatch>[] pageBatches)
+        private static void CompressPages(Comic comic, List<ComicPage> convertedPages)
+        {
+            File.Delete(comic.OutputFile);
+
+            var machine = new SevenZipMachine();
+
+            var reporter = new ProgressReporter(comic.PageCount);
+            machine.PageCompressed += (s, e) => reporter.ShowProgress($"Compressed {e.Page.Name}");
+
+            convertedPages = convertedPages.OrderBy(p => p.Number).AsList();
+            machine.CompressFile(comic, convertedPages);
+
+            Console.WriteLine();
+        }
+
+        private static void VerifyPageBatches(Comic comic, List<ComicPage> readPages, params List<ComicPageBatch>[] pageBatches)
         {
             var pagesCount = pageBatches.Sum(batch => batch.Sum(i => i.Pages.Count));
 
-            if (readyPages.Count + pagesCount != comic.PageCount)
+            if (readPages.Count + pagesCount != comic.PageCount)
             {
-                throw new ApplicationException($"{nameof(pageBatches)} pages is {pagesCount} should be {comic.PageCount - readyPages.Count}");
+                throw new ApplicationException($"{nameof(pageBatches)} pages is {pagesCount} should be {comic.PageCount - readPages.Count}");
             }
         }
     }

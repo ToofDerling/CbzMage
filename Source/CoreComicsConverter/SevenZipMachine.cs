@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace CoreComicsConverter.CbzFlow
+namespace CoreComicsConverter
 {
     public class SevenZipMachine
     {
@@ -45,16 +45,16 @@ namespace CoreComicsConverter.CbzFlow
             RunSevenZip(GetExtractSwitches(comic), comic.OutputDirectory, null);
         }
 
-        public void CompressFile(Comic comic, List<string> convertedPages)
+        public void CompressFile(Comic comic, List<ComicPage> allPages)
         {
-            RunSevenZip(GetCompressSwitches(comic), comic.OutputDirectory, convertedPages);
+            RunSevenZip(GetCompressSwitches(comic), comic.OutputDirectory, allPages);
         }
 
-        private void RunSevenZip(string switches, string workingDirectory, List<string> convertedPages)
+        private void RunSevenZip(string switches, string workingDirectory, List<ComicPage> allPages)
         {
             var sevenZipRunner = new ProcessRunner();
 
-            var reader = new OutputLinePagesReader(PageCompressed, convertedPages);
+            var reader = new OutputLinePagesReader(PageCompressed, allPages);
 
             sevenZipRunner.RunAndWaitForProcess(Settings.SevenZipPath, switches, reader.ProgressLineRead, workingDirectory, ProcessPriorityClass.Idle);
 
@@ -64,13 +64,13 @@ namespace CoreComicsConverter.CbzFlow
 
         private class OutputLinePagesReader
         {
-            private List<string> _convertedPages;
+            private List<ComicPage> _allPages;
 
             private event EventHandler<PageEventArgs> _pageCompressed;
 
-            public OutputLinePagesReader(EventHandler<PageEventArgs> pageCompressed, List<string> convertedPages)
+            public OutputLinePagesReader(EventHandler<PageEventArgs> pageCompressed, List<ComicPage> allPages)
             {
-                _convertedPages = convertedPages;
+                _allPages = allPages;
 
                 _pageCompressed = pageCompressed;
             }
@@ -84,7 +84,7 @@ namespace CoreComicsConverter.CbzFlow
                     return;
                 }
 
-                var lastIndex = _convertedPages.FindIndex(f => line.Contains(f));
+                var lastIndex = _allPages.FindIndex(p => line.Contains(p.Name));
                 if (lastIndex == -1)
                 {
                     return;
@@ -92,9 +92,7 @@ namespace CoreComicsConverter.CbzFlow
 
                 for (int i = _startIndex; i <= lastIndex; i++)
                 {
-                    var page = new ComicPage { Name = _convertedPages[i] };
-
-                    _pageCompressed?.Invoke(this, new PageEventArgs(page));
+                    _pageCompressed?.Invoke(this, new PageEventArgs(_allPages[i]));
                 }
 
                 _startIndex = lastIndex + 1;

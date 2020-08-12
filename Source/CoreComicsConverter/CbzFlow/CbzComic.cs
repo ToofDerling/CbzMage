@@ -9,12 +9,9 @@ namespace CoreComicsConverter.CbzFlow
         public CbzComic(string path) : base(ComicType.Cbz, path)
         {
             OutputDirectory = System.IO.Path.ChangeExtension(path, null);
-            OutputFile = System.IO.Path.ChangeExtension(path, ".pdf");
+            OutputFile = System.IO.Path.ChangeExtension(path, FileExt.Pdf);
         }
 
-        public static List<CbzComic> List(params string[] paths)
-        {
-            return new List<CbzComic>(paths.Select(x => new CbzComic(x)));
-        }
+        public static List<CbzComic> List(params string[] paths) => new List<CbzComic>(paths.Select(x => new CbzComic(x)));
     }
 }

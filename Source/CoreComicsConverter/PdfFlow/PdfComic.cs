@@ -9,22 +9,14 @@ namespace CoreComicsConverter.PdfFlow
         public PdfComic(string path) : base(ComicType.Pdf, path)
         {
             OutputDirectory = System.IO.Path.ChangeExtension(path, null);
-            OutputFile = System.IO.Path.ChangeExtension(path, ".cbz");
+            OutputFile = System.IO.Path.ChangeExtension(path, FileExt.Cbz);
         }
-
-        //public string GetPngPageString(int pageNumber)
-        //{
-        //    return GetPageString(pageNumber, "png");
-        //}
-
+   
         public string GetSinglePagePngString(int pageNumber)
         {
-            return $"{pageNumber.ToString().PadLeft(PageCountLength, '0')}-{1.ToString().PadLeft(PageCountLength, '0')}.png";
+            return $"{pageNumber.ToString().PadLeft(PageCountLength, '0')}-{1.ToString().PadLeft(PageCountLength, '0')}{FileExt.Png}";
         }
             
-        public static List<PdfComic> List(params string[] paths)
-        {
-            return new List<PdfComic>(paths.Select(x => new PdfComic(x)));
-        }
+        public static List<PdfComic> List(params string[] paths) => new List<PdfComic>(paths.Select(x => new PdfComic(x)));
     }
 }

@@ -1,9 +1,8 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 
 namespace CoreComicsConverter.Model
 {
-    public class Comic
+    public abstract class Comic
     {
         public ComicType Type { get; private set; }
 
@@ -37,15 +36,15 @@ namespace CoreComicsConverter.Model
 
         public int ImageCount { get; set; }
         
-        public string GetJpgPageString(int pageNumber)
+        public virtual string GetJpgPageString(int pageNumber)
         {
-            return GetPageString(pageNumber, "jpg");
+            return GetPageString("page-", pageNumber, FileExt.Jpg);
         }
 
-        protected string GetPageString(int pageNumber, string extension)
+        protected string GetPageString(string pageBase, int pageNumber, string extension)
         {
             var page = pageNumber.ToString().PadLeft(PageCountLength, '0');
-            return $"page-{page}.{extension}";
+            return $"{pageBase}{page}{extension}";
         }
         
         public void CleanOutputDirectory()
@@ -61,11 +60,6 @@ namespace CoreComicsConverter.Model
             CleanOutputDirectory();
 
             Directory.CreateDirectory(OutputDirectory);
-        }
-
-        public static List<Comic> List()
-        {
-            return new List<Comic>();
         }
     }
 }

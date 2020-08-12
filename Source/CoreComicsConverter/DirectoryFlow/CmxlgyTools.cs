@@ -4,14 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace CoreComicsConverter.Cmxlgy
+namespace CoreComicsConverter.DirectoryFlow
 {
     public static class CmxlgyTools
     {
-        //Terminology: Download is a comic downloaded using browser extension
-        //Backup is a cbz archive downloaded from the backups page
-
-        private static readonly Regex downloadMatcher = new Regex(@".*page\d{1,3}\.(jpe?g|png)$");
+        private static readonly Regex downloadMatcher = new Regex(@$"^page\d+\{FileExt.Png}$");
 
         public static bool IsDownload(string[] paths)
         {
@@ -25,12 +22,8 @@ namespace CoreComicsConverter.Cmxlgy
                 return false;
             }
 
-            return paths.Select(p => Path.GetFileName(p)).All(IsDownload);
-        }
-
-        public static bool IsDownload(string pageName)
-        {
-            return downloadMatcher.IsMatch(pageName);
+            var isDownload = paths.All(p => downloadMatcher.IsMatch(Path.GetFileName(p)));
+            return isDownload;
         }
 
         public static int GetDownloadPageNumber(string name)
@@ -39,8 +32,8 @@ namespace CoreComicsConverter.Cmxlgy
             var numberEnd = name.IndexOf('.', numberStart);
 
             var numberString = name.Substring(numberStart, numberEnd - numberStart);
-            var number = int.Parse(numberString);
 
+            var number = int.Parse(numberString);
             return number;
         }
 

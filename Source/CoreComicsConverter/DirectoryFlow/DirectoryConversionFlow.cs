@@ -1,9 +1,6 @@
-﻿using CoreComicsConverter.Cmxlgy;
-using CoreComicsConverter.Extensions;
-using CoreComicsConverter.Helpers;
+﻿using CoreComicsConverter.Helpers;
 using CoreComicsConverter.Model;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -11,14 +8,9 @@ namespace CoreComicsConverter.DirectoryFlow
 {
     public class DirectoryConversionFlow
     {
-        public bool IsDownload(DirectoryComic comic)
+        public bool VerifyDownload(DirectoryComic directoryComic)
         {
-            return CmxlgyTools.IsDownload(comic.Files);
-        }
-
-        public bool VerifyDownload(DirectoryComic comic)
-        {
-            var pagesMissing = CmxlgyTools.GetPagesMissing(comic.Files, out var isMangaDownload);
+            var pagesMissing = CmxlgyTools.GetPagesMissing(directoryComic.Files, out var isMangaDownload);
 
             var manga = isMangaDownload ? "manga " : string.Empty;
             ProgressReporter.Info($"This looks like a Cmxlgy {manga}download");
@@ -33,13 +25,13 @@ namespace CoreComicsConverter.DirectoryFlow
             return true;
         }
 
-        public List<ComicPage> ParseImagesSetPageCount(DirectoryComic comic)
+        public List<ComicPage> ParseImagesSetPageCount(DirectoryComic dierectoryComic)
         {
-            var pageParser = new DirectoryImageParser(comic);
+            var pageParser = new DirectoryImageParser(dierectoryComic);
 
-            var pageSizes = pageParser.ParseImages(comic);
+            var pageSizes = pageParser.ParseImages(dierectoryComic);
 
-            comic.PageCount = pageSizes.Count;
+            dierectoryComic.PageCount = pageSizes.Count;
 
             return pageSizes;
         }
@@ -79,9 +71,9 @@ namespace CoreComicsConverter.DirectoryFlow
             }
         }
 
-        public ConcurrentQueue<ComicPage> GetPagesToConvert(List<ComicPageBatch> batches)
+        public List<ComicPage> GetPagesToConvert(List<ComicPageBatch> batches)
         {
-            var list = new List<ComicPage>();
+            var pagesToConvert = new List<ComicPage>();
 
             foreach (var batch in batches)
             {
@@ -92,20 +84,13 @@ namespace CoreComicsConverter.DirectoryFlow
                         page.NewWidth = batch.NewWidth;
                         page.NewHeight = batch.NewHeight;
                     }
-
-                    list.AddRange(batch.Pages);
-                    batch.Pages.Clear();
                 }
-                else
-                {
-                    var range = batch.Pages.Where(p => p.Path.EndsWithIgnoreCase(".png"));
-                    list.AddRange(range);
 
-                    batch.Pages = batch.Pages.Except(range).AsList();
-                }
+                pagesToConvert.AddRange(batch.Pages);
+                batch.Pages.Clear();
             }
 
-            return new ConcurrentQueue<ComicPage>(list);
+            return pagesToConvert;
         }
     }
 }

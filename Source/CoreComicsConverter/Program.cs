@@ -14,8 +14,8 @@ namespace CoreComicsConverter
 
 #if DEBUG
         //private const string _testPdf = @"D:\Data\Pdf\Test\Voices of a Distant Star - Makoto Shinkai and Mizu Sahara";
-        //private const string _testPdf = @"D:\Data\Pdf\Test\Hawkworld New Edition";
-        private const string _testPdf = @"D:\Data\Pdf\Test\";
+       private const string _testPdf = @"D:\Data\Pdf\Test\Hawkworld New Edition";
+       // private const string _testPdf = @"D:\Data\Pdf\Test\WashDay.pdf";
 #else
         private const string _testPdf = null;
 #endif
@@ -86,17 +86,17 @@ namespace CoreComicsConverter
 
             var files = entries.Select(e => e.FullName).ToArray();
 
-            if (FilesAre(".pdf", files))
+            if (FilesAre(FileExt.Pdf, files))
             {
                 return Convert(PdfComic.List(files));
             }
             
-            if (FilesAre(".cbz", files))
+            if (FilesAre(FileExt.Cbz, files))
             {
                 return Convert(CbzComic.List(files));
             }
             
-            if (FilesAre(".png", files) || FilesAre(".jpg", files) || FilesAre(".jpeg", files))
+            if (FilesAre(FileExt.Png, files))
             {
                 return Convert(DirectoryComic.List(directory.FullName, files));
             }
@@ -106,12 +106,12 @@ namespace CoreComicsConverter
 
         private static bool StartConvertFile(string file)
         {
-            if (FilesAre(".pdf", file))
+            if (FilesAre(FileExt.Pdf, file))
             {
                 return Convert(PdfComic.List(file));
             }
 
-            if (FilesAre(".cbz", file))
+            if (FilesAre(FileExt.Cbz, file))
             {
                 return Convert(CbzComic.List(file));
             }

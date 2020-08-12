@@ -1,5 +1,4 @@
-﻿using CoreComicsConverter.CbzFlow;
-using CoreComicsConverter.Extensions;
+﻿using CoreComicsConverter.Extensions;
 using CoreComicsConverter.Helpers;
 using CoreComicsConverter.Model;
 using System;
@@ -15,8 +14,6 @@ namespace CoreComicsConverter.PdfFlow
     {
         public List<ComicPage> ParseImagesSetPageCount(PdfComic pdfComic)
         {
-            pdfComic.CreateOutputDirectory();
-
             List<ComicPage> pageSizes;
 
             using var parser = new PdfImageParser(pdfComic);
@@ -60,7 +57,7 @@ namespace CoreComicsConverter.PdfFlow
             }
         }
 
-        public List<ComicPageBatch> CalculateDpi(PdfComic pdfComic, List<ComicPageBatch> pageBatches, out ConcurrentQueue<ComicPage> readyPages)
+        public List<ComicPage> CalculateDpi(PdfComic pdfComic, List<ComicPageBatch> pageBatches)
         {
             Console.WriteLine($"Calculating dpi for {pageBatches.Count} imagesizes");
 
@@ -96,12 +93,13 @@ namespace CoreComicsConverter.PdfFlow
                 }
             }
 
-            readyPages = new ConcurrentQueue<ComicPage>(readyPagesBag);
-
-            Console.WriteLine($"Read pages: {readyPages.Count}");
+            var pagesRead = new List<ComicPage>(readyPagesBag);
+            Console.WriteLine($"Read pages: {pagesRead.Count}");
 
             // Trim image sizes that have been read fully
-            return pageBatches.Where(i => i.Pages.Count > 0).AsList();
+            pageBatches.RemoveAll(p => p.Pages.Count == 0);
+
+            return pagesRead;
         }
 
         private static bool CalculateDpiForBatch(PdfComic pdfComic, ComicPageBatch batch, ConcurrentBag<ComicPage> readyPagesBag)
@@ -209,10 +207,7 @@ namespace CoreComicsConverter.PdfFlow
 
             return chunkLists.ToArray();
 
-            static List<ComicPageBatch> SmallestChunkList(List<List<ComicPageBatch>> chunkLists)
-            {
-                return chunkLists.OrderBy(l => l.Sum(p => p.Pages.Count)).First();
-            }
+            static List<ComicPageBatch> SmallestChunkList(List<List<ComicPageBatch>> chunkLists) => chunkLists.OrderBy(l => l.Sum(p => p.Pages.Count)).First();
 
             static void SortAndView(List<ComicPageBatch> chunkList)
             {
@@ -226,9 +221,11 @@ namespace CoreComicsConverter.PdfFlow
             }
         }
 
-        public void ReadPages(PdfComic pdfComic, List<ComicPageBatch>[] pageLists, ConcurrentQueue<ComicPage> readyPages)
+        public void ReadPages(PdfComic pdfComic, List<ComicPageBatch>[] pageLists, List<ComicPage> readPages)
         {
-            var progressReporter = new ProgressReporter(pdfComic.PageCount - readyPages.Count);
+            var progressReporter = new ProgressReporter(pdfComic.PageCount - readPages.Count);
+
+            var readPagesBag = new ConcurrentBag<ComicPage>();
 
             Parallel.For(0, Settings.ParallelThreads, (index, state) =>
             {
@@ -241,7 +238,7 @@ namespace CoreComicsConverter.PdfFlow
                     var page = e.Page;
                     page.Path = Path.Combine(pdfComic.OutputDirectory, page.Name);
 
-                    readyPages.Enqueue(page);
+                    readPagesBag.Add(page);
                     progressReporter.ShowProgress($"Read {page.Name}");
                 };
 
@@ -253,21 +250,8 @@ namespace CoreComicsConverter.PdfFlow
             });
 
             Console.WriteLine();
-        }
 
-        public void CompressPages(Comic comic, List<string> convertedPages)
-        {
-            var machine = new SevenZipMachine();
-
-            var reporter = new ProgressReporter(comic.PageCount);
-
-            machine.PageCompressed += (s, e) => reporter.ShowProgress($"Compressed {e.Page.Name}");
-
-            machine.CompressFile(comic, convertedPages);
-
-            comic.CleanOutputDirectory();
-
-            Console.WriteLine();
+            readPages.AddRange(readPagesBag);
         }
     }
 }

@@ -19,7 +19,7 @@ namespace CoreComicsConverter
         {
             //File.Delete(comic.Path);
 
-            using var pdfWriter = new PdfWriter(comic.Path + ".pdf");
+            using var pdfWriter = new PdfWriter(comic.Path + FileExt.Pdf);
             using var pdfDocument = new PdfDocument(pdfWriter);
             using var document = new Document(pdfDocument);
 

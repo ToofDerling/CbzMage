@@ -8,17 +8,24 @@ namespace CoreComicsConverter.DirectoryFlow
         public DirectoryComic(string directory, string[] files) : base(ComicType.Directory, directory)
         {
             Files = files;
+            IsDownload = CmxlgyTools.IsDownload(files);
 
-            OutputDirectory = directory;
+            OutputDirectory = $"{directory}.tmp";
 
-            OutputFile = $"{System.IO.Path.TrimEndingDirectorySeparator(directory)}.cbz";
+            OutputFile = $"{System.IO.Path.TrimEndingDirectorySeparator(directory)}{FileExt.Cbz}";
         }
 
-        public string[] Files { get; private set; }
+        public string[] Files { get; }
 
-        public static List<DirectoryComic> List(string directory, string[] files)
+        public bool IsDownload { get; }
+
+        public override string GetJpgPageString(int pageNumber)
         {
-            return new List<DirectoryComic> { new DirectoryComic(directory, files) };
+            var pageBase = IsDownload ? "page" : "page-";
+
+            return GetPageString(pageBase, pageNumber, FileExt.Jpg);
         }
+
+        public static List<DirectoryComic> List(string directory, string[] files) => new List<DirectoryComic> { new DirectoryComic(directory, files) };
     }
 }
