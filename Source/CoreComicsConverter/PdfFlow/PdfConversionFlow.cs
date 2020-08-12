@@ -133,9 +133,9 @@ namespace CoreComicsConverter.PdfFlow
             return readUsingMinimumDpi;
         }
 
-        public List<ComicPageBatch> CoalescePageBatches(List<ComicPageBatch> imageSizesList)
+        public List<ComicPageBatch> CoalescePageBatches(List<ComicPageBatch> pageBatches)
         {
-            var dpiLookup = imageSizesList.ToLookup(i => i.Dpi);
+            var dpiLookup = pageBatches.ToLookup(i => i.Dpi);
 
             var coalescedList = new List<ComicPageBatch>();
 

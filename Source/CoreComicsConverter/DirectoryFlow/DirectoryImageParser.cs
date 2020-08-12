@@ -10,7 +10,7 @@ namespace CoreComicsConverter.DirectoryFlow
 {
     public class DirectoryImageParser : ComicPageParser
     {
-        private ConcurrentQueue<ComicPage> _pageQueue;
+        private readonly ConcurrentQueue<ComicPage> _pageQueue;
 
         private readonly DirectoryComic _comic;
 

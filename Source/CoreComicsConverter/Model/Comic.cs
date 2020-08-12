@@ -18,8 +18,6 @@ namespace CoreComicsConverter.Model
 
         public string OutputFile { get; protected set; }
 
-        public bool OutputFileCreated { get; set; }
-
         public int PageCount
         {
             get => _pageCount;

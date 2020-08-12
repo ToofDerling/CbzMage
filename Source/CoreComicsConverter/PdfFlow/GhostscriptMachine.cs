@@ -82,7 +82,7 @@ namespace CoreComicsConverter.PdfFlow
 
         private class OutputLinePagesReader
         {
-            private Queue<(string name, int number)> _pageQueue;
+            private readonly Queue<(string name, int number)> _pageQueue;
 
             private EventHandler<PageEventArgs> _pageRead;
 

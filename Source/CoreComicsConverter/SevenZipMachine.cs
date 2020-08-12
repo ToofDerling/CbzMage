@@ -64,7 +64,7 @@ namespace CoreComicsConverter
 
         private class OutputLinePagesReader
         {
-            private List<ComicPage> _allPages;
+            private readonly List<ComicPage> _allPages;
 
             private event EventHandler<PageEventArgs> _pageCompressed;
 

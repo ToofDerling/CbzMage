@@ -25,13 +25,13 @@ namespace CoreComicsConverter.DirectoryFlow
             return true;
         }
 
-        public List<ComicPage> ParseImagesSetPageCount(DirectoryComic dierectoryComic)
+        public List<ComicPage> ParseImagesSetPageCount(DirectoryComic directoryComic)
         {
-            var pageParser = new DirectoryImageParser(dierectoryComic);
+            var pageParser = new DirectoryImageParser(directoryComic);
 
-            var pageSizes = pageParser.ParseImages(dierectoryComic);
+            var pageSizes = pageParser.ParseImages(directoryComic);
 
-            dierectoryComic.PageCount = pageSizes.Count;
+            directoryComic.PageCount = pageSizes.Count;
 
             return pageSizes;
         }

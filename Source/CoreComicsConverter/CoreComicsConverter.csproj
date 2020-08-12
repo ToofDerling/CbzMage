@@ -25,6 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Extensions\ExceptionExtensions.cs" />
     <Compile Remove="PageCompressor.cs" />
     <Compile Remove="PageReadHandler.cs" />
   </ItemGroup>
