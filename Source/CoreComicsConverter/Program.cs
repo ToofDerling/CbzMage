@@ -15,7 +15,7 @@ namespace CoreComicsConverter
 #if DEBUG
         //private const string _testPdf = @"D:\Data\Pdf\Test\Voices of a Distant Star - Makoto Shinkai and Mizu Sahara";
        //private const string _testPdf = @"D:\Data\Pdf\Test\Hawkworld New Edition";
-       private const string _testPdf = @"D:\Data\Pdf\Test\";
+       private const string _testPdf = @"D:\Data\Pdf\Test\Smut_Peddler_Presents_My_Monster_Boyfriend__ebook_.pdf";
 #else
         private const string _testPdf = null;
 #endif

@@ -4,11 +4,8 @@ namespace CoreComicsConverter.Model
 {
     public abstract class Comic
     {
-        public ComicType Type { get; private set; }
-
-        public Comic(ComicType type, string path)
+        public Comic(string path)
         {
-            Type = type;
             Path = System.IO.Path.GetFullPath(path);
         }
 

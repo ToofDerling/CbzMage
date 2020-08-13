@@ -1,4 +1,5 @@
-﻿using CoreComicsConverter.Helpers;
+﻿using CoreComicsConverter.Events;
+using CoreComicsConverter.Helpers;
 using System;
 using System.Collections.Generic;
 

@@ -1,4 +1,5 @@
-﻿using CoreComicsConverter.Extensions;
+﻿using CoreComicsConverter.Events;
+using CoreComicsConverter.Extensions;
 using CoreComicsConverter.Helpers;
 using CoreComicsConverter.Model;
 using System;
@@ -23,6 +24,8 @@ namespace CoreComicsConverter.PdfFlow
                 "-dGraphicsAlphaBits=4",
                 "-dGridFitTT=2",
                 "-dUseCropBox",
+                //"-dMaxBitmap=1000000",
+                //$"-dNumRenderingThreads={Settings.ParallelThreads}",
                 $"-sOutputFile={outputFile}",
                 $"-sPageList={pageList}",
                 $"-r{dpi}",
@@ -71,53 +74,42 @@ namespace CoreComicsConverter.PdfFlow
 
         private void RunGhostscript(IEnumerable<int> pageNumbers, string pageListId, int padLen, string gsSwitches, string gsWorkingDirectory)
         {
-            var reader = new OutputLinePagesReader(PageRead, pageNumbers, pageListId, padLen);
-
             var ghostscriptRunner = new ProcessRunner();
-            ghostscriptRunner.RunAndWaitForProcess(Settings.GhostscriptPath, gsSwitches, reader.OutputLineRead, gsWorkingDirectory, ProcessPriorityClass.Idle);
 
-            var errorLines = ghostscriptRunner.GetErrorLines();
-            errorLines.ForEach(line => ProgressReporter.Error(line));
-        }
+            var pageQueue = GetPageQueue(pageNumbers, pageListId, padLen);
+            ghostscriptRunner.OutputReceived += (s, e) => OnOutputReceived(e);
 
-        private class OutputLinePagesReader
-        {
-            private readonly Queue<(string name, int number)> _pageQueue;
+            ghostscriptRunner.RunAndWaitForProcess(Settings.GhostscriptPath, gsSwitches, gsWorkingDirectory, ProcessPriorityClass.Idle);
+            DumpErrors();
 
-            private EventHandler<PageEventArgs> _pageRead;
-
-            public OutputLinePagesReader(EventHandler<PageEventArgs> pageRead, IEnumerable<int> pageNumbers, string pageListId, int padLen)
+            void OnOutputReceived(DataReceivedEventArgs e)
             {
-                _pageQueue = GetPageQueue(pageNumbers, pageListId, padLen);
-                _pageRead = pageRead;
-            }
-
-            private static Queue<(string name, int number)> GetPageQueue(IEnumerable<int> pageNumbers, string pageListId, int padLen)
-            {
-                var pageQueue = new Queue<(string name, int number)>();
-
-                int gsPageNumber = 1;
-                foreach (var pageNumber in pageNumbers)
-                {
-                    pageQueue.Enqueue(($"{pageListId}-{gsPageNumber.ToString().PadLeft(padLen, '0')}{FileExt.Png}", pageNumber));
-
-                    gsPageNumber++;
-                }
-
-                return pageQueue;
-            }
-
-            public void OutputLineRead(string line)
-            {
+                var line = e.Data;
                 if (string.IsNullOrEmpty(line) || !line.StartsWith("Page"))
                 {
                     return;
                 }
 
-                var (name, number) = _pageQueue.Dequeue();
-
-                _pageRead?.Invoke(this, new PageEventArgs(new ComicPage { Name = name, Number = number }));
+                var (name, number) = pageQueue.Dequeue();
+                PageRead?.Invoke(this, new PageEventArgs(new ComicPage { Name = name, Number = number }));
             }
+
+            void DumpErrors() => ghostscriptRunner.GetErrorLines().ForEach(line => ProgressReporter.Error(line));
+        }
+
+        private static Queue<(string name, int number)> GetPageQueue(IEnumerable<int> pageNumbers, string pageListId, int padLen)
+        {
+            var pageQueue = new Queue<(string name, int number)>();
+
+            int gsPageNumber = 1;
+            foreach (var pageNumber in pageNumbers)
+            {
+                pageQueue.Enqueue(($"{pageListId}-{gsPageNumber.ToString().PadLeft(padLen, '0')}{FileExt.Png}", pageNumber));
+
+                gsPageNumber++;
+            }
+
+            return pageQueue;
         }
 
         public event EventHandler<PageEventArgs> PageRead;

@@ -16,7 +16,7 @@ namespace CoreComicsConverter.CbzFlow
 
             var sevenZip = new SevenZipMachine();
 
-            sevenZip.PageCompressed += (s, e) => Console.WriteLine(e.Page.Name);
+            //sevenZip.PagesCompressed += (s, e) => e.Pages.Count  Console.WriteLine(e.Page.Name);
 
             sevenZip.ExtractFile(cbzComic);
         }

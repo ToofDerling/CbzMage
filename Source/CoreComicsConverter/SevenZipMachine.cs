@@ -1,4 +1,5 @@
-﻿using CoreComicsConverter.Helpers;
+﻿using CoreComicsConverter.Events;
+using CoreComicsConverter.Helpers;
 using CoreComicsConverter.Model;
 using System;
 using System.Collections.Generic;
@@ -54,51 +55,42 @@ namespace CoreComicsConverter
         {
             var sevenZipRunner = new ProcessRunner();
 
-            var reader = new OutputLinePagesReader(PageCompressed, allPages);
+            var allPagesStartIndex = 0;
+            sevenZipRunner.OutputReceived += (s, e) => OnOutputReceived(e);
 
-            sevenZipRunner.RunAndWaitForProcess(Settings.SevenZipPath, switches, reader.ProgressLineRead, workingDirectory, ProcessPriorityClass.Idle);
+            sevenZipRunner.RunAndWaitForProcess(Settings.SevenZipPath, switches, workingDirectory, ProcessPriorityClass.Idle);
 
             var errorLines = sevenZipRunner.GetErrorLines();
             errorLines.ForEach(line => ProgressReporter.Error(line));
+
+            void OnOutputReceived(DataReceivedEventArgs e)
+            {
+                var line = e.Data;
+                int endIndex;
+
+                if (string.IsNullOrWhiteSpace(line) || (endIndex = allPages.FindIndex(p => line.Contains(p.Name))) == -1)
+                {
+                    return;
+                }
+
+                allPagesStartIndex = InvokePagesCompressed(allPages, allPagesStartIndex, endIndex);
+            }
         }
 
-        private class OutputLinePagesReader
+        private int InvokePagesCompressed(List<ComicPage> allPages, int startIndex, int endIndex)
         {
-            private readonly List<ComicPage> _allPages;
+            var compressedPages = new List<ComicPage>();
 
-            private event EventHandler<PageEventArgs> _pageCompressed;
-
-            public OutputLinePagesReader(EventHandler<PageEventArgs> pageCompressed, List<ComicPage> allPages)
+            for (int i = startIndex; i <= endIndex; i++)
             {
-                _allPages = allPages;
-
-                _pageCompressed = pageCompressed;
+                compressedPages.Add(allPages[i]);
             }
 
-            private int _startIndex;
+            PagesCompressed?.Invoke(this, new PagesEventArgs(compressedPages));
 
-            public void ProgressLineRead(string line)
-            {
-                if (string.IsNullOrWhiteSpace(line))
-                {
-                    return;
-                }
-
-                var lastIndex = _allPages.FindIndex(p => line.Contains(p.Name));
-                if (lastIndex == -1)
-                {
-                    return;
-                }
-
-                for (int i = _startIndex; i <= lastIndex; i++)
-                {
-                    _pageCompressed?.Invoke(this, new PageEventArgs(_allPages[i]));
-                }
-
-                _startIndex = lastIndex + 1;
-            }
+            return endIndex + 1;
         }
 
-        public event EventHandler<PageEventArgs> PageCompressed;
+        public event EventHandler<PagesEventArgs> PagesCompressed;
     }
 }

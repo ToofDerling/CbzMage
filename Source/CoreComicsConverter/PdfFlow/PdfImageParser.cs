@@ -1,4 +1,5 @@
-﻿using CoreComicsConverter.Extensions;
+﻿using CoreComicsConverter.Events;
+using CoreComicsConverter.Extensions;
 using CoreComicsConverter.Model;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser;

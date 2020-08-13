@@ -8,9 +8,9 @@ namespace CoreComicsConverter.Helpers
     {
         private List<string> _errorLines = new List<string>();
 
-        public void RunAndWaitForProcess(string path, string switches, Action<string> outputLineReader, string workingDirectory, ProcessPriorityClass priorityClass = ProcessPriorityClass.Normal)
+        public void RunAndWaitForProcess(string path, string switches, string workingDirectory, ProcessPriorityClass priorityClass = ProcessPriorityClass.Normal)
         {
-            using var process = GetProcess(path, switches, outputLineReader, workingDirectory);
+            using var process = GetProcess(path, switches, workingDirectory);
 
             process.Start();
 
@@ -35,11 +35,13 @@ namespace CoreComicsConverter.Helpers
             return _errorLines;
         }
 
-        private Process GetProcess(string path, string args, Action<string> outputLineReader, string workingDirectoy)
+        public event EventHandler<DataReceivedEventArgs> OutputReceived;
+
+        private Process GetProcess(string path, string args, string workingDirectoy)
         {
             var process = new Process();
 
-            process.OutputDataReceived += (s, e) => outputLineReader(e.Data);
+            process.OutputDataReceived += (s, e) => OutputReceived?.Invoke(this, e);
             process.ErrorDataReceived += (s, e) => OnError(e.Data);
 
             process.StartInfo.FileName = path;

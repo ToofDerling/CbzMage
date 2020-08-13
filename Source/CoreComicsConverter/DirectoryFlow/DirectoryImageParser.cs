@@ -1,4 +1,5 @@
-﻿using CoreComicsConverter.Extensions;
+﻿using CoreComicsConverter.Events;
+using CoreComicsConverter.Extensions;
 using CoreComicsConverter.Model;
 using System;
 using System.Collections.Concurrent;

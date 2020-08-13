@@ -22,32 +22,35 @@ namespace CoreComicsConverter
         // Pdf conversion flow     
         public void ConversionFlow(PdfComic pdfComic)
         {
-            ConversionBegin(pdfComic);
+            for (int i = 0; i < 5; i++)
+            {
+                ConversionBegin(pdfComic);
 
-            var pdfFlow = new PdfConversionFlow();
+                var pdfFlow = new PdfConversionFlow();
 
-            var pageSizes = pdfFlow.ParseImagesSetPageCount(pdfComic);
+                var pageSizes = pdfFlow.ParseImagesSetPageCount(pdfComic);
 
-            var pageBatches = GetPageBatchesSortedByImageSize(pdfComic, pageSizes);
-            pdfFlow.FixLargePageSize(pageBatches);
+                var pageBatches = GetPageBatchesSortedByImageSize(pdfComic, pageSizes);
+                pdfFlow.FixLargePageSize(pageBatches);
 
-            var readPages = pdfFlow.CalculateDpi(pdfComic, pageBatches);
-            VerifyPageBatches(pdfComic, readPages, pageBatches);
+                var readPages = pdfFlow.CalculateDpi(pdfComic, pageBatches);
+                VerifyPageBatches(pdfComic, readPages, pageBatches);
 
-            pageBatches = pdfFlow.CoalescePageBatches(pageBatches);
-            VerifyPageBatches(pdfComic, readPages, pageBatches);
+                pageBatches = pdfFlow.CoalescePageBatches(pageBatches);
+                VerifyPageBatches(pdfComic, readPages, pageBatches);
 
-            var chunkedPageBatches = pdfFlow.ChunkPageBatches(pageBatches);
-            VerifyPageBatches(pdfComic, readPages, chunkedPageBatches);
+                var chunkedPageBatches = pdfFlow.ChunkPageBatches(pageBatches);
+                VerifyPageBatches(pdfComic, readPages, chunkedPageBatches);
 
-            pdfFlow.ReadPages(pdfComic, chunkedPageBatches, readPages);
-            VerifyPageBatches(pdfComic, readPages, chunkedPageBatches);
+                pdfFlow.ReadPages(pdfComic, chunkedPageBatches, readPages);
+                VerifyPageBatches(pdfComic, readPages, chunkedPageBatches);
 
-            var convertedPages = ConvertPages(pdfComic, readPages);
-            
-            CompressPages(pdfComic, convertedPages);
+                var convertedPages = ConvertPages(pdfComic, readPages);
 
-            ConversionEnd(pdfComic);
+                CompressPages(pdfComic, convertedPages);
+
+                ConversionEnd(pdfComic);
+            }
         }
 
         // Directory conversion flow
@@ -56,7 +59,7 @@ namespace CoreComicsConverter
             ConversionBegin(directoryComic);
 
             var directoryFlow = new DirectoryConversionFlow();
-            
+
             if (directoryComic.IsDownload && !directoryFlow.VerifyDownload(directoryComic))
             {
                 return;
@@ -74,7 +77,7 @@ namespace CoreComicsConverter
             VerifyPageBatches(directoryComic, pagesToConvert, pageBatches);
 
             var convertedPages = ConvertPages(directoryComic, pagesToConvert);
-            
+
             CompressPages(directoryComic, convertedPages);
 
             ConversionEnd(directoryComic);
@@ -89,7 +92,7 @@ namespace CoreComicsConverter
             cbzFlow.ExtractCbz(cbzComic);
         }
 
-        private  void ConversionBegin(Comic comic)
+        private void ConversionBegin(Comic comic)
         {
             _stopwatch.Restart();
 
@@ -211,12 +214,20 @@ namespace CoreComicsConverter
             var machine = new SevenZipMachine();
 
             var reporter = new ProgressReporter(comic.PageCount);
-            machine.PageCompressed += (s, e) => reporter.ShowProgress($"Compressing {e.Page.Name}");
+            machine.PagesCompressed += (s, e) => OnPagesCompressed(e.Pages);
 
             convertedPages = convertedPages.OrderBy(p => p.Number).AsList();
             machine.CompressFile(comic, convertedPages);
 
             Console.WriteLine();
+
+            void OnPagesCompressed(IReadOnlyCollection<ComicPage> pages)
+            {
+                foreach (var page in pages)
+                {
+                    reporter.ShowProgress($"Compressing {page.Name}");
+                }
+            }
         }
 
         private static void VerifyPageBatches(Comic comic, List<ComicPage> readPages, params List<ComicPageBatch>[] pageBatches)

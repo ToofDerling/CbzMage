@@ -1,7 +1,7 @@
 ﻿using CoreComicsConverter.Model;
 using System;
 
-namespace CoreComicsConverter
+namespace CoreComicsConverter.Events
 {
     public class PageEventArgs : EventArgs
     {

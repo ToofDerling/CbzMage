@@ -5,7 +5,7 @@ namespace CoreComicsConverter.DirectoryFlow
 {
     public class DirectoryComic : Comic
     {
-        public DirectoryComic(string directory, string[] files) : base(ComicType.Directory, directory)
+        public DirectoryComic(string directory, string[] files) : base(directory)
         {
             Files = files;
             IsDownload = CmxlgyTools.IsDownload(files);

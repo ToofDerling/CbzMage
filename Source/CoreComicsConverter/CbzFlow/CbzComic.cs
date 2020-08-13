@@ -6,7 +6,7 @@ namespace CoreComicsConverter.CbzFlow
 {
     public class CbzComic : Comic
     {
-        public CbzComic(string path) : base(ComicType.Cbz, path)
+        public CbzComic(string path) : base(path)
         {
             OutputDirectory = System.IO.Path.ChangeExtension(path, null);
             OutputFile = System.IO.Path.ChangeExtension(path, FileExt.Pdf);
