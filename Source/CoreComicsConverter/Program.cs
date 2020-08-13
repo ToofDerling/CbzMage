@@ -14,8 +14,8 @@ namespace CoreComicsConverter
 
 #if DEBUG
         //private const string _testPdf = @"D:\Data\Pdf\Test\Voices of a Distant Star - Makoto Shinkai and Mizu Sahara";
-       //private const string _testPdf = @"D:\Data\Pdf\Test\Hawkworld New Edition";
-       private const string _testPdf = @"D:\Data\Pdf\Test\Smut_Peddler_Presents_My_Monster_Boyfriend__ebook_.pdf";
+        private const string _testPdf = @"D:\Data\Pdf\Test\washday.pdf";
+        //private const string _testPdf = @"D:\Data\Pdf\Test\Smut_Peddler_Presents_My_Monster_Boyfriend__ebook_.pdf";
 #else
         private const string _testPdf = null;
 #endif
@@ -69,7 +69,7 @@ namespace CoreComicsConverter
             return false;
         }
 
-        private static bool StartConvertDirectory(DirectoryInfo directory)
+        private static bool StartConvertDirectory(DirectoryInfo directory, bool recursiveCall = false)
         {
             var entries = directory.GetFileSystemInfos();
             if (entries.Length == 0)
@@ -80,8 +80,16 @@ namespace CoreComicsConverter
 
             if (entries.All(e => e.IsDirectory()))
             {
-                //TODO
-                return false;
+                if (recursiveCall)
+                {
+                    return false;
+                }
+
+                foreach (var entry in entries)
+                {
+                    var entryDirectory = new DirectoryInfo(entry.FullName);
+                    return StartConvertDirectory(entryDirectory, recursiveCall: true);
+                }
             }
 
             var files = entries.Select(e => e.FullName).ToArray();
@@ -90,12 +98,12 @@ namespace CoreComicsConverter
             {
                 return Convert(PdfComic.List(files));
             }
-            
+
             if (FilesAre(FileExt.Cbz, files))
             {
                 return Convert(CbzComic.List(files));
             }
-            
+
             if (FilesAre(FileExt.Png, files))
             {
                 return Convert(DirectoryComic.List(directory.FullName, files));

@@ -22,35 +22,32 @@ namespace CoreComicsConverter
         // Pdf conversion flow     
         public void ConversionFlow(PdfComic pdfComic)
         {
-            for (int i = 0; i < 5; i++)
-            {
-                ConversionBegin(pdfComic);
+            ConversionBegin(pdfComic);
 
-                var pdfFlow = new PdfConversionFlow();
+            var pdfFlow = new PdfConversionFlow();
 
-                var pageSizes = pdfFlow.ParseImagesSetPageCount(pdfComic);
+            var pageSizes = pdfFlow.ParseImagesSetPageCount(pdfComic);
 
-                var pageBatches = GetPageBatchesSortedByImageSize(pdfComic, pageSizes);
-                pdfFlow.FixLargePageSize(pageBatches);
+            var pageBatches = GetPageBatchesSortedByImageSize(pdfComic, pageSizes);
+            pdfFlow.FixLargePageSize(pageBatches);
 
-                var readPages = pdfFlow.CalculateDpi(pdfComic, pageBatches);
-                VerifyPageBatches(pdfComic, readPages, pageBatches);
+            var readPages = pdfFlow.CalculateDpi(pdfComic, pageBatches);
+            VerifyPageBatches(pdfComic, readPages, pageBatches);
 
-                pageBatches = pdfFlow.CoalescePageBatches(pageBatches);
-                VerifyPageBatches(pdfComic, readPages, pageBatches);
+            pageBatches = pdfFlow.CoalescePageBatches(pageBatches);
+            VerifyPageBatches(pdfComic, readPages, pageBatches);
 
-                var chunkedPageBatches = pdfFlow.ChunkPageBatches(pageBatches);
-                VerifyPageBatches(pdfComic, readPages, chunkedPageBatches);
+            var chunkedPageBatches = pdfFlow.ChunkPageBatches(pageBatches);
+            VerifyPageBatches(pdfComic, readPages, chunkedPageBatches);
 
-                pdfFlow.ReadPages(pdfComic, chunkedPageBatches, readPages);
-                VerifyPageBatches(pdfComic, readPages, chunkedPageBatches);
+            pdfFlow.ReadPages(pdfComic, chunkedPageBatches, readPages);
+            VerifyPageBatches(pdfComic, readPages, chunkedPageBatches);
 
-                var convertedPages = ConvertPages(pdfComic, readPages);
+            var convertedPages = ConvertPages(pdfComic, readPages);
 
-                CompressPages(pdfComic, convertedPages);
+            CompressPages(pdfComic, convertedPages);
 
-                ConversionEnd(pdfComic);
-            }
+            ConversionEnd(pdfComic);
         }
 
         // Directory conversion flow

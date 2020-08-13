@@ -20,8 +20,8 @@ namespace CoreComicsConverter
         //TODO detect
         public static readonly string SevenZipWin = @"C:\Program Files\7-Zip\7z.exe";
 
-        public static readonly string SevenZipLinux = @"7z";
+        public static readonly string SevenZipUnix = @"7z";
 
-        public static readonly string SevenZipPath = Environment.OSVersion.Platform == PlatformID.Win32NT ? SevenZipWin : SevenZipLinux;
+        public static readonly string SevenZipPath = Environment.OSVersion.Platform == PlatformID.Win32NT ? SevenZipWin : SevenZipUnix;
     }
 }
