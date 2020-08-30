@@ -25,12 +25,14 @@ namespace CoreComicsConverter
             ConversionBegin(pdfComic);
 
             var pdfFlow = new PdfConversionFlow();
+            var readPages = new List<ComicPage>();
 
             var pageSizes = pdfFlow.ParseImagesSetPageCount(pdfComic);
 
             var pageSizeBatches = GetPageBatchesSortedByImageSize(pdfComic, pageSizes);
+            VerifyPageBatches(pdfComic, readPages, pageSizeBatches);
 
-            var pageBatch = pdfFlow.CalculateDpi(pdfComic, pageSizeBatches, out var readPages);
+            var pageBatch = pdfFlow.CalculateDpi(pdfComic, pageSizeBatches, readPages);
             VerifyPageBatches(pdfComic, readPages, pageBatch);
 
             var pageBatchChunks = pdfFlow.ChunkPageBatch(pageBatch);

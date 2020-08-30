@@ -22,9 +22,11 @@ namespace CoreComicsConverter.PdfFlow
             return pageSizes;
         }
 
-        public ComicPageBatch CalculateDpi(PdfComic pdfComic, ComicPageBatch[] pageBatches, out List<ComicPage> readPages)
+        public ComicPageBatch CalculateDpi(PdfComic pdfComic, ComicPageBatch[] pageBatches, List<ComicPage> readPages)
         {
-            var sortedBatches = pageBatches.OrderByDescending(b => b.Pages.Count);
+            // The AsList is necessary or the Skip below will not sometimes not work as expected
+            // causing the loop to add all pages in sortedBatches to mostOfThisSize
+            var sortedBatches = pageBatches.OrderByDescending(b => b.Pages.Count).AsList();
             var mostOfThisSize = sortedBatches.First();
 
             var wantedHeight = mostOfThisSize.Height;
@@ -33,8 +35,8 @@ namespace CoreComicsConverter.PdfFlow
             var readPage = CalculateDpiForBatch(pdfComic, mostOfThisSize);
             Console.WriteLine($"Calculated dpi: {mostOfThisSize.Dpi}");
 
-            // Ensure that page read during calculation won't be read again.
-            readPages = new List<ComicPage>() { readPage };
+            // Ensure that page read during calculation is not read again.
+            readPages.Add(readPage);
             mostOfThisSize.Pages.Remove(readPage);
 
             foreach (var batch in sortedBatches.Skip(1))
