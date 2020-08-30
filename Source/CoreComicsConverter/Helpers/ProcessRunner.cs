@@ -6,11 +6,34 @@ namespace CoreComicsConverter.Helpers
 {
     public class ProcessRunner
     {
-        private List<string> _errorLines = new List<string>();
-
-        public void RunAndWaitForProcess(string path, string switches, string workingDirectory, ProcessPriorityClass priorityClass = ProcessPriorityClass.Normal)
+        public List<string> RunAndWaitForProcess(string path, string args, string workingDirectory, EventHandler<DataReceivedEventArgs> outputReceived)
         {
-            using var process = GetProcess(path, switches, workingDirectory);
+            return RunAndWaitForProcess(path, args, workingDirectory, outputReceived, ProcessPriorityClass.Idle);
+        }
+
+        public List<string> RunAndWaitForProcess(string path, string args, string workingDirectory, EventHandler<DataReceivedEventArgs> outputReceived, ProcessPriorityClass priorityClass)
+        {
+            using var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = path,
+                    Arguments = args,
+                    WorkingDirectory = workingDirectory,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                }
+            };
+
+            if (outputReceived != null)
+            {
+                process.OutputDataReceived += (s, e) => outputReceived(s, e);
+            }
+
+            List<string> _errorLines = new List<string>();
+            process.ErrorDataReceived += (s, e) => OnError(e.Data);
 
             process.Start();
 
@@ -20,42 +43,16 @@ namespace CoreComicsConverter.Helpers
             process.BeginOutputReadLine();
 
             process.WaitForExit();
-        }
 
-        private void OnError(string line)
-        {
-            if (!string.IsNullOrEmpty(line))
-            {
-                _errorLines.Add(line);
-            }
-        }
-
-        public List<string> GetErrorLines()
-        {
             return _errorLines;
-        }
 
-        public event EventHandler<DataReceivedEventArgs> OutputReceived;
-
-        private Process GetProcess(string path, string args, string workingDirectoy)
-        {
-            var process = new Process();
-
-            process.OutputDataReceived += (s, e) => OutputReceived?.Invoke(this, e);
-            process.ErrorDataReceived += (s, e) => OnError(e.Data);
-
-            process.StartInfo.FileName = path;
-            process.StartInfo.Arguments = args;
-
-            process.StartInfo.WorkingDirectory = workingDirectoy;
-
-            process.StartInfo.UseShellExecute = false;
-            process.StartInfo.CreateNoWindow = true;
-
-            process.StartInfo.RedirectStandardOutput = true;
-            process.StartInfo.RedirectStandardError = true;
-
-            return process;
+            void OnError(string line)
+            {
+                if (!string.IsNullOrEmpty(line))
+                {
+                    _errorLines.Add(line);
+                }
+            }
         }
     }
 }

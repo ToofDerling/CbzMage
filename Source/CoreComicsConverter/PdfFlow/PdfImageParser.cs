@@ -17,6 +17,9 @@ namespace CoreComicsConverter.PdfFlow
         private int _pageNumber;
         private int _imageCount;
 
+        private int _pageWidth;
+        private int _pageHeight;
+
         private readonly PdfComic _pdfComic;
 
         private readonly PdfReader _pdfReader;
@@ -46,11 +49,17 @@ namespace CoreComicsConverter.PdfFlow
         protected override List<ComicPage> Parse()
         {
             _imageMap = new Dictionary<int, ComicPage>();
-            
+
             var pdfDocParser = new PdfDocumentContentParser(_pdfDoc);
 
             for (_pageNumber = 1; _pageNumber <= _pdfComic.PageCount; _pageNumber++)
             {
+                var page = _pdfDoc.GetPage(_pageNumber);
+                var pageSize = page.GetPageSize();
+
+                _pageWidth = Convert.ToInt32(pageSize.GetWidth());
+                _pageHeight = Convert.ToInt32(pageSize.GetHeight());
+
                 pdfDocParser.ProcessContent(_pageNumber, this);
 
                 // Handle pages with no images
@@ -82,20 +91,24 @@ namespace CoreComicsConverter.PdfFlow
             try
             {
                 var renderInfo = data as ImageRenderInfo;
-
                 var imageObject = renderInfo.GetImage();
 
                 var newWidth = Convert.ToInt32(imageObject.GetWidth());
                 var newHeight = Convert.ToInt32(imageObject.GetHeight());
 
-                if (_imageMap.TryGetValue(_pageNumber, out var page) && newWidth * newHeight > page.Width * page.Height)
+                if (!_imageMap.TryGetValue(_pageNumber, out var page))
+                {
+                    _imageMap[_pageNumber] = new ComicPage 
+                    { 
+                        Number = _pageNumber, 
+                        Width = newWidth, 
+                        Height = newHeight, 
+                    };
+                }
+                else if (newWidth * newHeight > page.Width * page.Height)
                 {
                     page.Width = newWidth;
                     page.Height = newHeight;
-                }
-                else
-                {
-                    _imageMap[_pageNumber] = new ComicPage { Number = _pageNumber, Width = newWidth, Height = newHeight };
                 }
 
                 _imageCount++;

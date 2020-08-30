@@ -1,4 +1,4 @@
-﻿using CoreComicsConverter.CbzFlow;
+﻿using CoreComicsConverter.CbzCbrFlow;
 using CoreComicsConverter.DirectoryFlow;
 using CoreComicsConverter.Extensions;
 using CoreComicsConverter.Helpers;
@@ -28,22 +28,25 @@ namespace CoreComicsConverter
 
             var pageSizes = pdfFlow.ParseImagesSetPageCount(pdfComic);
 
-            var pageBatches = GetPageBatchesSortedByImageSize(pdfComic, pageSizes);
-            pdfFlow.FixLargePageSize(pageBatches);
+            var pageSizeBatches = GetPageBatchesSortedByImageSize(pdfComic, pageSizes);
 
-            var readPages = pdfFlow.CalculateDpi(pdfComic, pageBatches);
-            VerifyPageBatches(pdfComic, readPages, pageBatches);
+            var pageBatch = pdfFlow.CalculateDpi(pdfComic, pageSizeBatches, out var readPages);
+            VerifyPageBatches(pdfComic, readPages, pageBatch);
 
-            pageBatches = pdfFlow.CoalescePageBatches(pageBatches);
-            VerifyPageBatches(pdfComic, readPages, pageBatches);
+            var pageBatchChunks = pdfFlow.ChunkPageBatch(pageBatch);
+            VerifyPageBatches(pdfComic, readPages, pageBatchChunks);
 
-            var chunkedPageBatches = pdfFlow.ChunkPageBatches(pageBatches);
-            VerifyPageBatches(pdfComic, readPages, chunkedPageBatches);
+            pdfFlow.ReadPages(pdfComic, pageBatchChunks, readPages);
+            VerifyPageBatches(pdfComic, readPages, pageBatchChunks);
 
-            pdfFlow.ReadPages(pdfComic, chunkedPageBatches, readPages);
-            VerifyPageBatches(pdfComic, readPages, chunkedPageBatches);
+            var changesWereMade = pdfFlow.AnalyzeImageSizes(readPages, pageBatch.Dpi, pageBatch.Height);
 
             var convertedPages = ConvertPages(pdfComic, readPages);
+
+            if (changesWereMade)
+            {
+                pdfFlow.AnalyzeImageSizes(readPages, pageBatch.Dpi, pageBatch.Height);
+            }
 
             CompressPages(pdfComic, convertedPages);
 
@@ -63,19 +66,19 @@ namespace CoreComicsConverter
             }
 
             var pageSizes = directoryFlow.ParseImagesSetPageCount(directoryComic);
-
             var pageBatches = GetPageBatchesSortedByImageSize(directoryComic, pageSizes);
+
             if (directoryComic.IsDownload)
             {
-                directoryFlow.FixDoublePageSpreads(pageBatches);
+                //directoryFlow.FixDoublePageSpreads(pageBatches);
             }
 
-            var pagesToConvert = directoryFlow.GetPagesToConvert(pageBatches);
-            VerifyPageBatches(directoryComic, pagesToConvert, pageBatches);
+            //var pagesToConvert = directoryFlow.GetPagesToConvert(pageBatches);
+            //VerifyPageBatches(directoryComic, pagesToConvert, pageBatches);
 
-            var convertedPages = ConvertPages(directoryComic, pagesToConvert);
+            //var convertedPages = ConvertPages(directoryComic, pagesToConvert);
 
-            CompressPages(directoryComic, convertedPages);
+            //CompressPages(directoryComic, convertedPages);
 
             ConversionEnd(directoryComic);
         }
@@ -84,9 +87,11 @@ namespace CoreComicsConverter
         {
             ConversionBegin(cbzComic);
 
-            var cbzFlow = new CbzConversionFlow();
+            var cbzFlow = new CbzCbrConversionFlow();
 
             cbzFlow.ExtractCbz(cbzComic);
+
+            cbzFlow.CreatePdf(cbzComic);
         }
 
         private void ConversionBegin(Comic comic)
@@ -111,7 +116,7 @@ namespace CoreComicsConverter
             Console.WriteLine();
         }
 
-        private static List<ComicPageBatch> GetPageBatchesSortedByImageSize(Comic comic, List<ComicPage> pageSizes)
+        private static ComicPageBatch[] GetPageBatchesSortedByImageSize(Comic comic, List<ComicPage> pageSizes)
         {
             // Group the pages by imagesize and sort with largest size first
             var sizeLookup = pageSizes.ToLookup(p => (p.Width, p.Height)).OrderByDescending(i => i.Key.Width * i.Key.Height);
@@ -132,7 +137,7 @@ namespace CoreComicsConverter
                 throw new ApplicationException($"{nameof(pageBatches)} is {pagesCount} should be {comic.PageCount}");
             }
 
-            return pageBatches;
+            return pageBatches.ToArray();
         }
 
         private static List<ComicPage> ConvertPages(Comic comic, List<ComicPage> readyPages)
@@ -166,7 +171,7 @@ namespace CoreComicsConverter
 
             if (!pagesQueue.IsEmpty)
             {
-                throw new ApplicationException($"{nameof(readyPages)} is {readyPages.Count} should be 0");
+                throw new ApplicationException($"{nameof(pagesQueue)} is {pagesQueue.Count} should be 0");
             }
 
             if (convertedPages.Count != comic.PageCount)
@@ -189,9 +194,9 @@ namespace CoreComicsConverter
             var jpg = comic.GetJpgPageString(page.Number);
             var jpgPath = Path.Combine(comic.OutputDirectory, jpg);
 
-            if (page.NewWidth > 0 && page.NewHeight > 0)
+            if (page.NewHeight > 0)
             {
-                image.Resize(page.NewWidth, page.NewHeight);
+                image.Resize(0, page.NewHeight);
             }
 
             image.Write(jpgPath);
@@ -200,6 +205,8 @@ namespace CoreComicsConverter
             {
                 File.Delete(page.Path);
             }
+
+            page.Path = jpgPath;
 
             return jpg;
         }
@@ -214,7 +221,7 @@ namespace CoreComicsConverter
             machine.PagesCompressed += (s, e) => OnPagesCompressed(e.Pages);
 
             convertedPages = convertedPages.OrderBy(p => p.Number).AsList();
-            machine.CompressFile(comic, convertedPages);
+            machine.CompressPages(comic, convertedPages);
 
             Console.WriteLine();
 
@@ -227,9 +234,9 @@ namespace CoreComicsConverter
             }
         }
 
-        private static void VerifyPageBatches(Comic comic, List<ComicPage> readPages, params List<ComicPageBatch>[] pageBatches)
+        private static void VerifyPageBatches(Comic comic, List<ComicPage> readPages, params ComicPageBatch[] pageBatches)
         {
-            var pagesCount = pageBatches.Sum(batch => batch.Sum(i => i.Pages.Count));
+            var pagesCount = pageBatches.Sum(batch => batch.Pages.Count);
 
             if (readPages.Count + pagesCount != comic.PageCount)
             {

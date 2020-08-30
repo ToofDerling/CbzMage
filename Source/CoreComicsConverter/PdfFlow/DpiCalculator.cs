@@ -6,17 +6,17 @@ namespace CoreComicsConverter.PdfFlow
 {
     public class DpiCalculator
     {
-        private readonly int _wantedImageWidth;
+        private readonly int _wantedImageHeight;
 
         private readonly PdfComic _pdfComic;
 
         private readonly ComicPage _page;
 
-        public DpiCalculator(PdfComic pdfComic, ComicPageBatch batch, ComicPage page)
+        public DpiCalculator(PdfComic pdfComic, int wantedHeight, ComicPage page)
         {
             _page = page;
 
-            _wantedImageWidth = batch.Width;
+            _wantedImageHeight = wantedHeight;
 
             _pdfComic = pdfComic;
         }
@@ -25,65 +25,65 @@ namespace CoreComicsConverter.PdfFlow
         {
             var dpi = Settings.MinimumDpi;
 
-            var width = GetImageWidth(dpi);
+            var height = GetImageHeight(dpi);
 
-            if (width < _wantedImageWidth)
+            if (height < _wantedImageHeight)
             {
-                dpi = GoingUp(dpi, width, _wantedImageWidth);
+                dpi = GoingUp(dpi, height, _wantedImageHeight);
             }
 
             return dpi;
         }
 
-        private int GoingUp(int dpi, int width, int wantedWidth)
+        private int GoingUp(int dpi, int height, int wantedHeight)
         {
-            var diff = wantedWidth - width;
+            var diff = wantedHeight - height;
 
             // Skip big step calculation if difference is small
             if (diff <= 15)
             {
-                var nextWidth = width;
-                while (nextWidth < wantedWidth)
+                var nextHeight = height;
+                while (nextHeight < wantedHeight)
                 {
                     dpi++;
-                    nextWidth = GetImageWidth(dpi);
+                    nextHeight = GetImageHeight(dpi);
                 }
             }
             else
             {
                 var step = 5;
                 dpi += step;
-                var nextWidth = GetImageWidth(dpi);
+                var nextHeight = GetImageHeight(dpi);
 
-                // Calculate big step if next width produced a large enough difference 
-                if (nextWidth < wantedWidth && wantedWidth - nextWidth > 15)
+                // Calculate big step if next height produced a large enough difference 
+                if (nextHeight < wantedHeight && wantedHeight - nextHeight > 15)
                 {
-                    var nextDiff = wantedWidth - nextWidth;
+                    var nextDiff = wantedHeight - nextHeight;
                     var bigStep = CalculateBigStep(diff, nextDiff, step);
 
                     dpi = Settings.MinimumDpi + bigStep;
-                    nextWidth = GetImageWidth(dpi);
+                    nextHeight = GetImageHeight(dpi);
                 }
-                // Go down if big step put us above wanted width
-                // Go up if after big step we're still below wanted width, or the calculation was skipped
-                dpi = GoDownAndUp(dpi, nextWidth, wantedWidth);
+                // Go down if big step put us above wanted height
+                // Go up if after big step we're still below wanted height, or the calculation was skipped
+                dpi = GoDownAndUp(dpi, nextHeight, wantedHeight);
             }
 
             return dpi;
         }
 
-        private int GoDownAndUp(int dpi, int nextWidth, int wantedWidth)
+        private int GoDownAndUp(int dpi, int nextHeight, int wantedHeight)
         {
-            while (nextWidth > wantedWidth && nextWidth - wantedWidth > 5)
+            while (nextHeight > wantedHeight && nextHeight - wantedHeight > 5)
             {
                 dpi--;
-                nextWidth = GetImageWidth(dpi);
+                nextHeight = GetImageHeight(dpi);
             }
 
-            while (nextWidth < wantedWidth)
+            while (nextHeight < wantedHeight)
             {
                 dpi++;
-                nextWidth = GetImageWidth(dpi);
+                nextHeight = GetImageHeight(dpi);
             }
 
             return dpi;
@@ -98,7 +98,7 @@ namespace CoreComicsConverter.PdfFlow
             return Convert.ToInt32(bigStep);
         }
 
-        private int GetImageWidth(int dpi)
+        private int GetImageHeight(int dpi)
         {
             var pageMachine = new GhostscriptMachine();
 
@@ -106,13 +106,15 @@ namespace CoreComicsConverter.PdfFlow
 
             if (string.IsNullOrEmpty(_page.Path))
             {
-                _page.Name = _pdfComic.GetSinglePagePngString(_page.Number);
+                _page.Name = pageMachine.GetReadPageString(_page.Number);
                 _page.Path = Path.Combine(_pdfComic.OutputDirectory, _page.Name);
             }
 
             _page.Ping();
 
-            return _page.Width;
+            Console.WriteLine($" {dpi} -> {_page.Width} x {_page.Height}");
+
+            return _page.Height;
         }
     }
 }

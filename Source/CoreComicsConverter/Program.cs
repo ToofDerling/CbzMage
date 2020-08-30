@@ -1,4 +1,4 @@
-using CoreComicsConverter.CbzFlow;
+using CoreComicsConverter.CbzCbrFlow;
 using CoreComicsConverter.DirectoryFlow;
 using CoreComicsConverter.Extensions;
 using CoreComicsConverter.PdfFlow;
@@ -14,7 +14,9 @@ namespace CoreComicsConverter
 
 #if DEBUG
         //private const string _testPdf = @"D:\Data\Pdf\Test\Voices of a Distant Star - Makoto Shinkai and Mizu Sahara";
-        private const string _testPdf = @"D:\Data\Pdf\Test\washday.pdf";
+        //private const string _testPdf = @"D:\Data\Pdf\Test\Stand Still. Stay Silent Book 1.cbz";
+        //private const string _testPdf = @"D:\Data\Pdf\Test\Fearscape.pdf";
+        private const string _testPdf = @"D:\Data\Pdf\Test\";
         //private const string _testPdf = @"D:\Data\Pdf\Test\Smut_Peddler_Presents_My_Monster_Boyfriend__ebook_.pdf";
 #else
         private const string _testPdf = null;

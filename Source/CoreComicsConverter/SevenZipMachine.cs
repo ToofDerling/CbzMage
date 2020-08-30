@@ -4,6 +4,8 @@ using CoreComicsConverter.Model;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 
 namespace CoreComicsConverter
 {
@@ -17,6 +19,8 @@ namespace CoreComicsConverter
                 $"\"{comic.Path}\"",
                 $"-mmt{Settings.ParallelThreads}",
                 "-y",
+                "-bsp1",
+                "-bso0",
                 $"-o\"{comic.OutputDirectory}\""
             };
 
@@ -41,29 +45,58 @@ namespace CoreComicsConverter
             return string.Join(' ', args);
         }
 
-        public void ExtractFile(Comic comic)
+        public string[] ExtractComic(Comic comic)
         {
-            RunSevenZip(GetExtractSwitches(comic), comic.OutputDirectory, null);
-        }
+            var switches = GetExtractSwitches(comic);
+            var lastProgress = string.Empty;
 
-        public void CompressFile(Comic comic, List<ComicPage> allPages)
-        {
-            RunSevenZip(GetCompressSwitches(comic), comic.OutputDirectory, allPages);
-        }
-
-        private void RunSevenZip(string switches, string workingDirectory, List<ComicPage> allPages)
-        {
             var sevenZipRunner = new ProcessRunner();
 
+            var errorLines = sevenZipRunner.RunAndWaitForProcess(Settings.SevenZipPath, switches, comic.OutputDirectory, OnExtractOutputReceived);
+
+            if (!lastProgress.Contains("100%"))
+            {
+                Extracted?.Invoke(this, new ExtractedEventArgs("100%"));
+            }
+
+            ProgressReporter.DumpErrors(errorLines);
+
+            return Directory.EnumerateFiles(comic.OutputDirectory).OrderBy(f => f).ToArray();
+
+            void OnExtractOutputReceived(object _, DataReceivedEventArgs e)
+            {
+                var progress = e.Data;
+
+                if (string.IsNullOrWhiteSpace(progress))
+                {
+                    return;
+                }
+
+                var idx = progress.IndexOf('%');
+                if (idx == -1)
+                {
+                    return;
+                }
+
+                lastProgress = progress.Substring(0, idx + 1).TrimStart();
+
+                Extracted?.Invoke(this, new ExtractedEventArgs(lastProgress));
+            }
+        }
+
+        public event EventHandler<ExtractedEventArgs> Extracted;
+
+        public void CompressPages(Comic comic, List<ComicPage> allPages)
+        {
+            var switches = GetCompressSwitches(comic);
             var allPagesStartIndex = 0;
-            sevenZipRunner.OutputReceived += (s, e) => OnOutputReceived(e);
 
-            sevenZipRunner.RunAndWaitForProcess(Settings.SevenZipPath, switches, workingDirectory, ProcessPriorityClass.Idle);
+            var sevenZipRunner = new ProcessRunner();
 
-            var errorLines = sevenZipRunner.GetErrorLines();
-            errorLines.ForEach(line => ProgressReporter.Error(line));
+            var errorLines = sevenZipRunner.RunAndWaitForProcess(Settings.SevenZipPath, switches, comic.OutputDirectory, OnCompressOutputReceived);
+            ProgressReporter.DumpErrors(errorLines);
 
-            void OnOutputReceived(DataReceivedEventArgs e)
+            void OnCompressOutputReceived(object _, DataReceivedEventArgs e)
             {
                 var line = e.Data;
                 int endIndex;

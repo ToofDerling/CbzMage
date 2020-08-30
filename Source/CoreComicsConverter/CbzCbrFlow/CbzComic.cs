@@ -1,10 +1,10 @@
-﻿using CoreComicsConverter.Model;
+﻿using CoreComicsConverter.DirectoryFlow;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace CoreComicsConverter.CbzFlow
+namespace CoreComicsConverter.CbzCbrFlow
 {
-    public class CbzComic : Comic
+    public class CbzComic : DirectoryComic
     {
         public CbzComic(string path) : base(path)
         {

@@ -24,8 +24,7 @@ namespace CoreComicsConverter.Model
             var pageSizes = Parse();
 
             Console.WriteLine();
-            Console.WriteLine($" {comic.PageCount} pages");
-            Console.WriteLine($" {comic.ImageCount} images");
+            Console.WriteLine($" {comic.PageCount} pages {comic.ImageCount} images");
 
             return pageSizes;
         }

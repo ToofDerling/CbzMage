@@ -6,7 +6,11 @@ namespace CoreComicsConverter
     {
         public static readonly int MinimumDpi = 300;
 
-        public static readonly int JpegQuality = 98;
+        public static readonly int JpegQuality = 95;
+
+        public static readonly int StandardHeight = 3075;
+
+        public static readonly int MaximumHeight = 4150;
 
         public static readonly int ParallelThreads = Environment.ProcessorCount;
 

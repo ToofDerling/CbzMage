@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace CoreComicsConverter.Helpers
 {
@@ -56,6 +57,14 @@ namespace CoreComicsConverter.Helpers
         public static void Warning(string message)
         {
             Show(message, ConsoleColor.Yellow);
+        }
+
+        public static void DumpErrors(IEnumerable<string> errorLines)
+        {
+            foreach (var message in errorLines)
+            {
+                Error(message);
+            }
         }
 
         public static void Error(string message)

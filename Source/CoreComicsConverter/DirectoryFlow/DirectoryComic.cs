@@ -5,7 +5,11 @@ namespace CoreComicsConverter.DirectoryFlow
 {
     public class DirectoryComic : Comic
     {
-        public DirectoryComic(string directory, string[] files) : base(directory)
+        protected DirectoryComic(string directory) : base(directory)
+        {
+        }
+
+        public DirectoryComic(string directory, string[] files) : this(directory)
         {
             Files = files;
             IsDownload = CmxlgyTools.IsDownload(files);
@@ -15,7 +19,7 @@ namespace CoreComicsConverter.DirectoryFlow
             OutputFile = $"{System.IO.Path.TrimEndingDirectorySeparator(directory)}{FileExt.Cbz}";
         }
 
-        public string[] Files { get; }
+        public string[] Files { get; set; }
 
         public bool IsDownload { get; }
 
