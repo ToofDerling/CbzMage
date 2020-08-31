@@ -24,7 +24,7 @@ namespace CoreComicsConverter.PdfFlow
 
         public ComicPageBatch CalculateDpi(PdfComic pdfComic, ComicPageBatch[] pageBatches, List<ComicPage> readPages)
         {
-            // The AsList is necessary or the Skip below will not sometimes not work as expected
+            // The AsList is necessary or the Skip below will sometimes not work as expected
             // causing the loop to add all pages in sortedBatches to mostOfThisSize
             var sortedBatches = pageBatches.OrderByDescending(b => b.Pages.Count).AsList();
             var mostOfThisSize = sortedBatches.First();
