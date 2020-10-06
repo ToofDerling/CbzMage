@@ -1,4 +1,6 @@
-﻿using System;
+﻿using CoreComicsConverter.Helpers;
+using CoreComicsConverter.PdfFlow;
+using System;
 
 namespace CoreComicsConverter
 {
@@ -15,17 +17,34 @@ namespace CoreComicsConverter
         public static readonly int ParallelThreads = Environment.ProcessorCount;
 
         //TODO detect
-        public static readonly string GhostscriptWin = @"C:\Program Files\gs\gs9.52\bin\gswin64c.exe";
-
-        public static readonly string GhostscriptUnix = "gs";
-
-        public static readonly string GhostscriptPath = Environment.OSVersion.Platform == PlatformID.Win32NT ? GhostscriptWin : GhostscriptUnix;
-
-        //TODO detect
         public static readonly string SevenZipWin = @"C:\Program Files\7-Zip\7z.exe";
 
         public static readonly string SevenZipUnix = @"7z";
 
         public static readonly string SevenZipPath = Environment.OSVersion.Platform == PlatformID.Win32NT ? SevenZipWin : SevenZipUnix;
+
+        public static string GhostscriptPath { get; private set; }
+
+        public static bool InitializeGhostscript()
+        {
+            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+            {
+                var gsVersion = GhostscriptVersionInfo.GetInstalledVersion();
+                if (gsVersion == null)
+                {
+                    ProgressReporter.Error("No Ghostscript installation found!");
+                    return false;
+                }
+
+                GhostscriptPath = gsVersion.Exe;
+                ProgressReporter.Info(GhostscriptPath);
+            }
+            else
+            {
+                GhostscriptPath = "gs";
+            }
+
+            return true;
+        }
     }
 }

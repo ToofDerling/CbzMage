@@ -16,32 +16,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Ghostscript.NET\**" />
-    <Compile Remove="Ghostscript\**" />
-    <EmbeddedResource Remove="Ghostscript.NET\**" />
-    <EmbeddedResource Remove="Ghostscript\**" />
-    <None Remove="Ghostscript.NET\**" />
-    <None Remove="Ghostscript\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="Extensions\ExceptionExtensions.cs" />
     <Compile Remove="PageCompressor.cs" />
     <Compile Remove="PageReadHandler.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="itext7" Version="7.1.12" />
-    <PackageReference Include="Magick.NET-Q16-x64" Version="7.21.1" />
+    <PackageReference Include="Magick.NET-Q16-x64" Version="7.22.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Win32.Registry" Version="4.7.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Ghostscript.NET\" />
   </ItemGroup>
 
 </Project>

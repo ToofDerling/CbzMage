@@ -1,6 +1,7 @@
 using CoreComicsConverter.CbzCbrFlow;
 using CoreComicsConverter.DirectoryFlow;
 using CoreComicsConverter.Extensions;
+using CoreComicsConverter.Helpers;
 using CoreComicsConverter.PdfFlow;
 using System;
 using System.Collections.Generic;
@@ -24,11 +25,18 @@ namespace CoreComicsConverter
 
         public static void Main(string[] args)
         {
-            var path = GetPath(args);
-            if (path == null || !StartConvert(path))
+            try
             {
-                Console.WriteLine("CoreComicsConverter <directory|comic>");
-                return;
+                var path = GetPath(args);
+                if (path == null || !StartConvert(path))
+                {
+                    Console.WriteLine("CoreComicsConverter <directory|comic>");
+                }
+            }
+            catch (Exception ex)
+            {
+                ProgressReporter.Error(ex.TypeAndMessage());
+                ProgressReporter.Info(ex.StackTrace);
             }
 
             Console.ReadLine();
@@ -38,7 +46,10 @@ namespace CoreComicsConverter
 
         private static bool Convert(List<PdfComic> pdfComics)
         {
-            pdfComics.ForEach(comic => { converter.ConversionFlow(comic); });
+            if (Settings.InitializeGhostscript())
+            {
+                pdfComics.ForEach(comic => { converter.ConversionFlow(comic); });
+            }
             return true;
         }
 
