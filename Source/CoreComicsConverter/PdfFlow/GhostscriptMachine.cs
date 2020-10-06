@@ -15,8 +15,6 @@ namespace CoreComicsConverter.PdfFlow
         {
             var args = new[]
             {
-                "-dNOPAUSE",
-                "-dBATCH",
                 "-sDEVICE=png16m",
                 //"-dUseCIEColor",  //This adds a problematic icc profile to the image
                 "-dTextAlphaBits=4",
@@ -25,7 +23,7 @@ namespace CoreComicsConverter.PdfFlow
                 "-dUseCropBox",
                 //"-dMaxBitmap=1000000",
                 //$"-dNumRenderingThreads={Settings.ParallelThreads}",
-                $"-sOutputFile={outputFile}",
+                $"-o {outputFile}",
                 $"-sPageList={pageList}",
                 $"-r{dpi}",
                 $"\"{pdfComic.Path}\""
