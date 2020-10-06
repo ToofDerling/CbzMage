@@ -134,9 +134,10 @@ namespace CoreComicsConverter.PdfFlow
                 }
             });
 
-            if (readPages.Any(p => p.Height == 0))
+            var count = readPages.Count(p => p.Height == 0);
+            if (count > 0)
             {
-                throw new ApplicationException("One or more pages has a height of 0");
+                throw new ApplicationException($"{count} page(s) has a height of 0");
             }
 
             var sortedHeightsLookup = readPages.ToLookup(p => p.Height).OrderByDescending(l => l.AsList().Count);
@@ -157,9 +158,9 @@ namespace CoreComicsConverter.PdfFlow
                 newHeight = Settings.MaximumHeight;
             }
 
-            bool changesWereMade = false;
+            var changesWereMade = false;
 
-            List<ComicPage> pages = firstLookup.AsList();
+            var pages = firstLookup.AsList();
             var oldHeight = firstLookup.Key;
 
             SetNewHeight();
