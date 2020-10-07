@@ -26,6 +26,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using CoreComicsConverter.Extensions;
@@ -141,7 +142,9 @@ namespace CoreComicsConverter.PdfFlow
 
                                 if (File.Exists(exe))
                                 {
-                                    var version = new Version(versionKey);
+                                    var fileVersion = FileVersionInfo.GetVersionInfo(exe);
+
+                                    var version = new Version(fileVersion.FileVersion);
 
                                     versionsMap[version] = new GhostscriptVersionInfo(version, exe);
                                 }
@@ -172,7 +175,7 @@ namespace CoreComicsConverter.PdfFlow
 
             foreach (var gsVer in gsVerList)
             {
-                if (gsVer.Version >= MinVersion && gsVer.Version <= MaxVersion)
+                if ((MinVersion == null || gsVer.Version >= MinVersion) && (MaxVersion == null || gsVer.Version <= MaxVersion))
                 {
                     return gsVer;
                 }
@@ -180,7 +183,7 @@ namespace CoreComicsConverter.PdfFlow
 
             ProgressReporter.Warning($"No Ghostscript version >= {MinVersion} and =< {MaxVersion}");
 
-            gsVerList.ForEach(g => ProgressReporter.Warning($" Found {g.Version}"));
+            gsVerList.ForEach(g => ProgressReporter.Warning($" Found {g.Version} -> {g.Exe}"));
 
             return null;
         }
