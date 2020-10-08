@@ -33,9 +33,9 @@ using CoreComicsConverter.Extensions;
 using CoreComicsConverter.Helpers;
 using Microsoft.Win32;
 
-namespace CoreComicsConverter.PdfFlow
+namespace CoreComicsConverter.AppVersions
 {
-    public class GhostscriptVersionInfo
+    public class GhostscriptVersion
     {
         private static readonly Version MinVersion = new Version(9, 50);
 
@@ -47,35 +47,13 @@ namespace CoreComicsConverter.PdfFlow
             "SOFTWARE\\Artifex Ghostscript\\"
         };
 
-        public GhostscriptVersionInfo(Version version, string gsExe)
-        {
-            Version = version;
-
-            Exe = gsExe;
-        }
-
-        /// <summary>
-        /// Gets Ghostscript version.
-        /// </summary>
-        public Version Version { get; }
-
-        public string Exe { get; }
-
-        /// <summary>
-        /// Returns GhostscriptVersionInfo string.
-        /// </summary>
-        public override string ToString()
-        {
-            return $"Version: {Version}, Exe: {Exe}";
-        }
-
         /// <summary>
         /// Gets installed Ghostscript versions list.
         /// </summary>
         /// <returns>A GhostscriptVersionInfo list of the Ghostscript installations found on the local system.</returns>
-        public static List<GhostscriptVersionInfo> GetInstalledVersions()
+        public static List<AppVersion> GetInstalledVersions()
         {
-            var versionsMap = new Dictionary<Version, GhostscriptVersionInfo>();
+            var versionsMap = new Dictionary<Version, AppVersion>();
 
             using var hklm32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
 
@@ -99,7 +77,7 @@ namespace CoreComicsConverter.PdfFlow
             return versionsMap.Values.AsList();
         }
 
-        private static void AddGhostscriptVersions(RegistryKey hklm, Dictionary<Version, GhostscriptVersionInfo> versionsMap, bool x64)
+        private static void AddGhostscriptVersions(RegistryKey hklm, Dictionary<Version, AppVersion> versionsMap, bool x64)
         {
             foreach (var subKeyName in hklmSubKeyNames)
             {
@@ -146,7 +124,7 @@ namespace CoreComicsConverter.PdfFlow
 
                                     var version = new Version(fileVersion.FileVersion);
 
-                                    versionsMap[version] = new GhostscriptVersionInfo(version, exe);
+                                    versionsMap[version] = new AppVersion(version, exe);
                                 }
                             }
                         }
@@ -159,7 +137,7 @@ namespace CoreComicsConverter.PdfFlow
             }
         }
 
-        public static GhostscriptVersionInfo GetInstalledVersion()
+        public static AppVersion GetInstalledVersion()
         {
             var gsVerList = GetInstalledVersions();
 

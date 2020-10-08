@@ -1,5 +1,5 @@
-﻿using CoreComicsConverter.Helpers;
-using CoreComicsConverter.PdfFlow;
+﻿using CoreComicsConverter.AppVersions;
+using CoreComicsConverter.Helpers;
 using System;
 
 namespace CoreComicsConverter
@@ -29,7 +29,7 @@ namespace CoreComicsConverter
         {
             if (Environment.OSVersion.Platform == PlatformID.Win32NT)
             {
-                var gsVersion = GhostscriptVersionInfo.GetInstalledVersion();
+                var gsVersion = GhostscriptVersion.GetInstalledVersion();
                 if (gsVersion == null)
                 {
                     ProgressReporter.Error("No Ghostscript installation found!");
