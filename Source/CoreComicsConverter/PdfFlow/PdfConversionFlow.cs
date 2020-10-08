@@ -137,7 +137,7 @@ namespace CoreComicsConverter.PdfFlow
                 page.Path = evt.FullPath;
 
                 readPagesBag.Add(page);
-                progressReporter.ShowProgress(page.Name);
+                progressReporter.ShowProgress($"Reading {page.Name}");
             }
         }
         public bool AnalyzeImageSizes(List<ComicPage> readPages, int dpi, int targetHeight)
