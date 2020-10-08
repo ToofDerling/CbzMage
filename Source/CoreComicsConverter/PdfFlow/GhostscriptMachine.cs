@@ -45,7 +45,7 @@ namespace CoreComicsConverter.PdfFlow
 
         public string GetReadPageString()
         {
-            // ComicPageBatch.BatchIs starts at 1 so use 0 to denote the single page read
+            // ComicPageBatch.BatchId starts at 1 so use 0 to denote the single page read
             return $"0-1{FileExt.Png}";
         }
 

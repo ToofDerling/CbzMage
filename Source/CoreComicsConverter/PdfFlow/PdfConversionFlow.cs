@@ -140,6 +140,7 @@ namespace CoreComicsConverter.PdfFlow
                 progressReporter.ShowProgress($"Reading {page.Name}");
             }
         }
+
         public bool AnalyzeImageSizes(List<ComicPage> readPages, int dpi, int targetHeight)
         {
             var queue = new ConcurrentQueue<ComicPage>(readPages);

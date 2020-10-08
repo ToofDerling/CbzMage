@@ -17,9 +17,6 @@ namespace CoreComicsConverter.PdfFlow
         private int _pageNumber;
         private int _imageCount;
 
-        private int _pageWidth;
-        private int _pageHeight;
-
         private readonly PdfComic _pdfComic;
 
         private readonly PdfReader _pdfReader;
@@ -54,12 +51,6 @@ namespace CoreComicsConverter.PdfFlow
 
             for (_pageNumber = 1; _pageNumber <= _pdfComic.PageCount; _pageNumber++)
             {
-                var page = _pdfDoc.GetPage(_pageNumber);
-                var pageSize = page.GetPageSize();
-
-                _pageWidth = Convert.ToInt32(pageSize.GetWidth());
-                _pageHeight = Convert.ToInt32(pageSize.GetHeight());
-
                 pdfDocParser.ProcessContent(_pageNumber, this);
 
                 // Handle pages with no images
