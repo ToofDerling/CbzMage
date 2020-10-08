@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 
 namespace CoreComicsConverter.Model
 {
     public class ComicPageBatch 
     {
+        public string BatchId { get; set; }
+
         public int Width { get; set; }
 
         public int Height { get; set; }
@@ -18,10 +19,6 @@ namespace CoreComicsConverter.Model
         /// The pages with this imagesize
         /// </summary>
         public List<ComicPage> Pages { get; set; }
-
-        public int FirstPage => Pages == null ? -1 : Pages.First().Number;
-
-        public int LastPage => Pages == null ? -1 : Pages.Last().Number;
 
         public int NewWidth { get; set; }
 

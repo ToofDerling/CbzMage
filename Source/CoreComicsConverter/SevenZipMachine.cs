@@ -50,9 +50,7 @@ namespace CoreComicsConverter
             var switches = GetExtractSwitches(comic);
             var lastProgress = string.Empty;
 
-            var sevenZipRunner = new ProcessRunner();
-
-            var errorLines = sevenZipRunner.RunAndWaitForProcess(Settings.SevenZipPath, switches, comic.OutputDirectory, OnExtractOutputReceived);
+            var errorLines = ProcessRunner.RunAndWaitForProcess(Settings.SevenZipPath, switches, comic.OutputDirectory, OnExtractOutputReceived);
 
             if (!lastProgress.Contains("100%"))
             {
@@ -91,9 +89,7 @@ namespace CoreComicsConverter
             var switches = GetCompressSwitches(comic);
             var allPagesStartIndex = 0;
 
-            var sevenZipRunner = new ProcessRunner();
-
-            var errorLines = sevenZipRunner.RunAndWaitForProcess(Settings.SevenZipPath, switches, comic.OutputDirectory, OnCompressOutputReceived);
+            var errorLines = ProcessRunner.RunAndWaitForProcess(Settings.SevenZipPath, switches, comic.OutputDirectory, OnCompressOutputReceived);
             ProgressReporter.DumpErrors(errorLines);
 
             void OnCompressOutputReceived(object _, DataReceivedEventArgs e)

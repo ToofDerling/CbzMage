@@ -2,8 +2,6 @@
 using CoreComicsConverter.Helpers;
 using CoreComicsConverter.Model;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -45,71 +43,54 @@ namespace CoreComicsConverter.PdfFlow
             return sb.ToString();
         }
 
-        public string GetReadPageString(int pageNumber)
+        public string GetReadPageString()
         {
-            return $"{pageNumber}-1{FileExt.Png}";
+            // ComicPageBatch.BatchIs starts at 1 so use 0 to denote the single page read
+            return $"0-1{FileExt.Png}";
         }
 
         public void ReadPage(PdfComic pdfComic, int pageNumber, int dpi)
         {
-            var switches = GetSwitches(pdfComic, dpi, pageNumber.ToString(), $"{pageNumber}-%d{FileExt.Png}");
+            var switches = GetSwitches(pdfComic, dpi, pageNumber.ToString(), $"0-%d{FileExt.Png}");
 
-            var ghostscriptRunner = new ProcessRunner();
-
-            var errorLines = ghostscriptRunner.RunAndWaitForProcess(Settings.GhostscriptPath, switches, pdfComic.OutputDirectory, null);
+            var errorLines = ProcessRunner.RunAndWaitForProcess(Settings.GhostscriptPath, switches, pdfComic.OutputDirectory, null);
             ProgressReporter.DumpErrors(errorLines);
         }
 
-        public List<ComicPage> ReadPages(PdfComic pdfComic, ComicPageBatch batch, ProgressReporter reporter)
+        public void ReadPages(PdfComic pdfComic, ComicPageBatch batch)
         {
             var pageNumbers = batch.Pages.Select(p => p.Number).AsList();
             var readPages = new List<ComicPage>(batch.Pages.Count);
 
             var pageList = CreatePageList(pageNumbers);
-            var pageListId = $"{batch.FirstPage}-{batch.LastPage}";
 
-            var switches = GetSwitches(pdfComic, batch.Dpi, pageList, $"{pageListId}-%d{FileExt.Png}");
-            var pageQueue = GetPageQueue(pdfComic, batch.Pages, pageListId);
+            var switches = GetSwitches(pdfComic, batch.Dpi, pageList, $"{batch.BatchId}-%d{FileExt.Png}");
 
-            var ghostscriptRunner = new ProcessRunner();
-
-            var errorLines = ghostscriptRunner.RunAndWaitForProcess(Settings.GhostscriptPath, switches, pdfComic.OutputDirectory, OnOutputReceived);
+            var errorLines = ProcessRunner.RunAndWaitForProcess(Settings.GhostscriptPath, switches, pdfComic.OutputDirectory, null);
             ProgressReporter.DumpErrors(errorLines);
-
-            return readPages;
-
-            void OnOutputReceived(object _, DataReceivedEventArgs e)
-            {
-                var line = e.Data;
-                if (string.IsNullOrEmpty(line) || !line.StartsWith("Page"))
-                {
-                    return;
-                }
-
-                var page = pageQueue.Dequeue();
-
-                reporter.ShowProgress($"Reading {page.Name}");
-
-                readPages.Add(page);
-            }
         }
 
-        private static Queue<ComicPage> GetPageQueue(PdfComic pdfComic, IEnumerable<ComicPage> pages, string pageListId)
+        public static IDictionary<string, ComicPage> GetPageMap(ComicPageBatch[] pageBatches)
         {
-            var pageQueue = new Queue<ComicPage>();
+            var pageMap = new Dictionary<string, ComicPage>(pageBatches.Sum(b => b.Pages.Count));
 
-            int gsPageNumber = 1;
-            foreach (var page in pages)
+            foreach (var batch in pageBatches)
             {
-                page.Name = $"{pageListId}-{gsPageNumber}{FileExt.Png}";
-                page.Path = Path.Combine(pdfComic.OutputDirectory, page.Name);
+                var pages = batch.Pages;
+                var batchId = batch.BatchId;
 
-                pageQueue.Enqueue(page);
+                for (int i = 0, psz = pages.Count; i < psz; i++)
+                {
+                    var gsPageNumber = i + 1;
 
-                gsPageNumber++;
+                    var page = pages[i];
+                    page.Name = $"{batchId}-{gsPageNumber}{FileExt.Png}";
+
+                    pageMap[page.Name] = page;
+                }
             }
 
-            return pageQueue;
+            return pageMap;
         }
     }
 }

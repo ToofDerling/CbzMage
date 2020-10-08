@@ -106,7 +106,7 @@ namespace CoreComicsConverter.PdfFlow
 
             if (string.IsNullOrEmpty(_page.Path))
             {
-                _page.Name = pageMachine.GetReadPageString(_page.Number);
+                _page.Name = pageMachine.GetReadPageString();
                 _page.Path = Path.Combine(_pdfComic.OutputDirectory, _page.Name);
             }
 

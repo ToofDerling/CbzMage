@@ -4,14 +4,14 @@ using System.Diagnostics;
 
 namespace CoreComicsConverter.Helpers
 {
-    public class ProcessRunner
+    public static class ProcessRunner
     {
-        public List<string> RunAndWaitForProcess(string path, string args, string workingDirectory, EventHandler<DataReceivedEventArgs> outputReceived)
+        public static List<string> RunAndWaitForProcess(string path, string args, string workingDirectory, EventHandler<DataReceivedEventArgs> outputReceived)
         {
             return RunAndWaitForProcess(path, args, workingDirectory, outputReceived, ProcessPriorityClass.Idle);
         }
 
-        public List<string> RunAndWaitForProcess(string path, string args, string workingDirectory, EventHandler<DataReceivedEventArgs> outputReceived, ProcessPriorityClass priorityClass)
+        public static List<string> RunAndWaitForProcess(string path, string args, string workingDirectory, EventHandler<DataReceivedEventArgs> outputReceived, ProcessPriorityClass priorityClass)
         {
             using var process = new Process
             {
@@ -40,7 +40,11 @@ namespace CoreComicsConverter.Helpers
             process.PriorityClass = priorityClass;
 
             process.BeginErrorReadLine();
-            process.BeginOutputReadLine();
+
+            if (outputReceived != null)
+            {
+                process.BeginOutputReadLine();
+            }
 
             process.WaitForExit();
 

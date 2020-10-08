@@ -4,6 +4,7 @@ using CoreComicsConverter.Model;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -81,7 +82,9 @@ namespace CoreComicsConverter.PdfFlow
             var chunkLists = new List<ComicPageBatch>();
             for (var i = 0; i < Settings.ParallelThreads; i++)
             {
-                var chunk = new ComicPageBatch { Dpi = pageBatch.Dpi, Height = pageBatch.Height, Pages = new List<ComicPage>() };
+                var batchId = (i + 1).ToString();
+
+                var chunk = new ComicPageBatch { BatchId = batchId,  Dpi = pageBatch.Dpi, Height = pageBatch.Height, Pages = new List<ComicPage>() };
                 chunkLists.Add(chunk);
             }
 
@@ -102,23 +105,41 @@ namespace CoreComicsConverter.PdfFlow
 
             var readPagesBag = new ConcurrentBag<ComicPage>();
 
+            var pageMap = GhostscriptMachine.GetPageMap(pageBatches);
+
+            using var watcher = new FileSystemWatcher
+            {
+                Path = pdfComic.OutputDirectory,
+                NotifyFilter = NotifyFilters.FileName,
+            };
+
+            watcher.Created += (s, e) => Log(e);
+            watcher.EnableRaisingEvents = true; ;
+
             Parallel.For(0, Settings.ParallelThreads, (index, state) =>
             {
                 var chunk = pageBatches[index];
 
                 var machine = new GhostscriptMachine();
 
-                var chunkReadPages = machine.ReadPages(pdfComic, chunk, progressReporter);
-                chunkReadPages.ForEach(readPagesBag.Add);
+                machine.ReadPages(pdfComic, chunk);
 
                 chunk.Pages.Clear();
             });
 
+            readPages.AddRange(readPagesBag);
+
             Console.WriteLine();
 
-            readPages.AddRange(readPagesBag);
-        }
+            void Log(FileSystemEventArgs evt)
+            {
+                var page = pageMap[evt.Name];
+                page.Path = evt.FullPath;
 
+                readPagesBag.Add(page);
+                progressReporter.ShowProgress(page.Name);
+            }
+        }
         public bool AnalyzeImageSizes(List<ComicPage> readPages, int dpi, int targetHeight)
         {
             var queue = new ConcurrentQueue<ComicPage>(readPages);
