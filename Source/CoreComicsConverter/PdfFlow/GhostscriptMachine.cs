@@ -53,7 +53,7 @@ namespace CoreComicsConverter.PdfFlow
         {
             var switches = GetSwitches(pdfComic, dpi, pageNumber.ToString(), $"0-%d{FileExt.Png}");
 
-            var errorLines = ProcessRunner.RunAndWaitForProcess(Settings.GhostscriptPath, switches, pdfComic.OutputDirectory, null);
+            var errorLines = ProcessRunner.RunAndWaitForProcess(Settings.GhostscriptPath, switches, pdfComic.OutputDirectory);
             ProgressReporter.DumpErrors(errorLines);
         }
 
@@ -66,7 +66,7 @@ namespace CoreComicsConverter.PdfFlow
 
             var switches = GetSwitches(pdfComic, batch.Dpi, pageList, $"{batch.BatchId}-%d{FileExt.Png}");
 
-            var errorLines = ProcessRunner.RunAndWaitForProcess(Settings.GhostscriptPath, switches, pdfComic.OutputDirectory, null);
+            var errorLines = ProcessRunner.RunAndWaitForProcess(Settings.GhostscriptPath, switches, pdfComic.OutputDirectory);
             ProgressReporter.DumpErrors(errorLines);
         }
 

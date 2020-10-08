@@ -6,7 +6,7 @@ namespace CoreComicsConverter.Helpers
 {
     public static class ProcessRunner
     {
-        public static List<string> RunAndWaitForProcess(string path, string args, string workingDirectory, EventHandler<DataReceivedEventArgs> outputReceived)
+        public static List<string> RunAndWaitForProcess(string path, string args, string workingDirectory, EventHandler<DataReceivedEventArgs> outputReceived = null)
         {
             return RunAndWaitForProcess(path, args, workingDirectory, outputReceived, ProcessPriorityClass.Idle);
         }
