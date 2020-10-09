@@ -1,3 +1,4 @@
+using CoreComicsConverter.AppVersions;
 using CoreComicsConverter.CbzCbrFlow;
 using CoreComicsConverter.DirectoryFlow;
 using CoreComicsConverter.Extensions;
@@ -46,7 +47,7 @@ namespace CoreComicsConverter
 
         private static bool Convert(List<PdfComic> pdfComics)
         {
-            if (Settings.InitializeGhostscript() && Settings.InitializeSevenZip())
+            if (Settings.Initialize(App.Ghostscript, App.SevenZip))
             {
                 pdfComics.ForEach(comic => { converter.ConversionFlow(comic); });
             }

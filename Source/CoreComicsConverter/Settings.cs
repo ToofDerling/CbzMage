@@ -20,48 +20,55 @@ namespace CoreComicsConverter
 
         public static string GhostscriptPath { get; private set; }
 
-        public static bool InitializeGhostscript()
+        public static bool Initialize(params App[] apps)
         {
+            var ok = true;
+
             if (Environment.OSVersion.Platform == PlatformID.Win32NT)
             {
-                var ghostscriptVersion = GhostscriptVersion.GetInstalledVersion();
-                if (ghostscriptVersion == null)
-                {
-                    ProgressReporter.Error("No Ghostscript installation found!");
-                    return false;
-                }
+                var versionMap = AppVersionManager.GetInstalledVersionOf(apps);
 
-                GhostscriptPath = ghostscriptVersion.Exe;
-                ProgressReporter.Info($"{GhostscriptPath} [{ghostscriptVersion.Version}]");
+                foreach (var key in versionMap)
+                {
+                    var app = key.Key;
+                    var appVersion = key.Value;
+
+                    switch (app)
+                    {
+                        case App.Ghostscript:
+                            if (appVersion == null)
+                            {
+                                ok = false;
+                                ProgressReporter.Error("No Ghostscript installation found!");
+                            }
+                            else
+                            {
+                                GhostscriptPath = appVersion.Exe;
+                                ProgressReporter.Info($"{GhostscriptPath} [{appVersion.Version}]");
+                            }
+                            break;
+                        case App.SevenZip:
+                            if (appVersion == null)
+                            {
+                                ok = false;
+                                ProgressReporter.Error("No 7-Zip installation found!");
+                            }
+                            else
+                            {
+                                SevenZipPath = appVersion.Exe;
+                                ProgressReporter.Info($"{SevenZipPath} [{appVersion.Version}]");
+                            }
+                            break;
+                    }
+                }
             }
             else
             {
                 GhostscriptPath = "gs";
+                SevenZipPath = "7z";
             }
 
-            return true;
-        }
-
-        public static bool InitializeSevenZip()
-        {
-            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
-            {
-                var sevenZipVersion = SevenZipVersion.GetInstalledVersion();
-                if (sevenZipVersion == null)
-                {
-                    ProgressReporter.Error("No 7-Zip installation found!");
-                    return false;
-                }
-
-                SevenZipPath = sevenZipVersion.Exe;
-                ProgressReporter.Info($"{SevenZipPath} [{sevenZipVersion.Version}]");
-            }
-            else
-            {
-                GhostscriptPath = "7z";
-            }
-
-            return true;
+            return ok;
         }
     }
 }

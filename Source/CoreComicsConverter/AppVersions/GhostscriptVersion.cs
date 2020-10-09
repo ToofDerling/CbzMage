@@ -43,103 +43,76 @@ namespace CoreComicsConverter.AppVersions
 
         private static readonly string[] hklmSubKeyNames = new[]
         {
+            "SOFTWARE\\Artifex Ghostscript\\",
             "SOFTWARE\\GPL Ghostscript\\",
-            "SOFTWARE\\Artifex Ghostscript\\"
         };
 
-        /// <summary>
-        /// Gets installed Ghostscript versions list.
-        /// </summary>
-        /// <returns>A GhostscriptVersionInfo list of the Ghostscript installations found on the local system.</returns>
-        public static List<AppVersion> GetInstalledVersions()
+        public static void AddGhostscriptVersions(List<RegistryKey> hklms, Dictionary<Version, AppVersion> versionsMap, bool x64)
         {
-            var versionsMap = new Dictionary<Version, AppVersion>();
-
-            using var hklm32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
-
-            var x64 = Environment.Is64BitProcess;
-
-            // 64 bit exe requires 64 bit process. 32 bit exe can run in both 32 bit and 64 bit process
-            if (x64)
+            foreach (var hklm in hklms)
             {
-                AddGhostscriptVersions(hklm32, versionsMap, x64);
-
-                using var hklm64 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
-
-                // 64 bit exe will overrule 32 bit exe with the same version.
-                AddGhostscriptVersions(hklm64, versionsMap, x64);
-            }
-            else
-            {
-                AddGhostscriptVersions(hklm32, versionsMap, x64);
-            }
-
-            return versionsMap.Values.AsList();
-        }
-
-        private static void AddGhostscriptVersions(RegistryKey hklm, Dictionary<Version, AppVersion> versionsMap, bool x64)
-        {
-            foreach (var subKeyName in hklmSubKeyNames)
-            {
-                using var ghostscriptKey = hklm.OpenSubKey(subKeyName);
-                if (ghostscriptKey == null)
+                foreach (var subKeyName in hklmSubKeyNames)
                 {
-                    continue;
-                }
-
-                // Each sub-key represents a version of the installed Ghostscript library
-                foreach (var versionKey in ghostscriptKey.GetSubKeyNames())
-                {
-                    try
+                    using var ghostscriptKey = hklm.OpenSubKey(subKeyName);
+                    if (ghostscriptKey == null)
                     {
-                        using var ghostscriptVersion = ghostscriptKey.OpenSubKey(versionKey);
+                        continue;
+                    }
 
-                        // get the Ghostscript native library path
-                        var gsDll = ghostscriptVersion.GetValue("GS_DLL", string.Empty) as string;
-
-                        if (!string.IsNullOrEmpty(gsDll) && File.Exists(gsDll))
+                    // Each sub-key represents a version of the installed Ghostscript library
+                    foreach (var versionKey in ghostscriptKey.GetSubKeyNames())
+                    {
+                        try
                         {
-                            string exe = null;
+                            using var ghostscriptVersion = ghostscriptKey.OpenSubKey(versionKey);
 
-                            // 64 bit exe requires 64 bit process. 
-                            if (x64 && gsDll.EndsWith("gsdll64.dll"))
+                            // Get the Ghostscript native library path
+                            var gsDll = ghostscriptVersion.GetValue("GS_DLL", string.Empty) as string;
+
+                            if (!string.IsNullOrEmpty(gsDll) && File.Exists(gsDll))
                             {
-                                exe = "gswin64c.exe";
-                            }
+                                string exe = null;
 
-                            // 32 bit exe can run in both 32 bit and 64 bit process
-                            if (exe == null && gsDll.EndsWith("gsdll32.dll"))
-                            {
-                                exe = "gswin32c.exe";
-                            }
-
-                            if (!string.IsNullOrEmpty(exe))
-                            {
-                                var bin = Path.GetDirectoryName(gsDll);
-                                exe = Path.Combine(bin, exe);
-
-                                if (File.Exists(exe))
+                                // 64 bit exe requires 64 bit process. 
+                                if (x64 && gsDll.EndsWith("gsdll64.dll"))
                                 {
-                                    var fileVersion = FileVersionInfo.GetVersionInfo(exe);
+                                    exe = "gswin64c.exe";
+                                }
 
-                                    var version = new Version(fileVersion.FileVersion);
+                                // 32 bit exe can run in both 32 bit and 64 bit process
+                                if (exe == null && gsDll.EndsWith("gsdll32.dll"))
+                                {
+                                    exe = "gswin32c.exe";
+                                }
 
-                                    versionsMap[version] = new AppVersion(version, exe);
+                                if (!string.IsNullOrEmpty(exe))
+                                {
+                                    var bin = Path.GetDirectoryName(gsDll);
+                                    exe = Path.Combine(bin, exe);
+
+                                    if (File.Exists(exe))
+                                    {
+                                        var fileVersion = FileVersionInfo.GetVersionInfo(exe);
+
+                                        var version = new Version(fileVersion.FileVersion);
+
+                                        versionsMap[version] = new AppVersion(version, exe);
+                                    }
                                 }
                             }
                         }
-                    }
-                    catch (Exception ex)
-                    {
-                        ProgressReporter.Warning(ex.TypeAndMessage());
+                        catch (Exception ex)
+                        {
+                            ProgressReporter.Warning(ex.TypeAndMessage());
+                        }
                     }
                 }
             }
         }
 
-        public static AppVersion GetInstalledVersion()
+        public static AppVersion GetInstalledVersion(Dictionary<Version, AppVersion> versionsMap)
         {
-            var ghostscriptVersions = GetInstalledVersions();
+            var ghostscriptVersions = versionsMap.Values.AsList();
 
             if (ghostscriptVersions.Count == 0)
             {
