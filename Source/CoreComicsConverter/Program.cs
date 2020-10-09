@@ -13,13 +13,9 @@ namespace CoreComicsConverter
 {
     public static class Program
     {
-
 #if DEBUG
         //private const string _testPdf = @"D:\Data\Pdf\Test\Voices of a Distant Star - Makoto Shinkai and Mizu Sahara";
-        //private const string _testPdf = @"D:\Data\Pdf\Test\Stand Still. Stay Silent Book 1.pdf";
-        private const string _testPdf = @"D:\Data\Pdf\Test\Fearscape.pdf";
-        //private const string _testPdf = @"D:\Data\Pdf\Test\StrawberryComics_Dirty-Deeds-1.pdf";
-        //private const string _testPdf = @"D:\Data\Pdf\Test\Smut_Peddler_Presents_My_Monster_Boyfriend__ebook_.pdf";
+        private const string _testPdf = @"D:\Data\Pdf\Test\Orion by Walt Simonson Book One";
 #else
         private const string _testPdf = null;
 #endif
@@ -60,7 +56,10 @@ namespace CoreComicsConverter
 
         private static bool Convert(List<DirectoryComic> directoryComics)
         {
-            directoryComics.ForEach(comic => { converter.ConversionFlow(comic); });
+            if (Settings.Initialize(App.SevenZip))
+            {
+                directoryComics.ForEach(comic => { converter.ConversionFlow(comic); });
+            }
             return true;
         }
 
