@@ -61,6 +61,11 @@ namespace CoreComicsConverter
                             break;
                     }
                 }
+
+                if (ok)
+                {
+                    Console.WriteLine();
+                }
             }
             else
             {
