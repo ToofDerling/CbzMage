@@ -9,7 +9,7 @@ using Microsoft.Win32;
 
 namespace CoreComicsConverter.AppVersions
 {
-    public class SevenZipVersion
+    public static class SevenZipVersion
     {
         public static void AddSevenZipVersions(List<RegistryKey> hklms, Dictionary<Version, AppVersion> versionsMap, bool x64)
         {

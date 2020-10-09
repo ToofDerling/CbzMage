@@ -113,7 +113,7 @@ namespace CoreComicsConverter.PdfFlow
                 NotifyFilter = NotifyFilters.FileName,
             };
 
-            watcher.Created += (s, e) => Log(e);
+            watcher.Created += (s, e) => LogProgress(e);
             watcher.EnableRaisingEvents = true; ;
 
             Parallel.For(0, Settings.ParallelThreads, (index, state) =>
@@ -131,7 +131,7 @@ namespace CoreComicsConverter.PdfFlow
 
             Console.WriteLine();
 
-            void Log(FileSystemEventArgs evt)
+            void LogProgress(FileSystemEventArgs evt)
             {
                 var page = pageMap[evt.Name];
                 page.Path = evt.FullPath;

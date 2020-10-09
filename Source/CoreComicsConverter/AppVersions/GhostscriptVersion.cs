@@ -35,7 +35,7 @@ using Microsoft.Win32;
 
 namespace CoreComicsConverter.AppVersions
 {
-    public class GhostscriptVersion
+    public static class GhostscriptVersion
     {
         private static readonly Version MinVersion = new Version(9, 50);
 

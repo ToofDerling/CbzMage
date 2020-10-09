@@ -34,6 +34,10 @@ namespace CoreComicsConverter
                     Console.WriteLine("CoreComicsConverter <directory|comic>");
                 }
             }
+            catch (PdfEncryptedException)
+            {
+                ProgressReporter.Error("Fatal error: pdf is encrypted!");
+            }
             catch (Exception ex)
             {
                 ProgressReporter.Error(ex.TypeAndMessage());

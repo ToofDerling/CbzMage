@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace CoreComicsConverter.AppVersions
 {
-    public class AppVersionManager
+    public static class AppVersionManager
     {
         public static Dictionary<App, AppVersion> GetInstalledVersionOf(params App[] apps)
         {

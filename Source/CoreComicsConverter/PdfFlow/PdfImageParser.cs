@@ -33,7 +33,7 @@ namespace CoreComicsConverter.PdfFlow
 
             if (_pdfReader.IsEncrypted())
             {
-                throw new PdfEncryptedException($"{_pdfComic.Path} is encrypted.");
+                throw new PdfEncryptedException();
             }
 
             _pdfComic.PageCount = _pdfDoc.GetNumberOfPages();
