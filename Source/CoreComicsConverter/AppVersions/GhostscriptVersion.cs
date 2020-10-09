@@ -81,21 +81,21 @@ namespace CoreComicsConverter.AppVersions
         {
             foreach (var subKeyName in hklmSubKeyNames)
             {
-                using var rkGs = hklm.OpenSubKey(subKeyName);
-                if (rkGs == null)
+                using var ghostscriptKey = hklm.OpenSubKey(subKeyName);
+                if (ghostscriptKey == null)
                 {
                     continue;
                 }
 
                 // Each sub-key represents a version of the installed Ghostscript library
-                foreach (var versionKey in rkGs.GetSubKeyNames())
+                foreach (var versionKey in ghostscriptKey.GetSubKeyNames())
                 {
                     try
                     {
-                        using var rkVer = rkGs.OpenSubKey(versionKey);
+                        using var ghostscriptVersion = ghostscriptKey.OpenSubKey(versionKey);
 
                         // get the Ghostscript native library path
-                        var gsDll = rkVer.GetValue("GS_DLL", string.Empty) as string;
+                        var gsDll = ghostscriptVersion.GetValue("GS_DLL", string.Empty) as string;
 
                         if (!string.IsNullOrEmpty(gsDll) && File.Exists(gsDll))
                         {
@@ -139,29 +139,29 @@ namespace CoreComicsConverter.AppVersions
 
         public static AppVersion GetInstalledVersion()
         {
-            var gsVerList = GetInstalledVersions();
+            var ghostscriptVersions = GetInstalledVersions();
 
-            if (gsVerList.Count == 0)
+            if (ghostscriptVersions.Count == 0)
             {
                 return null;
             }
 
-            if (gsVerList.Count > 1)
+            if (ghostscriptVersions.Count > 1)
             {
-                gsVerList = gsVerList.OrderByDescending(g => g.Version).AsList();
+                ghostscriptVersions = ghostscriptVersions.OrderByDescending(g => g.Version).AsList();
             }
 
-            foreach (var gsVer in gsVerList)
+            foreach (var ghostscriptVersion in ghostscriptVersions)
             {
-                if ((MinVersion == null || gsVer.Version >= MinVersion) && (MaxVersion == null || gsVer.Version <= MaxVersion))
+                if ((MinVersion == null || ghostscriptVersion.Version >= MinVersion) && (MaxVersion == null || ghostscriptVersion.Version <= MaxVersion))
                 {
-                    return gsVer;
+                    return ghostscriptVersion;
                 }
             }
 
             ProgressReporter.Warning($"No Ghostscript version >= {MinVersion} and =< {MaxVersion}");
 
-            gsVerList.ForEach(g => ProgressReporter.Warning($" Found {g.Version} -> {g.Exe}"));
+            ghostscriptVersions.ForEach(gs => ProgressReporter.Warning($" Found {gs.Version} -> {gs.Exe}"));
 
             return null;
         }
