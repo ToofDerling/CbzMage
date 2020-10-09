@@ -19,7 +19,7 @@ namespace CoreComicsConverter.DirectoryFlow
             {
                 var missing = string.Join(',', pagesMissing.OrderBy(p => p).Select(p => p.ToString()));
 
-                ProgressReporter.Error($"Pages {missing} is missing");
+                ProgressReporter.Error($"Pages {missing} are missing");
                 return false;
             }
             return true;
@@ -36,9 +36,9 @@ namespace CoreComicsConverter.DirectoryFlow
             return pageSizes;
         }
 
-        public void FixDoublePageSpreads(List<ComicPageBatch> pageBatches)
+        public void FixDoublePageSpreads(ComicPageBatch[] pageBatches)
         {
-            if (pageBatches.Count == 1)
+            if (pageBatches.Length == 1)
             {
                 return;
             }
@@ -71,11 +71,11 @@ namespace CoreComicsConverter.DirectoryFlow
             }
         }
 
-        public List<ComicPage> GetPagesToConvert(List<ComicPageBatch> batches)
+        public List<ComicPage> GetPagesToConvert(ComicPageBatch[] pageBatches)
         {
             var pagesToConvert = new List<ComicPage>();
 
-            foreach (var batch in batches)
+            foreach (var batch in pageBatches)
             {
                 if (batch.NewWidth > 0 && batch.NewHeight > 0)
                 {

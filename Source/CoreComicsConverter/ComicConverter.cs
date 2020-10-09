@@ -72,15 +72,14 @@ namespace CoreComicsConverter
 
             if (directoryComic.IsDownload)
             {
-                //directoryFlow.FixDoublePageSpreads(pageBatches);
+                directoryFlow.FixDoublePageSpreads(pageBatches);
             }
 
-            //var pagesToConvert = directoryFlow.GetPagesToConvert(pageBatches);
-            //VerifyPageBatches(directoryComic, pagesToConvert, pageBatches);
+            var pagesToConvert = directoryFlow.GetPagesToConvert(pageBatches);
+            VerifyPageBatches(directoryComic, pagesToConvert, pageBatches);
 
-            //var convertedPages = ConvertPages(directoryComic, pagesToConvert);
-
-            //CompressPages(directoryComic, convertedPages);
+            var convertedPages = ConvertPages(directoryComic, pagesToConvert);
+            CompressPages(directoryComic, convertedPages);
 
             ConversionEnd(directoryComic);
         }
