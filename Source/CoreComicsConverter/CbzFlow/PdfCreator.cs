@@ -1,7 +1,5 @@
-﻿using CoreComicsConverter.DirectoryFlow;
-using CoreComicsConverter.Events;
+﻿using CoreComicsConverter.Events;
 using CoreComicsConverter.Model;
-using ImageMagick;
 using iText.IO.Image;
 using iText.Kernel.Geom;
 using iText.Kernel.Pdf;
@@ -16,8 +14,7 @@ namespace CoreComicsConverter.CbzCbrFlow
     {
         public event EventHandler<PageEventArgs> PageCreated;
 
-
-        public void CreatePdf(DirectoryComic comic)
+        public void CreatePdf(CbzComic comic)
         {
             File.Delete(comic.OutputFile);
 

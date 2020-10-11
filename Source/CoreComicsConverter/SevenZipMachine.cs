@@ -1,4 +1,5 @@
 ﻿using CoreComicsConverter.Events;
+using CoreComicsConverter.Extensions;
 using CoreComicsConverter.Helpers;
 using CoreComicsConverter.Model;
 using System;
@@ -59,7 +60,9 @@ namespace CoreComicsConverter
 
             ProgressReporter.DumpErrors(errorLines);
 
-            return Directory.EnumerateFiles(comic.OutputDirectory).OrderBy(f => f).ToArray();
+            return Directory.EnumerateFiles(comic.OutputDirectory, "*", SearchOption.AllDirectories)
+                .Where(f => f.EndsWithIgnoreCase(FileExt.Jpg) || f.EndsWithIgnoreCase(FileExt.Png))
+                .OrderBy(f => f).ToArray();
 
             void OnExtractOutputReceived(object _, DataReceivedEventArgs e)
             {

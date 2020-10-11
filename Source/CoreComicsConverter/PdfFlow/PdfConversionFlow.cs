@@ -114,7 +114,7 @@ namespace CoreComicsConverter.PdfFlow
             };
 
             watcher.Created += (s, e) => LogProgress(e);
-            watcher.EnableRaisingEvents = true; ;
+            watcher.EnableRaisingEvents = true;
 
             Parallel.For(0, Settings.ParallelThreads, (index, state) =>
             {

@@ -1,5 +1,4 @@
-﻿using CoreComicsConverter.DirectoryFlow;
-using CoreComicsConverter.Extensions;
+﻿using CoreComicsConverter.Extensions;
 using CoreComicsConverter.Helpers;
 using CoreComicsConverter.Model;
 using System;
@@ -10,11 +9,9 @@ using System.Reflection.Metadata;
 
 namespace CoreComicsConverter.CbzCbrFlow
 {
-    public class CbzCbrConversionFlow
+    public class CbzFlow
     {
-        private DirectoryConversionFlow _directoryConversionFlow = new DirectoryConversionFlow();
-
-        public void ExtractCbz(DirectoryComic cbzComic)
+        public void ExtractCbz(CbzComic cbzComic)
         {
             var sevenZip = new SevenZipMachine();
 
@@ -23,16 +20,10 @@ namespace CoreComicsConverter.CbzCbrFlow
 
             var extractedFiles = sevenZip.ExtractComic(cbzComic);
 
+            Console.WriteLine();
+
             cbzComic.Files = extractedFiles;
             cbzComic.PageCount = cbzComic.ImageCount = extractedFiles.Length;
-
-            Console.WriteLine();
-        }
-
-        public List<ComicPage> ParseImagesSetPageCount(DirectoryComic cbzComic)
-        {
-            var pageSizes = _directoryConversionFlow.ParseImagesSetPageCount(cbzComic);
-            return pageSizes;
         }
 
         public void CreatePdf(CbzComic cbzComic)

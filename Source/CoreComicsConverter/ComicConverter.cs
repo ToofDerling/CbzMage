@@ -1,5 +1,4 @@
 ﻿using CoreComicsConverter.CbzCbrFlow;
-using CoreComicsConverter.DirectoryFlow;
 using CoreComicsConverter.Extensions;
 using CoreComicsConverter.Helpers;
 using CoreComicsConverter.Model;
@@ -18,6 +17,8 @@ namespace CoreComicsConverter
     public class ComicConverter
     {
         private readonly Stopwatch _stopwatch = new Stopwatch();
+
+        public Options Options { get; set; }
 
         // Pdf conversion flow     
         public void ConversionFlow(PdfComic pdfComic)
@@ -55,44 +56,17 @@ namespace CoreComicsConverter
             ConversionEnd(pdfComic);
         }
 
-        // Directory conversion flow
-        public void ConversionFlow(DirectoryComic directoryComic)
-        {
-            ConversionBegin(directoryComic);
-
-            var directoryFlow = new DirectoryConversionFlow();
-
-            if (directoryComic.IsDownload && !directoryFlow.VerifyDownload(directoryComic))
-            {
-                return;
-            }
-
-            var pageSizes = directoryFlow.ParseImagesSetPageCount(directoryComic);
-            var pageBatches = GetPageBatchesSortedByImageSize(directoryComic, pageSizes);
-
-            if (directoryComic.IsDownload)
-            {
-                directoryFlow.FixDoublePageSpreads(pageBatches);
-            }
-
-            var pagesToConvert = directoryFlow.GetPagesToConvert(pageBatches);
-            VerifyPageBatches(directoryComic, pagesToConvert, pageBatches);
-
-            var convertedPages = ConvertPages(directoryComic, pagesToConvert);
-            CompressPages(directoryComic, convertedPages);
-
-            ConversionEnd(directoryComic);
-        }
-
         public void ConversionFlow(CbzComic cbzComic)
         {
             ConversionBegin(cbzComic);
 
-            var cbzFlow = new CbzCbrConversionFlow();
+            var cbzFlow = new CbzFlow();
 
             cbzFlow.ExtractCbz(cbzComic);
 
             cbzFlow.CreatePdf(cbzComic);
+
+            ConversionEnd(cbzComic);
         }
 
         private void ConversionBegin(Comic comic)
@@ -127,8 +101,6 @@ namespace CoreComicsConverter
             // Flatten the lookup
             foreach (var size in sizeLookup)
             {
-                var pageNumbers = size.Select(s => s.Number).AsList();
-
                 pageBatches.Add(new ComicPageBatch { Width = size.Key.Width, Height = size.Key.Height, Pages = size.AsList() });
             }
 
