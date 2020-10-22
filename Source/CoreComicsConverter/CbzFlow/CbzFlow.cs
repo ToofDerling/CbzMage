@@ -15,12 +15,11 @@ namespace CoreComicsConverter.CbzCbrFlow
         {
             var sevenZip = new SevenZipMachine();
 
-            var progressReporter = new ProgressReporter(0);
-            sevenZip.Extracted += (s, e) => progressReporter.ShowMessage($"Extracted {e.Progress}");
+            sevenZip.Extracted += (s, e) => ProgressReporter.ShowMessage($"Extracted {e.Progress}");
 
             var extractedFiles = sevenZip.ExtractComic(cbzComic);
 
-            Console.WriteLine();
+            ProgressReporter.EndMessages();
 
             cbzComic.Files = extractedFiles;
             cbzComic.PageCount = cbzComic.ImageCount = extractedFiles.Length;
@@ -34,6 +33,8 @@ namespace CoreComicsConverter.CbzCbrFlow
             pdfCreator.PageCreated += (s, e) => progressReporter.ShowProgress($"{e.Page.Name} created");
 
             pdfCreator.CreatePdf(cbzComic);
+
+            progressReporter.EndProgress();
         }
     }
 }

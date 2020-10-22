@@ -9,7 +9,7 @@ namespace CoreComicsConverter.Helpers
 
         private readonly int _total;
 
-        private int _current;
+        private volatile int _current;
 
         public ProgressReporter(int total)
         {
@@ -26,22 +26,28 @@ namespace CoreComicsConverter.Helpers
             convertedProgress = Math.Min(convertedProgress, 100);
 
             var progress = $">> {message} {convertedProgress}%";
-            LogProgressToConsole(progress);
-        }
 
-        public void ShowMessage(string message)
-        {
-            message = $">> {message}";
-            LogProgressToConsole(message);
-        }
-
-        private void LogProgressToConsole(string message)
-        {
             lock (lockObject)
             {
                 Console.SetCursorPosition(0, Console.CursorTop);
-                Console.Write(message);
+                Console.Write(progress);
             }
+        }
+
+        public void EndProgress()
+        {
+            Console.WriteLine();
+        }
+
+        public static void ShowMessage(string message)
+        {
+            Console.SetCursorPosition(0, Console.CursorTop);
+            Console.Write($">> {message}");
+        }
+
+        public static void EndMessages()
+        {
+            Console.WriteLine();
         }
 
         public static void Done(string message)
