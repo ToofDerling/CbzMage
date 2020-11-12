@@ -26,8 +26,6 @@ namespace CoreComicsConverter
 
             try
             {
-                args = SetOptions(args);
-
                 var path = GetPath(args);
                 if (path == null || !StartConvert(path))
                 {
@@ -86,11 +84,6 @@ namespace CoreComicsConverter
 
         private static bool StartConvertDirectory(DirectoryInfo directory, bool recursiveCall = false)
         {
-            if (converter.Options.ViewCbz)
-            {
-                return StartViewCbz(directory);
-            }
-
             var entries = directory.GetFileSystemInfos();
             if (entries.Length == 0)
             {
@@ -142,56 +135,9 @@ namespace CoreComicsConverter
             return false;
         }
 
-        private static bool StartViewCbz(DirectoryInfo directory)
-        {
-            var cbzFiles = directory.GetFiles($"*{FileExt.Cbz}", SearchOption.AllDirectories);
-            if (cbzFiles.Length == 0)
-            {
-                // Nothing to do
-                return false;
-            }
-
-            var emptyFiles = cbzFiles.Where(fi => fi.Length == 0);
-
-            foreach (var emptyFile in emptyFiles)
-            {
-                ProgressReporter.Warning($"{emptyFile.FullName} size is 0");
-            }
-
-            var files = cbzFiles.Except(emptyFiles).Select(fi => fi.FullName).ToArray();
-
-            if (files.Length == 0)
-            {
-                // Nothing to do
-                return false;
-            }
-
-            return Convert(CbzComic.List(files));
-        }
-
         private static bool FilesAre(string ext, params string[] files)
         {
             return files.All(f => f.EndsWithIgnoreCase(ext));
-        }
-
-        private static string[] SetOptions(string[] args)
-        {
-            var options = new Options();
-
-            for (int i = 0, sz = args.Length; i < sz; i++)
-            {
-                var option = args[i];
-
-                if (option.EqualsIgnoreCase(Options.OptViewCbz))
-                {
-                    options.ViewCbz = true;
-                    args[i] = null;
-                }
-            }
-
-            converter.Options = options;
-
-            return args.Where(a => a != null).ToArray();
         }
 
         private static string GetPath(string[] args)

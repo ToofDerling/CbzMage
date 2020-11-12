@@ -84,7 +84,7 @@ namespace CoreComicsConverter.PdfFlow
             {
                 var batchId = (i + 1).ToString();
 
-                var chunk = new ComicPageBatch { BatchId = batchId,  Dpi = pageBatch.Dpi, Height = pageBatch.Height, Pages = new List<ComicPage>() };
+                var chunk = new ComicPageBatch { BatchId = batchId, Dpi = pageBatch.Dpi, Height = pageBatch.Height, Pages = new List<ComicPage>() };
                 chunkLists.Add(chunk);
             }
 
@@ -129,7 +129,7 @@ namespace CoreComicsConverter.PdfFlow
 
             readPages.AddRange(readPagesBag);
 
-            Console.WriteLine();
+            progressReporter.EndProgress();
 
             void LogProgress(FileSystemEventArgs evt)
             {
@@ -147,12 +147,9 @@ namespace CoreComicsConverter.PdfFlow
 
             Parallel.For(0, Settings.ParallelThreads, (index, state) =>
             {
-                while (!queue.IsEmpty)
+                while (queue.TryDequeue(out var page))
                 {
-                    if (queue.TryDequeue(out var page))
-                    {
-                        page.Ping();
-                    }
+                    page.Ping();
                 }
             });
 

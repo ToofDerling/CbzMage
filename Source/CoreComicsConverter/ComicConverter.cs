@@ -18,8 +18,6 @@ namespace CoreComicsConverter
     {
         private readonly Stopwatch _stopwatch = new Stopwatch();
 
-        public Options Options { get; set; }
-
         // Pdf conversion flow     
         public void ConversionFlow(PdfComic pdfComic)
         {
@@ -138,7 +136,7 @@ namespace CoreComicsConverter
                 }
             });
 
-            Console.WriteLine();
+            progressReporter.EndProgress();
 
             var convertedPages = new List<ComicPage>(convertedPagesBag);
 
@@ -196,7 +194,7 @@ namespace CoreComicsConverter
             convertedPages = convertedPages.OrderBy(p => p.Number).AsList();
             machine.CompressPages(comic, convertedPages);
 
-            Console.WriteLine();
+            reporter.EndProgress();
 
             void OnPagesCompressed(IReadOnlyCollection<ComicPage> pages)
             {

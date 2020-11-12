@@ -18,7 +18,7 @@ namespace CoreComicsConverter
             {
                 "x",
                 $"\"{comic.Path}\"",
-                $"-mmt{Settings.ParallelThreads}",
+                $"-mmt={Settings.ParallelThreads}",
                 "-y",
                 "-bsp1",
                 "-bso0",
@@ -34,7 +34,7 @@ namespace CoreComicsConverter
             {
                 "a",
                 $"\"{comic.OutputFile}\"",
-                $"-mmt{Settings.ParallelThreads}",
+                $"-mmt={Settings.ParallelThreads}",
                 "-y",
                 "-tzip",
                 "-mx=7",
