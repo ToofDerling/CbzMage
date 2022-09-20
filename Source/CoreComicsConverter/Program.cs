@@ -13,7 +13,7 @@ namespace CoreComicsConverter
     public static class Program
     {
 #if DEBUG
-        private static readonly string[] _testArgs = new[] { @"M:\Media\Tegneserier\Marvel" };
+        private static readonly string[] _testArgs = new[] { @"M:\Data\Pdf\Test" };
 #else
         private static readonly string[] _testArgs = null;
 #endif

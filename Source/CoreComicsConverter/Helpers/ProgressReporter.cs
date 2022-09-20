@@ -80,10 +80,21 @@ namespace CoreComicsConverter.Helpers
 
         private static void Show(string message, ConsoleColor color)
         {
-            var oldColor = Console.ForegroundColor;
-            Console.ForegroundColor = color;
+            ConsoleColor? oldColor = null;
+
+            var currentColor = Console.ForegroundColor;
+            if (color != currentColor)
+            {
+                oldColor = currentColor;
+                Console.ForegroundColor = color;
+            }
+
             Console.WriteLine(message);
-            Console.ForegroundColor = oldColor;
+
+            if (oldColor.HasValue)
+            {
+                Console.ForegroundColor = oldColor.Value;
+            }
         }
     }
 }
