@@ -4,11 +4,11 @@ namespace CoreComicsConverter.AppVersions
 {
     public class AppVersion
     {
-        public AppVersion(Version version, string gsExe)
+        public AppVersion(Version version, string exe)
         {
             Version = version;
 
-            Exe = gsExe;
+            Exe = exe;
         }
   
         public Version Version { get; }

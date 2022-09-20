@@ -18,7 +18,7 @@ namespace CoreComicsConverter.AppVersions
                 using var sevenZipKey = hklm.OpenSubKey("SOFTWARE\\7-Zip\\");
                 if (sevenZipKey == null)
                 {
-                    return;
+                    continue;
                 }
 
                 try
