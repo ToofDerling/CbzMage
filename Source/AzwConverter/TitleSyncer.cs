@@ -1,4 +1,5 @@
 ﻿using AzwConverter.Metadata;
+using CbzMage.Shared.Helpers;
 using System.Net;
 
 namespace AzwConverter
@@ -8,6 +9,7 @@ namespace AzwConverter
         public int SyncBooksToTitles(Dictionary<string, string[]> books, Dictionary<string, string> titles, ArchiveDb archive)
         {
             var syncedBookCount = 0;
+            var booksWithErrors = new List<string>();
 
             foreach (var book in books)
             {
@@ -16,7 +18,6 @@ namespace AzwConverter
                 // Book is not in current titles
                 if (!titles.ContainsKey(bookId))
                 {
-                    syncedBookCount++;
 
                     // Try the archive
                     var name = archive.GetName(bookId);
@@ -31,7 +32,19 @@ namespace AzwConverter
                         var azwFile = bookFiles.First(b => b.EndsWith(Settings.AzwExt));
 
                         using var stream = File.Open(azwFile, FileMode.Open);
-                        var metadata = new MobiMetadata(stream);
+
+                        MobiMetadata metadata = null;
+                        try
+                        {
+                             metadata = new MobiMetadata(stream);
+                        }
+                        catch (Exception ex)
+                        {
+                            ProgressReporter.Error($"Error reading {bookId}", ex);
+                            
+                            booksWithErrors.Add(bookId);
+                            continue;
+                        }
 
                         var title = metadata.MobiHeader.FullName.ToFileSystemString();
                         title = WebUtility.HtmlDecode(title);
@@ -58,8 +71,14 @@ namespace AzwConverter
 
                         // Add archived/scanned title to list of current titles
                         titles[bookId] = file;
+                        syncedBookCount++;
                     }
                 }
+            }
+
+            foreach (var bookId in booksWithErrors)
+            { 
+                books.Remove(bookId);
             }
 
             return syncedBookCount;

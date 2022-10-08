@@ -164,7 +164,6 @@ namespace AzwConverter
             {
                 Console.WriteLine("Done");
             }
-            Console.ReadLine();
         }
 
         private string BookCountOutputHelper(string path, out StringBuilder sb)

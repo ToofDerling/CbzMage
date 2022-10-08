@@ -73,6 +73,12 @@ namespace CbzMage.Shared.Helpers
             }
         }
 
+        public static void Error(string message, Exception ex)
+        { 
+             var errorMessage = $"{message}: {ex.GetType().Name} {ex.Message}";
+             Error(errorMessage);
+        }
+
         public static void Error(string message)
         {
             Show(message, ConsoleColor.Red);

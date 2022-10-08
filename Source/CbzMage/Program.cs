@@ -26,13 +26,14 @@ Pdf:
 ";
         static void Main(string[] args)
         {
-            var action = AzwAction.ScanNew;
+            //var action = AzwAction.ScanNew;
+            var action = AzwAction.Convert;
 
             var converter = new AzwConverter.AzwConverter(action, null);
             converter.DoAction();
 
 
-            Console.WriteLine(_usage);
+            //Console.WriteLine(_usage);
             Console.ReadLine();
         }
     }
