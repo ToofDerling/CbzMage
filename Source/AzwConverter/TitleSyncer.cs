@@ -1,4 +1,5 @@
 ﻿using AzwConverter.Metadata;
+using System.Net;
 
 namespace AzwConverter
 {
@@ -33,6 +34,8 @@ namespace AzwConverter
                         var metadata = new MobiMetadata(stream);
 
                         var title = metadata.MobiHeader.FullName.ToFileSystemString();
+                        title = WebUtility.HtmlDecode(title);
+
                         var publisher = metadata.MobiHeader.EXTHHeader.Publisher.ToFileSystemString();
 
                         // Normalize publisher names
