@@ -63,28 +63,26 @@ namespace AzwConverter.Metadata
 
             using (XmlReader xmlReader = XmlReader.Create(strReader, XmlReaderSettings))
             {
-                var nextPageId = 0;
+                var pageId = 1; // Start with 1 because we usually have a cover
 
                 xmlReader.MoveToContent();
                 while (xmlReader.Read())
                 {
                     if (xmlReader.Name == "itemref")
                     {
-                        var pageRef = xmlReader.GetAttribute("idref");
-                        var pageIdStr = xmlReader.GetAttribute("skelid");
-                        if (pageRef != null && pageIdStr != null)
+                        var idRef = xmlReader.GetAttribute("idref");
+                        // Can't use skelid to generate pagenumber because it isn't always sequential
+                        var skelId = xmlReader.GetAttribute("skelid");
+                        if (idRef != null && skelId != null)
                         {
-                            var pageId = int.Parse(pageIdStr);
-                            if (pageId != nextPageId)
-                            {
-                                throw new Exception($"Expected skelId {nextPageId} got {pageId}");
-                            }
+                            // page-0001, page-0002...
+                            var pageName = $"page-{(pageId).ToString().PadLeft(4, '0')}";
+                            
+                            // Normalize pagename in the xml
+                            sb.Replace(idRef, pageName);
 
-                            var pageName = $"page-{(pageId + 1).ToString().PadLeft(4, '0')}";
-                            sb.Replace(pageRef, pageName);
-
-                            pages.Add(pageRef);
-                            nextPageId++;
+                            pages.Add(pageName);
+                            pageId++;
                         }
                     }
                 }
