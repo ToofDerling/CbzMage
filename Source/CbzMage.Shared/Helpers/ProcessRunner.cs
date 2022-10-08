@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace CoreComicsConverter.Helpers
+namespace CbzMage.Shared.Helpers
 {
     public static class ProcessRunner
     {

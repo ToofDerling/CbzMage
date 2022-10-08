@@ -1,6 +1,6 @@
-﻿using CoreComicsConverter.Events;
+﻿using CbzMage.Shared.Helpers;
+using CoreComicsConverter.Events;
 using CoreComicsConverter.Extensions;
-using CoreComicsConverter.Helpers;
 using CoreComicsConverter.Model;
 using System;
 using System.Collections.Generic;
@@ -79,7 +79,7 @@ namespace CoreComicsConverter
                     return;
                 }
 
-                lastProgress = progress.Substring(0, idx + 1).TrimStart();
+                lastProgress = progress[..(idx + 1)].TrimStart();
 
                 Extracted?.Invoke(this, new ExtractedEventArgs(lastProgress));
             }

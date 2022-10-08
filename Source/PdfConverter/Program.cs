@@ -1,7 +1,7 @@
+using CbzMage.Shared.Helpers;
 using CoreComicsConverter.AppVersions;
 using CoreComicsConverter.CbzCbrFlow;
 using CoreComicsConverter.Extensions;
-using CoreComicsConverter.Helpers;
 using CoreComicsConverter.PdfFlow;
 using System;
 using System.Collections.Generic;

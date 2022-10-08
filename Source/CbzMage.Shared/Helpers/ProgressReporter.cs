@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace CoreComicsConverter.Helpers
+namespace CbzMage.Shared.Helpers
 {
     public class ProgressReporter
     {

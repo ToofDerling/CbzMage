@@ -1,5 +1,5 @@
-﻿using CoreComicsConverter.Events;
-using CoreComicsConverter.Helpers;
+﻿using CbzMage.Shared.Helpers;
+using CoreComicsConverter.Events;
 using System;
 using System.Collections.Generic;
 

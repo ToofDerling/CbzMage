@@ -1,5 +1,5 @@
-﻿using CoreComicsConverter.AppVersions;
-using CoreComicsConverter.Helpers;
+﻿using CbzMage.Shared.Helpers;
+using CoreComicsConverter.AppVersions;
 using System;
 
 namespace CoreComicsConverter
