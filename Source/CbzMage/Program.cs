@@ -1,4 +1,6 @@
-﻿namespace CbzMage
+﻿using AzwConverter;
+
+namespace CbzMage
 {
     internal class Program
     {
@@ -24,8 +26,13 @@ Pdf:
 ";
         static void Main(string[] args)
         {
-            Console.WriteLine(_usage);
+            var action = AzwAction.ScanNew;
 
+            var converter = new AzwConverter.AzwConverter(action, null);
+            converter.DoAction();
+
+
+            Console.WriteLine(_usage);
             Console.ReadLine();
         }
     }

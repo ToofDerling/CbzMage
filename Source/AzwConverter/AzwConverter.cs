@@ -7,7 +7,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace AzwConverter
 {
-    internal class AzwConverter
+    public class AzwConverter
     {
         // Global veriables updated by processing threads
         private volatile int bookCount;
@@ -19,31 +19,28 @@ namespace AzwConverter
         // For testing. If >0 overrules the result of GetNumberOfThreads
         private const int maxThreads = 0;
 
-        private readonly AzwAction action;
+        private readonly AzwAction _action;
 
-        private readonly string fileOrDirectory;
+        private readonly string _fileOrDirectory;
 
         public AzwConverter(AzwAction action, string fileOrDirectory)
         {
             using IHost host = Host.CreateDefaultBuilder().Build();
             var config = host.Services.GetRequiredService<IConfiguration>();
+
             Settings.ReadAppSettings(config);
-
-            this.action = action;
-            this.fileOrDirectory = fileOrDirectory; //TODO
-        }
-
-        public async Task DoAction()
-        {
-            //var action = AzwAction.ScanNew;
-            var action = AzwAction.Convert;
-
 
             Console.WriteLine($"Azw directory: {Settings.AzwDir}");
             Console.WriteLine($"Titles directory: {Settings.TitlesDir}");
             Console.WriteLine($"Cbz directory: {Settings.CbzDir}");
             Console.WriteLine();
 
+            _action = action;
+            _fileOrDirectory = fileOrDirectory; //TODO
+        }
+
+        public void DoAction()
+        {
             var reader = new TitleReader();
             // Key is the book id, Value is a list of book datafiles 
             var books = reader.ReadBooks();
@@ -51,10 +48,10 @@ namespace AzwConverter
             var titles = reader.ReadTitles();
             Console.WriteLine($"Found {titles.Count} current title{titles.SIf1()}");
 
-            if (action == AzwAction.Analyze)
+            if (_action == AzwAction.Analyze)
             {
                 var analyzer = new AzwAnalyzer();
-                analyzer.Analyze(books, titles, GetNumberOfThreads(books.Count));
+                analyzer.Analyze(books, titles, GetNumberOfThreads());
 
                 return;
             }
@@ -79,19 +76,19 @@ namespace AzwConverter
             Console.WriteLine($"Found {books.Count} book{books.SIf1()}");
             Console.WriteLine($"Found {unConvertedBooks.Count} unconverted book{unConvertedBooks.SIf1()}");
 
-            if (action != AzwAction.ScanUpdated && !unConvertedBooks.Any())
+            if (_action != AzwAction.ScanUpdated && !unConvertedBooks.Any())
             {
                 return;
             }
 
-            var numberOfThreads = GetNumberOfThreads(unConvertedBooks.Count);
-            var converter = new ConverterEngine(action);
+            var numberOfThreads = GetNumberOfThreads();
+            var converter = new ConverterEngine(_action);
 
             // Try to be as lenient as possible (and Trim the results).
             var publisherTitleRegex = new Regex(@"(\[)(?<publisher>.*?)(\])(?<title>.*)");
 
             Console.WriteLine();
-            Console.WriteLine(action == AzwAction.Convert ? "Converting..." : "Scanning...");
+            Console.WriteLine(_action == AzwAction.Convert ? "Converting..." : "Scanning...");
 
             var stopWatch = new Stopwatch();
             stopWatch.Start();
@@ -101,15 +98,15 @@ namespace AzwConverter
             try
             {
                 totalBooks = unConvertedBooks.Count;
-                if (action == AzwAction.Convert)
+                if (_action == AzwAction.Convert)
                 {
                     Parallel.ForEach(unConvertedBooks, options, b => ConvertBook(b.Key, b.Value, titles[b.Key]));
                 }
-                else if (action == AzwAction.ScanNew)
+                else if (_action == AzwAction.ScanNew)
                 {
                     Parallel.ForEach(unConvertedBooks, options, b => SyncNewBook(b.Key, titles[b.Key], archive));
                 }
-                else if (action == AzwAction.ScanUpdated)
+                else if (_action == AzwAction.ScanUpdated)
                 {
                     Parallel.ForEach(unConvertedBooks, options, b => SyncNewBook(b.Key, titles[b.Key], archive));
 
@@ -159,7 +156,7 @@ namespace AzwConverter
             var secsPerPage = elapsed.TotalSeconds / pagesCount;
 
             Console.WriteLine();
-            if (action == AzwAction.Convert)
+            if (_action == AzwAction.Convert)
             {
                 Console.WriteLine($"{pagesCount} pages converted in {elapsed.TotalSeconds:F3} seconds ({secsPerPage:F3} per page)");
             }
@@ -253,7 +250,7 @@ namespace AzwConverter
             return unConvertedBooks;
         }
 
-        private static int GetNumberOfThreads(int jobCount)
+        private static int GetNumberOfThreads()
         {
             var numberOfThreads = Math.Min(Settings.NumberOfThreads, Environment.ProcessorCount);
             if (maxThreads > 0)
