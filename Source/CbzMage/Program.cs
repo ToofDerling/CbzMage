@@ -32,7 +32,7 @@ Pdf:
 
 
             var converter = new AzwConverter.AzwConverter(action, null);
-            converter.InitializeConverter();
+            converter.ConvertOrScan();
 
 
             //Console.WriteLine(_usage);

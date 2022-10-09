@@ -5,7 +5,6 @@ using CbzMage.Shared.Helpers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using static System.Reflection.Metadata.BlobBuilder;
 
 namespace AzwConverter
 {
@@ -41,7 +40,7 @@ namespace AzwConverter
             _fileOrDirectory = fileOrDirectory; //TODO
         }
 
-        public void InitializeConverter()
+        public void ConvertOrScan()
         {
             var reader = new TitleReader();
             // Key is the book id, Value is a list of book datafiles 
@@ -93,10 +92,10 @@ namespace AzwConverter
                 }
             }
 
-            RunActionInParallel(books, unConvertedBooks, titles, convertedTitles, archive, syncer);
+            RunActionsInParallel(books, unConvertedBooks, titles, convertedTitles, archive, syncer);
         }
 
-        private void RunActionInParallel(Dictionary<string, string[]> books,
+        private void RunActionsInParallel(Dictionary<string, string[]> books,
             List<KeyValuePair<string, string[]>> unConvertedBooks,
             Dictionary<string, string> titles,
             Dictionary<string, string> convertedTitles,
