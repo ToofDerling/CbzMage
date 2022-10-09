@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace CoreComicsConverter.Extensions
+namespace CbzMage.Shared.Extensions
 {
     public static class FileSystemInfoExtensions
     {

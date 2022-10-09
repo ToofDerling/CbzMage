@@ -1,5 +1,5 @@
-﻿using CbzMage.Shared.Helpers;
-using CoreComicsConverter.Extensions;
+﻿using CbzMage.Shared.Extensions;
+using CbzMage.Shared.Helpers;
 using CoreComicsConverter.Model;
 using System.Collections.Generic;
 using System.Linq;

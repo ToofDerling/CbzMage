@@ -114,8 +114,7 @@ namespace AzwConverter
             for (int i = 0, sz = sdImageRecords.ContentRecords.Count; i < sz; i++)
             {
                 state.Pages++;
-                var page = Path.Combine($"page-{state.Pages.ToString().PadLeft(4, '0')}.jpg");
-
+                var page = state.PageName();
 
                 // First try the HD image
                 if (hdImageRecords != null && hdImageRecords.ContentRecords[i].IsCresRecord())

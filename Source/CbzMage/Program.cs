@@ -26,11 +26,13 @@ Pdf:
 ";
         static void Main(string[] args)
         {
-            //var action = AzwAction.ScanNew;
-            var action = AzwAction.Convert;
+            var action = AzwAction.ScanNew;
+            //var action = AzwAction.Convert;
+            //var action = AzwAction.ScanUpdated;
+
 
             var converter = new AzwConverter.AzwConverter(action, null);
-            converter.DoAction();
+            converter.InitializeConverter();
 
 
             //Console.WriteLine(_usage);

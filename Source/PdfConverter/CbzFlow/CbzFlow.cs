@@ -1,11 +1,4 @@
 ﻿using CbzMage.Shared.Helpers;
-using CoreComicsConverter.Extensions;
-using CoreComicsConverter.Model;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection.Metadata;
 
 namespace CoreComicsConverter.CbzCbrFlow
 {

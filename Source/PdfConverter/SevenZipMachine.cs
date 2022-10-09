@@ -1,6 +1,6 @@
-﻿using CbzMage.Shared.Helpers;
+﻿using CbzMage.Shared.Extensions;
+using CbzMage.Shared.Helpers;
 using CoreComicsConverter.Events;
-using CoreComicsConverter.Extensions;
 using CoreComicsConverter.Model;
 using System;
 using System.Collections.Generic;

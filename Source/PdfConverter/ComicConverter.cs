@@ -1,6 +1,6 @@
-﻿using CbzMage.Shared.Helpers;
+﻿using CbzMage.Shared.Extensions;
+using CbzMage.Shared.Helpers;
 using CoreComicsConverter.CbzCbrFlow;
-using CoreComicsConverter.Extensions;
 using CoreComicsConverter.Model;
 using CoreComicsConverter.PdfFlow;
 using ImageMagick;

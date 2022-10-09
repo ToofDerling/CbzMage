@@ -5,6 +5,7 @@ using CbzMage.Shared.Helpers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using static System.Reflection.Metadata.BlobBuilder;
 
 namespace AzwConverter
 {
@@ -40,7 +41,7 @@ namespace AzwConverter
             _fileOrDirectory = fileOrDirectory; //TODO
         }
 
-        public void DoAction()
+        public void InitializeConverter()
         {
             var reader = new TitleReader();
             // Key is the book id, Value is a list of book datafiles 
@@ -71,17 +72,36 @@ namespace AzwConverter
             var archived = syncer.SyncTitlesToArchive(titles, archive, books);
             Console.WriteLine($"Archived {archived} titles");
 
-            var unConvertedBooks = GetUnconvertedBooks(books, convertedTitles);
-
+            // Number of books are stable after title syncing.
             Console.WriteLine();
             Console.WriteLine($"Found {books.Count} book{books.SIf1()}");
-            ProgressReporter.Done($"Found {unConvertedBooks.Count} unconverted book{unConvertedBooks.SIf1()}");
 
-            if (_action != AzwAction.ScanUpdated && !unConvertedBooks.Any())
+            var unConvertedBooks = GetUnconvertedBooks(books, convertedTitles);
+            var doneStr = $"Found {unConvertedBooks.Count} unconverted book{unConvertedBooks.SIf1()}";
+            if (unConvertedBooks.Any())
             {
-                return;
+                ProgressReporter.Done(doneStr);
+            }
+            else
+            { 
+                ProgressReporter.Info(doneStr);
+                if (_action != AzwAction.ScanUpdated)
+                {
+                    Console.WriteLine();
+                    ProgressReporter.Info("Done");
+                    return;
+                }
             }
 
+            RunActionInParallel(books, unConvertedBooks, titles, convertedTitles, archive, syncer);
+        }
+
+        private void RunActionInParallel(Dictionary<string, string[]> books,
+            List<KeyValuePair<string, string[]>> unConvertedBooks,
+            Dictionary<string, string> titles,
+            Dictionary<string, string> convertedTitles,
+            ArchiveDb archive, TitleSyncer syncer)
+        {
             var numberOfThreads = GetNumberOfThreads();
             var converter = new ConverterEngine(_action);
 
@@ -196,8 +216,13 @@ namespace AzwConverter
 
                 sb.AppendLine();
                 sb.Append(insert).Append(Path.GetFileName(newTitleFile));
+
+                ProgressReporter.Done(sb.ToString());
             }
-            ProgressReporter.Done(sb.ToString());
+            else
+            {
+                ProgressReporter.Info(sb.ToString());
+            }
         }
 
         private void SyncNewBook(string bookId, string titleFile, ArchiveDb archive)

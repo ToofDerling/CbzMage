@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace CoreComicsConverter.Extensions
+namespace CbzMage.Shared.Extensions
 {
     public static class StringExtensions
     {

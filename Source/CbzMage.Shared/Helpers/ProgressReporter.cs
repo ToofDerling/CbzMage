@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using CbzMage.Shared.Extensions;
 
 namespace CbzMage.Shared.Helpers
 {
     public class ProgressReporter
     {
-        private readonly object lockObject = new object();
+        private readonly object lockObject = new();
 
         private readonly int _total;
 
@@ -57,7 +56,7 @@ namespace CbzMage.Shared.Helpers
 
         public static void Info(string message)
         {
-            Console.WriteLine(message);
+           Show(message, ConsoleColor.White);
         }
 
         public static void Warning(string message)
@@ -74,9 +73,9 @@ namespace CbzMage.Shared.Helpers
         }
 
         public static void Error(string message, Exception ex)
-        { 
-             var errorMessage = $"{message}: {ex.GetType().Name} {ex.Message}";
-             Error(errorMessage);
+        {
+            var errorMessage = $"{message}: {ex.TypeAndMessage()}";
+            Error(errorMessage);
         }
 
         public static void Error(string message)
@@ -84,22 +83,23 @@ namespace CbzMage.Shared.Helpers
             Show(message, ConsoleColor.Red);
         }
 
+        private static readonly object showLock = new();
+
         private static void Show(string message, ConsoleColor color)
         {
-            ConsoleColor? oldColor = null;
-
-            var currentColor = Console.ForegroundColor;
-            if (color != currentColor)
+            lock (showLock)
             {
-                oldColor = currentColor;
-                Console.ForegroundColor = color;
-            }
+                if (color != Console.ForegroundColor)
+                {
+                    Console.ForegroundColor = color;
+                }
 
-            Console.WriteLine(message);
+                Console.WriteLine(message);
 
-            if (oldColor.HasValue)
-            {
-                Console.ForegroundColor = oldColor.Value;
+                if (Console.ForegroundColor != ConsoleColor.White)
+                {
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
             }
         }
     }

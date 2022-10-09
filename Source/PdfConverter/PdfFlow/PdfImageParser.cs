@@ -1,5 +1,5 @@
-﻿using CoreComicsConverter.Events;
-using CoreComicsConverter.Extensions;
+﻿using CbzMage.Shared.Extensions;
+using CoreComicsConverter.Events;
 using CoreComicsConverter.Model;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser;
