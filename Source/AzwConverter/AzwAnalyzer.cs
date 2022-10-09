@@ -107,15 +107,15 @@ namespace AzwConverter
                         File.WriteAllBytes(file, coverData.ToArray());
                     }
 
-                    for (int i = 0; i < meta.PageRecords.RescRecord.Pages.Count; i++)
-                    {
-                        var page = meta.PageRecords.RescRecord.Pages[i];
-                        var file = Path.Combine(dir, $"{page}.jpg");
+                    //for (int i = 0; i < meta.PageRecords.RescRecord.PageCount; i++)
+                    //{
+                    //    var page = meta.PageRecords.RescRecord.Pages[i];
+                    //    var file = Path.Combine(dir, $"{page}.jpg");
 
-                        var pageData = meta.PageRecords.ContentRecords[i].ReadData();
+                    //    var pageData = meta.PageRecords.ContentRecords[i].ReadData();
                     
-                        File.WriteAllBytes(file, pageData.ToArray());
-                    }
+                    //    File.WriteAllBytes(file, pageData.ToArray());
+                    //}
 
                     var dirHd = Path.Combine(directory, "pagesHD");
                     Directory.CreateDirectory(dirHd);
@@ -143,7 +143,7 @@ namespace AzwConverter
                     }
 
                     var sb = new StringBuilder();
-                    sb.AppendLine($"PageCount: {meta.PageRecords.RescRecord.Pages.Count} CoverOffset: 0");
+                    sb.AppendLine($"PageCount: {meta.PageRecords.RescRecord.PageCount} CoverOffset: 0");
                     sb.AppendLine($"ImageCount: {meta.PageRecords.ContentRecords.Count} CoverImage: {meta.PageRecords.CoverRecord != null}");
 
                     Console.Write(sb.ToString());

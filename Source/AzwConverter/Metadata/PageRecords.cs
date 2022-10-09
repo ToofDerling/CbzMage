@@ -89,7 +89,7 @@
             }
             _allRecords.RemoveAt(rescIndex);
 
-            var pageCount = RescRecord.Pages.Count;
+            var pageCount = RescRecord.PageCount;
 
             // If we have more records than pagecount filter out the known types
             if (_allRecords.Count > pageCount)
