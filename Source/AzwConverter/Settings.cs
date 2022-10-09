@@ -39,7 +39,7 @@ namespace AzwConverter
             if (string.IsNullOrWhiteSpace(cbzDir))
             {
                 var dir = new DirectoryInfo(AzwDir).Parent;
-                cbzDir = Path.Combine(dir.FullName, "Cbz Files");
+                cbzDir = Path.Combine(dir.FullName, "Cbz Backup");
             }
             cbzDir.CreateDirIfNotExists();
             CbzDir = cbzDir;

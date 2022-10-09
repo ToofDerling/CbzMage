@@ -1,4 +1,5 @@
 ﻿using AzwConverter.Metadata;
+using CbzMage.Shared.Helpers;
 using System.IO.Compression;
 using System.IO.MemoryMappedFiles;
 using System.Text;
@@ -46,12 +47,11 @@ namespace AzwConverter
             }
             else
             {
-                // TODO: ProgressReporter.Warn
                 var sb = new StringBuilder();
                 sb.AppendLine();
                 sb.Append(bookId).Append(" / ").Append(metadata.MobiHeader.FullName);
                 sb.Append(": no HD image container");
-                Console.WriteLine(sb.ToString());
+                ProgressReporter.Warning(sb.ToString());
 
                 if (_azwAction == AzwAction.Convert)
                 {

@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;
+using CbzMage.Shared.Helpers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -74,7 +75,7 @@ namespace AzwConverter
 
             Console.WriteLine();
             Console.WriteLine($"Found {books.Count} book{books.SIf1()}");
-            Console.WriteLine($"Found {unConvertedBooks.Count} unconverted book{unConvertedBooks.SIf1()}");
+            ProgressReporter.Done($"Found {unConvertedBooks.Count} unconverted book{unConvertedBooks.SIf1()}");
 
             if (_action != AzwAction.ScanUpdated && !unConvertedBooks.Any())
             {
@@ -128,8 +129,7 @@ namespace AzwConverter
                 var match = publisherTitleRegex.Match(Path.GetFileName(titleFile));
                 if (!match.Success)
                 {
-                    // TODO: Use ProgressReporter.Error
-                    Console.WriteLine($"Invalid title file: {Path.GetFileName(titleFile)}");
+                    ProgressReporter.Error($"Invalid title file: {Path.GetFileName(titleFile)}");
                     return;
                 }
                 var publisher = match.Groups["publisher"].Value.Trim();
@@ -197,7 +197,7 @@ namespace AzwConverter
                 sb.AppendLine();
                 sb.Append(insert).Append(Path.GetFileName(newTitleFile));
             }
-            Console.WriteLine(sb.ToString());
+            ProgressReporter.Done(sb.ToString());
         }
 
         private void SyncNewBook(string bookId, string titleFile, ArchiveDb archive)
@@ -209,7 +209,7 @@ namespace AzwConverter
             var newTitleFile = AddMarker(titleFile, Settings.NewTitleMarker);
 
             BookCountOutputHelper(newTitleFile, out var sb);
-            Console.WriteLine(sb.ToString());
+            ProgressReporter.Done(sb.ToString());
         }
 
         private static string AddMarker(string titleFile, string marker)
