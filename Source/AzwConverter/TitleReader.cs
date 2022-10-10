@@ -2,15 +2,17 @@
 {
     public class TitleReader
     {
-        public Dictionary<string, string[]> ReadBooks()
+        public Dictionary<string, FileInfo[]> ReadBooks()
         {
-            var books = new Dictionary<string, string[]>();
+            var books = new Dictionary<string, FileInfo[]>();
 
             var dirs = Directory.GetDirectories(Settings.AzwDir, "*_EBOK");
             foreach (var bookDir in dirs)
             {
-                var files = Directory.GetFiles(bookDir);
-                if (files.Any(f => f.EndsWith(Settings.AzwExt)))
+                var dirInfo = new DirectoryInfo(bookDir);
+                var files = dirInfo.GetFiles();
+
+                if (files.Any(f => f.FullName.EndsWith(Settings.AzwExt)))
                 {
                     books[Path.GetFileName(bookDir)] = files;
                 }
@@ -19,20 +21,18 @@
             return books;
         }
 
-        public Dictionary<string, string> ReadTitles()
+        public Dictionary<string, FileInfo> ReadTitles()
         {
-            return ReadDir(Settings.TitlesDir);
+            var directoryInfo = new DirectoryInfo(Settings.TitlesDir);
+
+            return directoryInfo.EnumerateFiles().Where(f => f.Name != "archive.db").ToDictionary(f => File.ReadAllText(f.FullName), f => f);
         }
 
-        public Dictionary<string, string> ReadConvertedTitles()
+        public Dictionary<string, FileInfo> ReadConvertedTitles()
         {
-            return ReadDir(Settings.ConvertedTitlesDir, SearchOption.TopDirectoryOnly);
-        }
+            var directoryInfo = new DirectoryInfo(Settings.ConvertedTitlesDir);
 
-        private static Dictionary<string, string> ReadDir(string dir, SearchOption searchOption = SearchOption.TopDirectoryOnly)
-        {
-            return Directory.EnumerateFiles(dir, "*", searchOption)
-                .Where(f => Path.GetFileName(f) != "archive.db").ToDictionary(f => File.ReadAllText(f), f => f);
+            return directoryInfo.EnumerateFiles().ToDictionary(f => File.ReadAllText(f.FullName), f => f);
         }
     }
 }

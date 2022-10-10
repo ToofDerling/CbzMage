@@ -30,10 +30,8 @@ Pdf:
             //var action = AzwAction.Convert;
             //var action = AzwAction.ScanUpdated;
 
-
             var converter = new AzwConverter.AzwConverter(action, null);
             converter.ConvertOrScan();
-
 
             //Console.WriteLine(_usage);
             Console.ReadLine();

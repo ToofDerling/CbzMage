@@ -15,24 +15,24 @@ namespace AzwConverter
             _azwAction = azwAction;
         }
 
-        public CbzState ScanBook(string bookId, string[] dataFiles)
+        public CbzState ScanBook(string bookId, FileInfo[] dataFiles)
         {
             return ConvertBook(bookId, dataFiles, null);
         }
 
-        public CbzState ConvertBook(string bookId, string[] dataFiles, string cbzFile)
+        public CbzState ConvertBook(string bookId, FileInfo[] dataFiles, string cbzFile)
         {
-            var azwFile = dataFiles.First(b => b.EndsWith(Settings.AzwExt));
+            var azwFile = dataFiles.First(b => b.FullName.EndsWith(Settings.AzwExt));
 
-            using var mappedFile = MemoryMappedFile.CreateFromFile(azwFile);
+            using var mappedFile = MemoryMappedFile.CreateFromFile(azwFile.FullName);
             using var stream = mappedFile.CreateViewStream();
 
             var metadata = new MobiMetadata(stream);
 
-            var hdContainer = dataFiles.FirstOrDefault(l => l.EndsWith(Settings.AzwResExt));
+            var hdContainer = dataFiles.FirstOrDefault(l => l.FullName.EndsWith(Settings.AzwResExt));
             if (hdContainer != null)
             {
-                using var hdMappedFile = MemoryMappedFile.CreateFromFile(hdContainer);
+                using var hdMappedFile = MemoryMappedFile.CreateFromFile(hdContainer.FullName);
                 using var hdStream = hdMappedFile.CreateViewStream();
 
                 metadata.ReadHDImageRecords(hdStream);

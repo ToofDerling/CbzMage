@@ -6,7 +6,7 @@ namespace AzwConverter
 {
     public class TitleSyncer
     {
-        public int SyncBooksToTitles(Dictionary<string, string[]> books, Dictionary<string, string> titles, ArchiveDb archive)
+        public int SyncBooksToTitles(Dictionary<string, FileInfo[]> books, Dictionary<string, FileInfo> titles, ArchiveDb archive)
         {
             var syncedBookCount = 0;
             var booksWithErrors = new List<string>();
@@ -29,19 +29,19 @@ namespace AzwConverter
                     {
                         // Or scan the book file
                         var bookFiles = book.Value;
-                        var azwFile = bookFiles.First(b => b.EndsWith(Settings.AzwExt));
+                        var azwFile = bookFiles.First(b => b.FullName.EndsWith(Settings.AzwExt));
 
-                        using var stream = File.Open(azwFile, FileMode.Open);
+                        using var stream = azwFile.Open(FileMode.Open);
 
                         MobiMetadata metadata = null;
                         try
                         {
-                             metadata = new MobiMetadata(stream);
+                            metadata = new MobiMetadata(stream);
                         }
                         catch (Exception ex)
                         {
                             ProgressReporter.Error($"Error reading {bookId}", ex);
-                            
+
                             booksWithErrors.Add(bookId);
                             continue;
                         }
@@ -70,21 +70,21 @@ namespace AzwConverter
                         File.WriteAllText(file, bookId);
 
                         // Add archived/scanned title to list of current titles
-                        titles[bookId] = file;
+                        titles[bookId] = new FileInfo(file);
                         syncedBookCount++;
                     }
                 }
             }
 
             foreach (var bookId in booksWithErrors)
-            { 
+            {
                 books.Remove(bookId);
             }
 
             return syncedBookCount;
         }
 
-        public int SyncTitlesToArchive(Dictionary<string, string> titles, ArchiveDb archive, Dictionary<string, string[]> books)
+        public int SyncTitlesToArchive(Dictionary<string, FileInfo> titles, ArchiveDb archive, Dictionary<string, FileInfo[]> books)
         {
             var idsToRemove = new List<string>();
             var archivedTitleCount = 0;
@@ -94,7 +94,7 @@ namespace AzwConverter
                 var bookId = title.Key;
                 var titleFile = title.Value;
 
-                var emptyState = new CbzState { Name = Path.GetFileName(titleFile) };
+                var emptyState = new CbzState { Name = titleFile.Name };
                 archive.SetState(bookId, emptyState);
 
                 // Delete title if no longer in books.
@@ -103,7 +103,7 @@ namespace AzwConverter
                     archivedTitleCount++;
 
                     idsToRemove.Add(bookId);
-                    File.Delete(titleFile);
+                    titleFile.Delete();
                 }
             }
 
@@ -116,25 +116,25 @@ namespace AzwConverter
             return archivedTitleCount;
         }
 
-        public string SyncTitleTo(string bookId, string titleFile, Dictionary<string, string> toFiles, string toDir)
+        public string SyncConvertedTitle(string bookId, string titleFile, Dictionary<string, FileInfo> convertedTitles)
         {
-            var foundExisting = toFiles.TryGetValue(bookId, out var existingTitleFile);
+            var foundExisting = convertedTitles.TryGetValue(bookId, out var existingTitleFile);
 
             // Prevent duplicate bookId 
             if (foundExisting)
             {
-                File.Delete(existingTitleFile);
+                existingTitleFile.Delete();
             }
 
             var name = Path.GetFileName(titleFile);
             name = name.RemoveAllMarkers();
 
             name = name.Trim();
-            var dest = Path.Combine(toDir, name);
+            var dest = Path.Combine(Settings.ConvertedTitlesDir, name);
             File.Copy(titleFile, dest);
 
             // Update with the synced title 
-            toFiles[bookId] = dest;
+            convertedTitles[bookId] = new(dest);
             return name;
         }
     }

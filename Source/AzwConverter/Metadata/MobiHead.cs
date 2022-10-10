@@ -53,7 +53,6 @@ namespace AzwConverter.Metadata
         private readonly byte[] lastContentRecordNumber = new byte[2];
 
         private readonly EXTHHead exthHeader = null;
-        private readonly PageRecords imageRecords = null;
         private readonly byte[] fullName;
 
         public MobiHead(Stream stream, long previousHeaderPos)

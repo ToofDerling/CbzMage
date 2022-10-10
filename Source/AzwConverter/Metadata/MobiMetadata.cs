@@ -49,7 +49,6 @@
 
             PageRecordsHD = new PageRecords(hdContainerStream, pdbHead.Records, ImageType.HD,
                 1, (ushort)(pdbHead.Records.Length - 1),
-                /* Are these two relevant in this context? */
                 MobiHeader.EXTHHeader.CoverOffset, MobiHeader.EXTHHeader.ThumbOffset);
 
             PageRecordsHD.AnalyzePageRecordsHD();
