@@ -110,9 +110,10 @@ namespace AzwConverter
             var numberOfThreads = GetNumberOfThreads();
             var options = new ParallelOptions { MaxDegreeOfParallelism = numberOfThreads };
 
+            var converter = new ConverterEngine();
             var stopWatch = new Stopwatch();
+
             stopWatch.Start();
-            
             try
             {
                 if (updatedBooks.Count > 0)
@@ -123,7 +124,6 @@ namespace AzwConverter
                     Console.WriteLine();
                     ProgressReporter.Info($"Scanning {updatedBooks.Count} updated book{updatedBooks.SIf1()} for changes:");
 
-                    var converter = new ConverterEngine(readonlyMode: true);
                     Parallel.ForEach(updatedBooks, options, b => ScanUpdatedBook(converter, archive, b.Key, b.Value, titles[b.Key]));
                 }
 
@@ -137,7 +137,6 @@ namespace AzwConverter
                         Console.WriteLine();
                         ProgressReporter.Info($"Converting {unconvertedBooks.Count} book{unconvertedBooks.SIf1()}:");
 
-                        var converter = new ConverterEngine();
                         Parallel.ForEach(unconvertedBooks, options, book => 
                             ConvertBook(book.Key, book.Value, titles[book.Key], convertedTitles, converter, syncer, archive));
                     }
@@ -154,8 +153,8 @@ namespace AzwConverter
             {
                 archive.SaveDb();
             }
-
             stopWatch.Stop();
+
             var elapsed = stopWatch.Elapsed;
             var secsPerPage = elapsed.TotalSeconds / pagesCount;
 

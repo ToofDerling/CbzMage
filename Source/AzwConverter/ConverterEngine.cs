@@ -8,18 +8,11 @@ namespace AzwConverter
 {
     public class ConverterEngine
     {
-        private readonly bool _createCbz = true;
-
-        public ConverterEngine(bool readonlyMode = false)
-        {
-            if (readonlyMode)
-            { 
-                _createCbz = false;
-            }
-        }
+        private bool _createCbz = true;
 
         public CbzState ScanBook(string bookId, FileInfo[] dataFiles)
         {
+            _createCbz = false;
             return ConvertBook(bookId, dataFiles, null);
         }
 
@@ -45,8 +38,7 @@ namespace AzwConverter
                 }
                 else
                 {
-                    // Pass a null ziparchiver to work in readonly mode
-                    return ReadAndCompressPages(null, metadata.PageRecordsHD, metadata.PageRecords);
+                    return ReadPages(metadata.PageRecordsHD, metadata.PageRecords);
                 }
             }
             else
@@ -63,8 +55,7 @@ namespace AzwConverter
                 }
                 else
                 {
-                    // Pass a null ziparchiver to work in readonly mode
-                    return ReadAndCompressPages(null, null, metadata.PageRecords);
+                    return ReadPages(null, metadata.PageRecords);
                 }
             }
         }
@@ -86,6 +77,12 @@ namespace AzwConverter
         {
             using var zipArchive = ZipFile.Open(cbzFile, ZipArchiveMode.Create);
             return ReadAndCompressPages(zipArchive, hdImageRecords, sdImageRecords);
+        }
+
+        private CbzState ReadPages(PageRecords? hdImageRecords, PageRecords sdImageRecords)
+        {
+            // Pass a null ziparchiver to work in readonly mode
+            return ReadAndCompressPages(null, hdImageRecords, sdImageRecords);
         }
 
         private CbzState ReadAndCompressPages(ZipArchive? zipArchive, PageRecords? hdImageRecords, PageRecords sdImageRecords)
