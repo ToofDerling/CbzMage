@@ -90,34 +90,27 @@ namespace AzwConverter
             var unconvertedBooks = GetUnconvertedBooks(books, convertedTitles);
             ProgressReporter.DoneOrInfo($"Found {unconvertedBooks.Count} unconverted book{unconvertedBooks.SIf1()}", unconvertedBooks.Count);
 
-            // Determine if we have more work to do
-            if (updatedBooks.Count == 0 && unconvertedBooks.Count == 0)
-            {
-                archive.SaveDb();
-
-                Console.WriteLine();
-                ProgressReporter.Info("Done");
-                return;
-            }
-
             var stopWatch = new Stopwatch();
             stopWatch.Start();
             try
             {
-                RunActionsInParallel(books, updatedBooks, unconvertedBooks, titles, convertedTitles, archive, syncer);
+                if (updatedBooks.Count > 0 || unconvertedBooks.Count > 0)
+                {
+                    RunActionsInParallel(books, updatedBooks, unconvertedBooks, titles, convertedTitles, archive, syncer);
+                }
             }
             finally
             {
                 archive.SaveDb();
             }
             stopWatch.Stop();
-
-            var elapsed = stopWatch.Elapsed;
-            var secsPerPage = elapsed.TotalSeconds / pagesCount;
-
             Console.WriteLine();
-            if (_action == AzwAction.Convert)
+
+            if (_action == AzwAction.Convert && pagesCount > 0)
             {
+                var elapsed = stopWatch.Elapsed;
+                var secsPerPage = elapsed.TotalSeconds / pagesCount;
+
                 Console.WriteLine($"{pagesCount} pages converted in {elapsed.TotalSeconds:F3} seconds ({secsPerPage:F3} per page)");
             }
             else
