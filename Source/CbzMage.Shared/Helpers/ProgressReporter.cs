@@ -49,6 +49,18 @@ namespace CbzMage.Shared.Helpers
             Console.WriteLine();
         }
 
+        public static void DoneOrInfo(string message, int count)
+        {
+            if (count > 0)
+            {
+                Done(message);
+            }
+            else
+            {
+                Info(message);
+            }
+        }
+
         public static void Done(string message)
         {
             Show(message, ConsoleColor.Green);

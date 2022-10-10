@@ -29,7 +29,7 @@ namespace AzwConverter
                     {
                         // Or scan the book file
                         var bookFiles = book.Value;
-                        var azwFile = bookFiles.First(b => b.FullName.EndsWith(Settings.AzwExt));
+                        var azwFile = bookFiles.First(file => file.IsAzwFile());
 
                         using var stream = azwFile.Open(FileMode.Open);
 
@@ -131,7 +131,9 @@ namespace AzwConverter
 
             name = name.Trim();
             var dest = Path.Combine(Settings.ConvertedTitlesDir, name);
+            
             File.Copy(titleFile, dest);
+            File.SetLastWriteTime(dest, DateTime.Now);
 
             // Update with the synced title 
             convertedTitles[bookId] = new(dest);

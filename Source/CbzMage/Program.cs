@@ -26,9 +26,8 @@ Pdf:
 ";
         static void Main(string[] args)
         {
-            var action = AzwAction.ScanNew;
+            var action = AzwAction.Scan;
             //var action = AzwAction.Convert;
-            //var action = AzwAction.ScanUpdated;
 
             var converter = new AzwConverter.AzwConverter(action, null);
             converter.ConvertOrScan();

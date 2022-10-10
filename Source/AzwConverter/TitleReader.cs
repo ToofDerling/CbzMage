@@ -12,7 +12,7 @@
                 var dirInfo = new DirectoryInfo(bookDir);
                 var files = dirInfo.GetFiles();
 
-                if (files.Any(f => f.FullName.EndsWith(Settings.AzwExt)))
+                if (files.Any(file => file.IsAzwFile()))
                 {
                     books[Path.GetFileName(bookDir)] = files;
                 }

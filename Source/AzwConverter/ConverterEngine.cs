@@ -8,11 +8,14 @@ namespace AzwConverter
 {
     public class ConverterEngine
     {
-        private readonly AzwAction _azwAction;
+        private readonly bool _createCbz = true;
 
-        public ConverterEngine(AzwAction azwAction)
+        public ConverterEngine(bool readonlyMode = false)
         {
-            _azwAction = azwAction;
+            if (readonlyMode)
+            { 
+                _createCbz = false;
+            }
         }
 
         public CbzState ScanBook(string bookId, FileInfo[] dataFiles)
@@ -22,26 +25,27 @@ namespace AzwConverter
 
         public CbzState ConvertBook(string bookId, FileInfo[] dataFiles, string cbzFile)
         {
-            var azwFile = dataFiles.First(b => b.FullName.EndsWith(Settings.AzwExt));
+            var azwFile = dataFiles.First(file => file.IsAzwFile());
 
             using var mappedFile = MemoryMappedFile.CreateFromFile(azwFile.FullName);
             using var stream = mappedFile.CreateViewStream();
 
             var metadata = new MobiMetadata(stream);
 
-            var hdContainer = dataFiles.FirstOrDefault(l => l.FullName.EndsWith(Settings.AzwResExt));
+            var hdContainer = dataFiles.FirstOrDefault(file => file.IsAzwResFile());
             if (hdContainer != null)
             {
                 using var hdMappedFile = MemoryMappedFile.CreateFromFile(hdContainer.FullName);
                 using var hdStream = hdMappedFile.CreateViewStream();
 
                 metadata.ReadHDImageRecords(hdStream);
-                if (_azwAction == AzwAction.Convert)
+                if (_createCbz)
                 {
                     return CreateCbz(cbzFile, metadata.PageRecordsHD, metadata.PageRecords);
                 }
                 else
                 {
+                    // Pass a null ziparchiver to work in readonly mode
                     return ReadAndCompressPages(null, metadata.PageRecordsHD, metadata.PageRecords);
                 }
             }
@@ -53,12 +57,13 @@ namespace AzwConverter
                 sb.Append(": no HD image container");
                 ProgressReporter.Warning(sb.ToString());
 
-                if (_azwAction == AzwAction.Convert)
+                if (_createCbz)
                 {
                     return CreateCbz(cbzFile, null, metadata.PageRecords);
                 }
                 else
                 {
+                    // Pass a null ziparchiver to work in readonly mode
                     return ReadAndCompressPages(null, null, metadata.PageRecords);
                 }
             }
@@ -139,6 +144,7 @@ namespace AzwConverter
                 if (zip != null)
                 {
                     var entry = zip.CreateEntry(name, Settings.CompressionLevel);
+
                     using var stream = entry.Open();
                     stream.Write(record.ReadData());
                 }

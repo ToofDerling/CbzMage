@@ -51,5 +51,15 @@ namespace AzwConverter
                 Directory.CreateDirectory(dir);
             }
         }
+
+        public static bool IsAzwFile(this FileInfo fileInfo)
+        {
+            return fileInfo.FullName.EndsWith(Settings.AzwExt);
+        }
+
+        public static bool IsAzwResFile(this FileInfo fileInfo)
+        {
+            return fileInfo.FullName.EndsWith(Settings.AzwResExt);
+        }
     }
 }

@@ -18,7 +18,10 @@ namespace AzwConverter
         // For testing. If >0 overrules the result of GetUnconvertedBooks
         private const int maxBooks = 0;
         // For testing. If >0 overrules the result of GetNumberOfThreads
-        private const int maxThreads = 0;
+        private const int maxThreads = 1;
+
+        // Try to be as lenient as possible (and Trim the results).
+        private Regex _publisherTitleRegex = new(@"(\[)(?<publisher>.*?)(\])(?<title>.*)");
 
         private readonly AzwAction _action;
 
@@ -31,9 +34,9 @@ namespace AzwConverter
 
             Settings.ReadAppSettings(config);
 
-            Console.WriteLine($"Azw directory: {Settings.AzwDir}");
-            Console.WriteLine($"Titles directory: {Settings.TitlesDir}");
-            Console.WriteLine($"Cbz directory: {Settings.CbzDir}");
+            Console.WriteLine($"Azw files: {Settings.AzwDir}");
+            Console.WriteLine($"Titles files: {Settings.TitlesDir}");
+            Console.WriteLine($"Cbz backups: {Settings.CbzDir}");
             Console.WriteLine();
 
             _action = action;
@@ -43,11 +46,10 @@ namespace AzwConverter
         public void ConvertOrScan()
         {
             var reader = new TitleReader();
-            // Key is the book id, Value is a list of book datafiles 
-            var books = reader.ReadBooks();
-
+  
+            Console.Write("Reading current titles: ");
             var titles = reader.ReadTitles();
-            Console.WriteLine($"Found {titles.Count} current title{titles.SIf1()}");
+            Console.WriteLine(titles.Count);
 
             //if (_action == AzwAction.Analyze)
             //{
@@ -57,115 +59,100 @@ namespace AzwConverter
             //    return;
             //}
 
+            Console.Write("Reading archived titles: ");
             var archive = new ArchiveDb();
-            Console.WriteLine($"Found {archive.Count} archived title{archive.Count.SIf1()}");
+            Console.WriteLine(archive.Count);
 
+            Console.Write("Reading converted titles: ");
             var convertedTitles = reader.ReadConvertedTitles();
-            Console.WriteLine($"Found {convertedTitles.Count} converted title{convertedTitles.SIf1()}");
-
-            var syncer = new TitleSyncer();
+            Console.WriteLine(convertedTitles.Count);
             Console.WriteLine();
 
+            // Key is the book id, Value is a list of book datafiles 
+            Console.Write("Reading books: ");
+            var books = reader.ReadBooks();
+            Console.WriteLine(books.Count);
+
+            var syncer = new TitleSyncer();
+
+            // Number of books are stable after title syncing.
             var added = syncer.SyncBooksToTitles(books, titles, archive);
             Console.WriteLine($"Added {added} missing titles");
+
             var archived = syncer.SyncTitlesToArchive(titles, archive, books);
             Console.WriteLine($"Archived {archived} titles");
 
-            // Number of books are stable after title syncing.
             Console.WriteLine();
-            Console.WriteLine($"Found {books.Count} book{books.SIf1()}");
+            // Display the scanning results
+            var updatedBooks = GetUpdatedBooks(books, convertedTitles);
+            ProgressReporter.Info($"Found {updatedBooks.Count} updated book{updatedBooks.SIf1()}");
 
-            var unConvertedBooks = GetUnconvertedBooks(books, convertedTitles);
-            var doneStr = $"Found {unConvertedBooks.Count} unconverted book{unConvertedBooks.SIf1()}";
-            if (unConvertedBooks.Any())
+            var unconvertedBooks = GetUnconvertedBooks(books, convertedTitles);
+            ProgressReporter.DoneOrInfo($"Found {unconvertedBooks.Count} unconverted book{unconvertedBooks.SIf1()}", unconvertedBooks.Count);
+
+            // Determine if we have more work to do
+            if (updatedBooks.Count == 0 && unconvertedBooks.Count == 0)
             {
-                ProgressReporter.Done(doneStr);
-            }
-            else
-            { 
-                ProgressReporter.Info(doneStr);
-                if (_action != AzwAction.ScanUpdated)
-                {
-                    Console.WriteLine();
-                    ProgressReporter.Info("Done");
-                    return;
-                }
+                Console.WriteLine();
+                ProgressReporter.Info("Done");
+                return;
             }
 
-            RunActionsInParallel(books, unConvertedBooks, titles, convertedTitles, archive, syncer);
+            RunActionsInParallel(books, updatedBooks, unconvertedBooks, titles, convertedTitles, archive, syncer);
         }
-
-        private void RunActionsInParallel(Dictionary<string, FileInfo[]> books, List<KeyValuePair<string, FileInfo[]>> unConvertedBooks,
+        
+        private void RunActionsInParallel(Dictionary<string, FileInfo[]> books,
+            List<KeyValuePair<string, FileInfo[]>> updatedBooks, List<KeyValuePair<string, FileInfo[]>> unconvertedBooks,
             Dictionary<string, FileInfo> titles, Dictionary<string, FileInfo> convertedTitles,
             ArchiveDb archive, TitleSyncer syncer)
         {
+      
             var numberOfThreads = GetNumberOfThreads();
-            var converter = new ConverterEngine(_action);
-
-            // Try to be as lenient as possible (and Trim the results).
-            var publisherTitleRegex = new Regex(@"(\[)(?<publisher>.*?)(\])(?<title>.*)");
-
-            Console.WriteLine();
-            Console.WriteLine(_action == AzwAction.Convert ? "Converting..." : "Scanning...");
+            var options = new ParallelOptions { MaxDegreeOfParallelism = numberOfThreads };
 
             var stopWatch = new Stopwatch();
             stopWatch.Start();
-
-            var options = new ParallelOptions { MaxDegreeOfParallelism = numberOfThreads };
-
+            
             try
             {
-                totalBooks = unConvertedBooks.Count;
-                if (_action == AzwAction.Convert)
+                if (updatedBooks.Count > 0)
                 {
-                    Parallel.ForEach(unConvertedBooks, options, b => ConvertBook(b.Key, b.Value, titles[b.Key]));
-                }
-                else if (_action == AzwAction.ScanNew)
-                {
-                    Parallel.ForEach(unConvertedBooks, options, b => SyncNewBook(b.Key, titles[b.Key], archive));
-                }
-                else if (_action == AzwAction.ScanUpdated)
-                {
-                    Parallel.ForEach(unConvertedBooks, options, b => SyncNewBook(b.Key, titles[b.Key], archive));
+                    totalBooks = updatedBooks.Count;
+                    bookCount = 0;
 
-                    var checkUpdated = books.Except(unConvertedBooks);
-                    totalBooks = checkUpdated.Count();
-                    bookCount = 0; // Reset
+                    Console.WriteLine();
+                    ProgressReporter.Info($"Scanning {updatedBooks.Count} updated book{updatedBooks.SIf1()} for changes:");
 
-                    Parallel.ForEach(checkUpdated, options, b => ScanAndSyncUpdatedBook(converter, archive, b.Key, b.Value, titles[b.Key]));
+                    var converter = new ConverterEngine(readonlyMode: true);
+                    Parallel.ForEach(updatedBooks, options, b => ScanUpdatedBook(converter, archive, b.Key, b.Value, titles[b.Key]));
+                }
+
+                if (unconvertedBooks.Count > 0)
+                {
+                    totalBooks = unconvertedBooks.Count;
+                    bookCount = 0;
+
+                    if (_action == AzwAction.Convert)
+                    {
+                        Console.WriteLine();
+                        ProgressReporter.Info($"Converting {unconvertedBooks.Count} book{unconvertedBooks.SIf1()}:");
+
+                        var converter = new ConverterEngine();
+                        Parallel.ForEach(unconvertedBooks, options, book => 
+                            ConvertBook(book.Key, book.Value, titles[book.Key], convertedTitles, converter, syncer, archive));
+                    }
+                    else if (_action == AzwAction.Scan)
+                    {
+                        Console.WriteLine();
+                        ProgressReporter.Info($"Listing {unconvertedBooks.Count} unconverted book{unconvertedBooks.SIf1()}:");
+
+                        Parallel.ForEach(unconvertedBooks, options, b => SyncNewBook(b.Key, titles[b.Key], archive));
+                    }
                 }
             }
             finally
             {
                 archive.SaveDb();
-            }
-
-            void ConvertBook(string bookId, FileInfo[] dataFiles, FileInfo titleFile)
-            {
-                // Validate the titlefile
-                var match = publisherTitleRegex.Match(titleFile.Name);
-                if (!match.Success)
-                {
-                    ProgressReporter.Error($"Invalid title file: {titleFile.Name}");
-                    return;
-                }
-                var publisher = match.Groups["publisher"].Value.Trim();
-                var title = match.Groups["title"].Value.Trim();
-
-                var publisherDir = Path.Combine(Settings.CbzDir, publisher);
-                publisherDir.CreateDirIfNotExists();
-
-                var cbzFile = Path.Combine(publisherDir, $"{title}.cbz");
-                var state = converter.ConvertBook(bookId, dataFiles, cbzFile);
-
-                var newTitleFile = RemoveMarker(titleFile);
-                syncer.SyncConvertedTitle(bookId, newTitleFile, convertedTitles);
-
-                // Title may have been renamed between scanning and converting, so sync it again.
-                state.Name = Path.GetFileName(newTitleFile);
-                archive.SetState(bookId, state);
-
-                PrintCbzState(cbzFile, state);
             }
 
             stopWatch.Stop();
@@ -183,6 +170,36 @@ namespace AzwConverter
             }
         }
 
+        private void ConvertBook(string bookId, FileInfo[] dataFiles, 
+            FileInfo titleFile, Dictionary<string, FileInfo> convertedTitles,
+            ConverterEngine converter, TitleSyncer syncer, ArchiveDb archive)
+        {
+            // Validate the titlefile
+            var match = _publisherTitleRegex.Match(titleFile.Name);
+            if (!match.Success)
+            {
+                ProgressReporter.Error($"Invalid title file: {titleFile.Name}");
+                return;
+            }
+            var publisher = match.Groups["publisher"].Value.Trim();
+            var title = match.Groups["title"].Value.Trim();
+
+            var publisherDir = Path.Combine(Settings.CbzDir, publisher);
+            publisherDir.CreateDirIfNotExists();
+
+            var cbzFile = Path.Combine(publisherDir, $"{title}.cbz");
+            var state = converter.ConvertBook(bookId, dataFiles, cbzFile);
+
+            var newTitleFile = RemoveMarker(titleFile);
+            syncer.SyncConvertedTitle(bookId, newTitleFile, convertedTitles);
+
+            // Title may have been renamed between scanning and converting, so sync it again.
+            state.Name = Path.GetFileName(newTitleFile);
+            archive.SetState(bookId, state);
+
+            PrintCbzState(cbzFile, state);
+        }
+
         private string BookCountOutputHelper(string path, out StringBuilder sb)
         {
             sb = new StringBuilder();
@@ -197,7 +214,7 @@ namespace AzwConverter
             return insert;
         }
 
-        private void ScanAndSyncUpdatedBook(ConverterEngine converter, ArchiveDb archive,
+        private void ScanUpdatedBook(ConverterEngine converter, ArchiveDb archive,
             string bookId, FileInfo[] dataFiles, FileInfo titleFile)
         {
             var state = converter.ScanBook(bookId, dataFiles);
@@ -256,6 +273,37 @@ namespace AzwConverter
             titleFile.MoveTo(newTitleFile);
 
             return newTitleFile;
+        }
+
+        private static List<KeyValuePair<string, FileInfo[]>> GetUpdatedBooks(Dictionary<string, FileInfo[]> books,
+            Dictionary<string, FileInfo> convertedTitles)
+        {
+            var updatedBooks = new List<KeyValuePair<string, FileInfo[]>>();
+
+            foreach (var book in books)
+            {
+                // If the title has been converted
+                if (convertedTitles.TryGetValue(book.Key, out var convertedTitle))
+                {
+                    var convertedDate = convertedTitle.LastWriteTime;
+
+                    // Test if the two datafiles has been updated since the conversion
+                    var azwFile = book.Value.First(file => file.IsAzwFile());
+                    if (azwFile.LastWriteTime > convertedDate)
+                    {
+                        updatedBooks.Add(book);
+                        continue;
+                    }
+
+                    var azwResFile = book.Value.FirstOrDefault(file => file.IsAzwResFile());
+                    if (azwResFile != null && azwFile.LastWriteTime > convertedDate)
+                    {
+                        updatedBooks.Add(book);
+                    }
+                }
+            }
+
+            return updatedBooks;
         }
 
         private static List<KeyValuePair<string, FileInfo[]>> GetUnconvertedBooks(Dictionary<string, FileInfo[]> books,
