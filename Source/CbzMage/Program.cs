@@ -1,4 +1,5 @@
 ﻿using AzwConverter;
+using System.Runtime.InteropServices;
 
 namespace CbzMage
 {
@@ -21,6 +22,10 @@ Pdf:
 ";
         static void Main(string[] args)
         {
+#if DEBUG
+            args = new[] {"AzwScan"};
+#endif
+
             var validAction = false;
 
             string actionStr;
@@ -42,13 +47,27 @@ Pdf:
                 }
             }
 
-
             if (!validAction)
             {
                 Console.WriteLine(_usage);
             }
 
-            Console.ReadLine();
+            // If this is run as a "gui" let the console hang around
+            if (ConsoleWillBeDestroyedAtTheEnd())
+            {
+                Console.ReadLine();
+            }
         }
+
+        private static bool ConsoleWillBeDestroyedAtTheEnd()
+        {
+            var processList = new uint[1];
+            var processCount = GetConsoleProcessList(processList, 1);
+
+            return processCount == 1;
+        }
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        static extern uint GetConsoleProcessList(uint[] processList, uint processCount);
     }
 }
