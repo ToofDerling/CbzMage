@@ -5,34 +5,49 @@ namespace CbzMage
     internal class Program
     {
         public static string _usage = @"
-Azw:
-    Azw Convert [or AzwConvert] 
-    Scans awz directory and converts all unconverted books to cbz files.
-    
-    Azw Convert [or AzwConvert] <.NEW or .UPDATED title> or <directory with .NEW and .UPDATED titles>
-    Converts .NEW and .UPDATED title(s) to cbz files.    
+All commands are case insensitive.
 
-    Azw ScanNew [or AzwScanNew] 
-    Scans azw directory and creates a .NEW title for each unconverted book. 
-    
-    Azw ScanUpdated [or AzwScanUpdated]
-    Scans azw directory and creates a .NEW title for each unconverted book and a .UPDATED title for each
-    book that has been updated.
+AzwConvert [or Azw Convert]
+    Scans awz directory and converts all unconverted books to cbz files.
+
+AzwScan [or Azw Scan]
+    Scans azw directory and creates a .NEW title file for each unconverted book. 
+
+In both cases CbzMage will scan for updated books and create an .UPDATED title 
+file for each updated book. 
 
 Pdf:
     Nothing yet...    
-
-(All commands are case insensitive.).
 ";
         static void Main(string[] args)
         {
-            //var action = AzwAction.Scan;
-            var action = AzwAction.Convert;
+            var validAction = false;
 
-            var converter = new AzwConverter.AzwConverter(action, null);
-            converter.ConvertOrScan();
+            string actionStr;
 
-            //Console.WriteLine(_usage);
+            if (args.Length > 0)
+            {
+                actionStr = args[0];
+                if (args.Length > 1)
+                {
+                    actionStr += args[1];
+                }
+            
+                if (Enum.TryParse(typeof(AzwAction), actionStr, ignoreCase: true, out var action))
+                {
+                    validAction = true;
+
+                    var converter = new AzwConverter.AzwConverter((AzwAction)action, null);
+                    converter.ConvertOrScan();
+                }
+            }
+
+
+            if (!validAction)
+            {
+                Console.WriteLine(_usage);
+            }
+
             Console.ReadLine();
         }
     }
