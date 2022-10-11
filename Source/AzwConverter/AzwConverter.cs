@@ -31,7 +31,7 @@ namespace AzwConverter
         {
             using IHost host = Host.CreateDefaultBuilder().Build();
             var config = host.Services.GetRequiredService<IConfiguration>();
-
+          
             Settings.ReadAppSettings(config);
 
             Console.WriteLine($"Azw files: {Settings.AzwDir}");

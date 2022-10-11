@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "CbzMage": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}
