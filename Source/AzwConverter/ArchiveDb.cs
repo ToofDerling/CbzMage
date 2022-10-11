@@ -23,7 +23,7 @@ namespace AzwConverter
             {
                 var lines = File.ReadAllLines(_dbFile);
 
-                foreach (var line in lines)
+                Parallel.ForEach(lines, line =>
                 {
                     var tokens = line.Split(' ', 2);
                     var bookId = tokens[0];
@@ -33,7 +33,7 @@ namespace AzwConverter
                         throw new InvalidOperationException($"{bookId} already in archive");
                     }
                     _db[bookId] = JsonSerializer.Deserialize<CbzState>(tokens[1]);
-                }
+                });
             }
         }
 
@@ -82,7 +82,7 @@ namespace AzwConverter
                 return;
             }
 
-            var sb = new StringBuilder();
+            var sb = new StringBuilder(32000);
 
             foreach (var x in _db)
             {
