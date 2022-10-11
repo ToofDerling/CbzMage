@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using System.Xml;
 
-namespace AzwConverter.Metadata
+namespace AzwMetadata
 {
     public class RescRecord : PageRecord
     {
@@ -49,7 +49,7 @@ namespace AzwConverter.Metadata
 
             var xmlBegin = xmlDataStr.IndexOf("<");
             var xmlEnd = xmlDataStr.LastIndexOf(">");
-            
+
             var xmlStr = xmlDataStr.Substring(xmlBegin, xmlEnd - xmlBegin + 1);
             int pageCount = 0;
 

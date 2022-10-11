@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace AzwConverter.Metadata
+namespace AzwMetadata
 {
     public partial class PDBHead : BaseHeader
     {

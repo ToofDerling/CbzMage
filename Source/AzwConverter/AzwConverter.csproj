@@ -10,7 +10,6 @@
     <Compile Remove="Hmm\DumpAZW6_py3.py.cs" />
     <Compile Remove="Hmm\MobiMergeHDImage.cs" />
     <Compile Remove="Hmm\mobimergehdimage.py.cs" />
-    <Compile Remove="Metadata\CoverExtractor.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -22,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\AzwMetadata\AzwMetadata.csproj" />
     <ProjectReference Include="..\CbzMage.Shared\CbzMage.Shared.csproj" />
   </ItemGroup>
 

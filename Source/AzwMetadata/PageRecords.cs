@@ -1,6 +1,4 @@
-﻿using CbzMage.Shared.Extensions;
-
-namespace AzwConverter.Metadata
+﻿namespace AzwMetadata
 {
     public class PageRecords
     {
@@ -96,7 +94,7 @@ namespace AzwConverter.Metadata
             // If we have more records than pagecount filter out the known types
             if (_allRecords.Count > pageCount)
             {
-                var restOfRecords = _allRecords.Skip(pageCount).AsList();
+                var restOfRecords = _allRecords.Skip(pageCount).ToList();
 
                 for (int i = 0, sz = restOfRecords.Count; i < sz; i++)
                 {
@@ -116,8 +114,8 @@ namespace AzwConverter.Metadata
                 }
 
                 // Set the "real" rest and the content records
-                RestOfRecords = restOfRecords.Where(rec => rec != null).AsList();
-                ContentRecords = _allRecords.Take(pageCount).AsList();
+                RestOfRecords = restOfRecords.Where(rec => rec != null).ToList();
+                ContentRecords = _allRecords.Take(pageCount).ToList();
             }
             else
             {

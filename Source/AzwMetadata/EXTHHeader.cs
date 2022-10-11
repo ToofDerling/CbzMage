@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace AzwConverter.Metadata
+namespace AzwMetadata
 {
     public class EXTHHead : BaseHeader
     {

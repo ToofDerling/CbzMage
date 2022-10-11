@@ -1,4 +1,4 @@
-﻿using AzwConverter.Metadata;
+﻿using AzwMetadata;
 using CbzMage.Shared.Helpers;
 using System.Net;
 

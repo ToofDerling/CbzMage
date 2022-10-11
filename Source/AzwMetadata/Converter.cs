@@ -1,6 +1,6 @@
 ﻿using System.Buffers.Binary;
 
-namespace AzwConverter.Metadata
+namespace AzwMetadata
 {
     public static class Converter
     {

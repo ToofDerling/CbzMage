@@ -106,7 +106,7 @@ namespace AzwConverter
             stopWatch.Stop();
             Console.WriteLine();
 
-            if (_action == AzwAction.Convert && pagesCount > 0)
+            if (_action == AzwAction.AzwConvert && pagesCount > 0)
             {
                 var elapsed = stopWatch.Elapsed;
                 var secsPerPage = elapsed.TotalSeconds / pagesCount;
@@ -146,7 +146,7 @@ namespace AzwConverter
                 totalBooks = unconvertedBooks.Count;
                 bookCount = 0;
 
-                if (_action == AzwAction.Convert)
+                if (_action == AzwAction.AzwConvert)
                 {
                     Console.WriteLine();
                     ProgressReporter.Info($"Converting {unconvertedBooks.Count} book{unconvertedBooks.SIf1()}:");
@@ -154,7 +154,7 @@ namespace AzwConverter
                     Parallel.ForEach(unconvertedBooks, options, book =>
                         ConvertBook(book.Key, book.Value, titles[book.Key], convertedTitles, converter, syncer, archive));
                 }
-                else if (_action == AzwAction.Scan)
+                else if (_action == AzwAction.AzwScan)
                 {
                     Console.WriteLine();
                     ProgressReporter.Info($"Listing {unconvertedBooks.Count} unconverted book{unconvertedBooks.SIf1()}:");

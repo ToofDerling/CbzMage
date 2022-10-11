@@ -1,4 +1,4 @@
-﻿namespace AzwConverter.Metadata
+﻿namespace AzwMetadata
 {
     public class MobiMetadata
     {
