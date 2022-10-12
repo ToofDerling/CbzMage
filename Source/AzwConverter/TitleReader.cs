@@ -42,8 +42,7 @@ namespace AzwConverter
         {
             var dict = new ConcurrentDictionary<string, FileInfo>();
 
-            var options = new ParallelOptions { MaxDegreeOfParallelism = Settings.NumberOfThreads };
-            Parallel.ForEach(files, options, file =>
+            Parallel.ForEach(files, Settings.ParallelOptions, file =>
             {
                 dict[File.ReadAllText(file.FullName)] = file;
             });

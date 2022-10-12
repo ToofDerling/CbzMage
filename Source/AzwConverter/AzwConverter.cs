@@ -122,8 +122,6 @@ namespace AzwConverter
             Dictionary<string, FileInfo> titles, Dictionary<string, FileInfo> convertedTitles,
             ArchiveDb archive, TitleSyncer syncer)
         {
-            var options = new ParallelOptions { MaxDegreeOfParallelism = Settings.NumberOfThreads };
-
             var converter = new ConverterEngine();
 
             if (updatedBooks.Count > 0)
@@ -134,7 +132,7 @@ namespace AzwConverter
                 Console.WriteLine();
                 ProgressReporter.Info($"Scanning {updatedBooks.Count} updated book{updatedBooks.SIf1()} for changes:");
 
-                Parallel.ForEach(updatedBooks, options, b => ScanUpdatedBook(converter, archive, b.Key, b.Value, titles[b.Key]));
+                Parallel.ForEach(updatedBooks, Settings.ParallelOptions, b => ScanUpdatedBook(converter, archive, b.Key, b.Value, titles[b.Key]));
             }
 
             if (unconvertedBooks.Count > 0)
@@ -147,7 +145,7 @@ namespace AzwConverter
                     Console.WriteLine();
                     ProgressReporter.Info($"Converting {unconvertedBooks.Count} book{unconvertedBooks.SIf1()}:");
 
-                    Parallel.ForEach(unconvertedBooks, options, book =>
+                    Parallel.ForEach(unconvertedBooks, Settings.ParallelOptions, book =>
                         ConvertBook(book.Key, book.Value, titles[book.Key],
                         convertedTitles.ContainsKey(book.Key) ? convertedTitles[book.Key] : null,
                         converter, syncer, archive));
@@ -157,7 +155,7 @@ namespace AzwConverter
                     Console.WriteLine();
                     ProgressReporter.Info($"Listing {unconvertedBooks.Count} unconverted book{unconvertedBooks.SIf1()}:");
 
-                    Parallel.ForEach(unconvertedBooks, options, b => SyncNewBook(b.Key, titles[b.Key], archive));
+                    Parallel.ForEach(unconvertedBooks, Settings.ParallelOptions, b => SyncNewBook(b.Key, titles[b.Key], archive));
                 }
             }
         }

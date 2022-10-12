@@ -74,7 +74,7 @@ namespace AzwConverter
                 // Tests shows this is a good value for a HDD. Need to test an SSD as well. 
                 numberOfThreads = 3;
             }
-            _numberOfThreads = numberOfThreads;
+            Settings.numberOfThreads = numberOfThreads;
 
             //CompressionLevel
             var compressionLevel = config.GetValue<CompressionLevel>("CompressionLevel");
@@ -96,20 +96,19 @@ namespace AzwConverter
 
         public static string CbzDir { get; private set; }
 
-        private static int _numberOfThreads { get; set; }   
+        private static int numberOfThreads { get; set; }   
 
-        public static int NumberOfThreads => GetNumberOfThreads();
+        public static ParallelOptions ParallelOptions => GetParallelOptions();
 
-        private static int GetNumberOfThreads()
+        private static ParallelOptions GetParallelOptions()
         {
-            var numberOfThreads = Math.Min(_numberOfThreads, Environment.ProcessorCount);
+            var numberOfThreads = Math.Min(Settings.numberOfThreads, Environment.ProcessorCount);
             if (maxThreads > 0)
             {
                 numberOfThreads = maxThreads;
             }
-            return numberOfThreads;
+            return new ParallelOptions { MaxDegreeOfParallelism = numberOfThreads };
         }
-
 
         public static CompressionLevel CompressionLevel { get; private set; }
 
