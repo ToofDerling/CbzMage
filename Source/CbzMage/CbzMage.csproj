@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AzwConverter\AzwConverter.csproj" />
+    <ProjectReference Include="..\CbzMage.Shared\CbzMage.Shared.csproj" />
   </ItemGroup>
 
 </Project>
