@@ -25,7 +25,6 @@ Pdf:
 #if DEBUG
             args = new[] {"AzwScan"};
 #endif
-
             var validAction = false;
 
             string actionStr;
@@ -37,13 +36,20 @@ Pdf:
                 {
                     actionStr += args[1];
                 }
-            
-                if (Enum.TryParse(typeof(AzwAction), actionStr, ignoreCase: true, out var action))
-                {
-                    validAction = true;
 
-                    var converter = new AzwConverter.AzwConverter((AzwAction)action, null);
-                    converter.ConvertOrScan();
+                try
+                {
+                    if (Enum.TryParse(typeof(AzwAction), actionStr, ignoreCase: true, out var action))
+                    {
+                        validAction = true;
+
+                        var converter = new AzwConverter.AzwConverter((AzwAction)action, null);
+                        converter.ConvertOrScan();
+                    }
+                }
+                catch (Exception ex)
+                { 
+                    Console.WriteLine(ex.ToString()); 
                 }
             }
 
