@@ -6,21 +6,22 @@ namespace AzwConverter
     {
         public Dictionary<string, FileInfo[]> ReadBooks()
         {
-            var books = new Dictionary<string, FileInfo[]>();
+            var dict = new ConcurrentDictionary<string, FileInfo[]>();
 
             var dirs = Directory.GetDirectories(Settings.AzwDir, "*_EBOK");
-            foreach (var bookDir in dirs)
+
+            Parallel.ForEach(dirs, Settings.ParallelOptions, bookDir =>
             {
                 var dirInfo = new DirectoryInfo(bookDir);
                 var files = dirInfo.GetFiles();
 
                 if (files.Any(file => file.IsAzwFile()))
                 {
-                    books[Path.GetFileName(bookDir)] = files;
+                    dict[Path.GetFileName(bookDir)] = files;
                 }
-            }
+            });
 
-            return books;
+            return new Dictionary<string, FileInfo[]>(dict);
         }
 
         public Dictionary<string, FileInfo> ReadTitles()
