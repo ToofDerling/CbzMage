@@ -1,5 +1,4 @@
-﻿using System.Reflection.Metadata;
-using System.Text;
+﻿using System.Text;
 
 namespace AzwConverter
 {
@@ -22,7 +21,7 @@ namespace AzwConverter
             return sb.Replace("   ", " ").Replace("  ", " ").ToString().Trim();
         }
 
-        public static string RemoveAllMarkers(this string name)
+        public static string RemoveAnyMarker(this string name)
         {
             foreach (var marker in Settings.AllMarkers)
             {
@@ -32,6 +31,11 @@ namespace AzwConverter
                 }
             }
             return name;
+        }
+
+        public static string AddMarker(this string name, string marker)
+        {
+            return !name.StartsWith(marker) ? $"{marker} {name}" : name;
         }
 
         public static string SIf1(this int count)

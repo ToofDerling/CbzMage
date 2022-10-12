@@ -68,17 +68,14 @@ namespace AzwConverter
             TrimPublishers = trimPublishers ?? Array.Empty<string>();
 
             //NumberOfThreads
-            var numberOfThreads = config.GetValue<int>("NumberOfThreads");
+            numberOfThreads = config.GetValue<int>("NumberOfThreads");
             if (numberOfThreads == default)
             {
-                // Tests shows this is a good value for a HDD. Need to test an SSD as well. 
                 numberOfThreads = 3;
             }
-            Settings.numberOfThreads = numberOfThreads;
 
             //CompressionLevel
-            var compressionLevel = config.GetValue<CompressionLevel>("CompressionLevel");
-            CompressionLevel = compressionLevel;
+            CompressionLevel = config.GetValue<CompressionLevel>("CompressionLevel");
         }
 
         public static string[] TrimPublishers { get; private set; }

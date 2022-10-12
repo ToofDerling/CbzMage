@@ -39,15 +39,15 @@ namespace AzwConverter
 
         public bool IsStateUpdated(string bookId, CbzState state)
         {
-            var found = _db.TryGetValue(bookId, out var oldState);
-            found = found && !oldState.IsEmpty();
+            var isInDb = _db.TryGetValue(bookId, out var oldState);
+            isInDb = isInDb && !oldState.IsEmpty();
 
-            var updated = found
+            var updated = isInDb
                 && ((state.HdCover && !oldState.HdCover) || (state.HdImages > oldState.HdImages));
 
             var nameChanged = state.Name != oldState.Name;
 
-            if (!found || updated || nameChanged)
+            if (!isInDb || updated || nameChanged)
             {
                 SetState(bookId, state);
             }
@@ -69,7 +69,7 @@ namespace AzwConverter
                 state = oldState;
             }
 
-            state.Name = state.Name.RemoveAllMarkers();
+            state.Name = state.Name.RemoveAnyMarker();
 
             _db[bookId] = state;
             _isDirty = true;

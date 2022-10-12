@@ -50,6 +50,7 @@ namespace AzwConverter
                         title = WebUtility.HtmlDecode(title);
 
                         var publisher = metadata.MobiHeader.EXTHHeader.Publisher.ToFileSystemString();
+                        publisher = WebUtility.HtmlDecode(publisher);   
 
                         // Normalize publisher names
                         foreach (var trimmedName in Settings.TrimPublishers)
@@ -124,7 +125,7 @@ namespace AzwConverter
             }
 
             var name = Path.GetFileName(titleFile);
-            name = name.RemoveAllMarkers().Trim();
+            name = name.RemoveAnyMarker().Trim();
 
             var dest = Path.Combine(Settings.ConvertedTitlesDir, name);
             

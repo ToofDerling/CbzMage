@@ -2,6 +2,6 @@
 {
     public enum AzwAction
     {
-        AzwScan, AzwConvert, AzwAnalyze
+        AzwScan, AzwConvert
     }
 }

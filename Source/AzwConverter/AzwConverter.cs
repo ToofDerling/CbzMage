@@ -19,7 +19,7 @@ namespace AzwConverter
         private volatile int pagesCount;
 
         // Try to be as lenient as possible (and Trim the results).
-        private Regex _publisherTitleRegex = new(@"(\[)(?<publisher>.*?)(\])(?<title>.*)");
+        private readonly Regex _publisherTitleRegex = new(@"(\[)(?<publisher>.*?)(\])(?<title>.*)");
 
         private readonly AzwAction _action;
 
@@ -48,14 +48,6 @@ namespace AzwConverter
             Console.Write("Reading current titles: ");
             var titles = reader.ReadTitles();
             Console.WriteLine(titles.Count);
-
-            //if (_action == AzwAction.Analyze)
-            //{
-            //    var analyzer = new AzwAnalyzer();
-            //    analyzer.Analyze(books, titles, GetNumberOfThreads());
-
-            //    return;
-            //}
 
             Console.Write("Reading archived titles: ");
             var archive = new ArchiveDb();
@@ -94,7 +86,7 @@ namespace AzwConverter
             {
                 if (updatedBooks.Count > 0 || unconvertedBooks.Count > 0)
                 {
-                    RunActionsInParallel(books, updatedBooks, unconvertedBooks, titles, convertedTitles, archive, syncer);
+                    RunActionsInParallel(updatedBooks, unconvertedBooks, titles, convertedTitles, archive, syncer);
                 }
             }
             finally
@@ -117,8 +109,8 @@ namespace AzwConverter
             }
         }
 
-        private void RunActionsInParallel(Dictionary<string, FileInfo[]> books,
-            List<KeyValuePair<string, FileInfo[]>> updatedBooks, List<KeyValuePair<string, FileInfo[]>> unconvertedBooks,
+        private void RunActionsInParallel(List<KeyValuePair<string, FileInfo[]>> updatedBooks, 
+            List<KeyValuePair<string, FileInfo[]>> unconvertedBooks,
             Dictionary<string, FileInfo> titles, Dictionary<string, FileInfo> convertedTitles,
             ArchiveDb archive, TitleSyncer syncer)
         {
@@ -132,7 +124,8 @@ namespace AzwConverter
                 Console.WriteLine();
                 ProgressReporter.Info($"Scanning {updatedBooks.Count} updated book{updatedBooks.SIf1()} for changes:");
 
-                Parallel.ForEach(updatedBooks, Settings.ParallelOptions, b => ScanUpdatedBook(converter, archive, b.Key, b.Value, titles[b.Key]));
+                Parallel.ForEach(updatedBooks, Settings.ParallelOptions, book => 
+                    ScanUpdatedBook(converter, archive, book.Key, book.Value, titles[book.Key]));
             }
 
             if (unconvertedBooks.Count > 0)
@@ -155,7 +148,8 @@ namespace AzwConverter
                     Console.WriteLine();
                     ProgressReporter.Info($"Listing {unconvertedBooks.Count} unconverted book{unconvertedBooks.SIf1()}:");
 
-                    Parallel.ForEach(unconvertedBooks, Settings.ParallelOptions, b => SyncNewBook(b.Key, titles[b.Key], archive));
+                    Parallel.ForEach(unconvertedBooks, Settings.ParallelOptions, book => 
+                        SyncNewBook(book.Key, titles[book.Key], archive));
                 }
             }
         }
@@ -180,7 +174,7 @@ namespace AzwConverter
             var cbzFile = Path.Combine(publisherDir, $"{title}.cbz");
             var state = converter.ConvertBook(bookId, dataFiles, cbzFile);
 
-            var newTitleFile = RemoveMarker(titleFile);
+            var newTitleFile = RemoveMarkerFromFile(titleFile);
             syncer.SyncConvertedTitle(bookId, newTitleFile, convertedTitleFile);
 
             // Title may have been renamed between scanning and converting, so update the archive.
@@ -195,8 +189,8 @@ namespace AzwConverter
             sb = new StringBuilder();
             sb.AppendLine();
 
-            var i = Interlocked.Increment(ref bookCount);
-            var str = $"{i}/{totalBooks} - ";
+            var count = Interlocked.Increment(ref bookCount);
+            var str = $"{count}/{totalBooks} - ";
             var insert = " ".PadLeft(str.Length);
 
             sb.Append(str).Append(Path.GetFileName(path));
@@ -216,7 +210,7 @@ namespace AzwConverter
 
             if (updated)
             {
-                var newTitleFile = AddMarker(titleFile, Settings.UpdatedTitleMarker);
+                var newTitleFile = AddMarkerToFile(titleFile, Settings.UpdatedTitleMarker);
 
                 sb.AppendLine();
                 sb.Append(insert).Append(Path.GetFileName(newTitleFile));
@@ -235,19 +229,15 @@ namespace AzwConverter
             var emptyState = new CbzState { Name = titleFile.Name };
             archive.SetState(bookId, emptyState);
 
-            var newTitleFile = AddMarker(titleFile, Settings.NewTitleMarker);
+            var newTitleFile = AddMarkerToFile(titleFile, Settings.NewTitleMarker);
             BookCountOutputHelper(newTitleFile, out var sb);
 
             ProgressReporter.Done(sb.ToString());
         }
 
-        private static string AddMarker(FileInfo titleFile, string marker)
+        private static string AddMarkerToFile(FileInfo titleFile, string marker)
         {
-            var name = titleFile.Name;
-            if (!name.StartsWith(marker))
-            {
-                name = $"{marker} {name}";
-            }
+            var name = titleFile.Name.AddMarker(marker);
 
             var newTitleFile = Path.Combine(Settings.TitlesDir, name);
             titleFile.MoveTo(newTitleFile);
@@ -255,9 +245,9 @@ namespace AzwConverter
             return newTitleFile;
         }
 
-        private static string RemoveMarker(FileInfo titleFile)
+        private static string RemoveMarkerFromFile(FileInfo titleFile)
         {
-            var name = titleFile.Name.RemoveAllMarkers();
+            var name = titleFile.Name.RemoveAnyMarker();
 
             var newTitleFile = Path.Combine(Settings.TitlesDir, name);
             titleFile.MoveTo(newTitleFile);
