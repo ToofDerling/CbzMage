@@ -7,7 +7,7 @@ namespace CbzMage
     internal class Program
     {
         public static string _usage = @"
-All commands are case insensitive.
+Commands are case insensitive. 
 
 AzwConvert [or Azw Convert]
     Scans awz directory and converts all unconverted books to cbz files.
