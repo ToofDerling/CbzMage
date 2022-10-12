@@ -1,4 +1,5 @@
 ﻿using AzwConverter;
+using CbzMage.Shared.Helpers;
 using System.Runtime.InteropServices;
 
 namespace CbzMage
@@ -49,13 +50,13 @@ Pdf:
                 }
                 catch (Exception ex)
                 { 
-                    Console.WriteLine(ex.ToString()); 
+                    ProgressReporter.Error("CbzMage error:", ex); 
                 }
             }
 
             if (!validAction)
             {
-                Console.WriteLine(_usage);
+                ProgressReporter.Info(_usage);
             }
 
             // If this is run as a "gui" let the console hang around
