@@ -10,16 +10,14 @@ namespace AzwConverter
 {
     public class AzwConverter
     {
+        // For testing. If >0 overrules the result of GetUnconvertedBooks
+        private const int maxBooks = 0;        
+        
         // Global veriables updated by processing threads
         private volatile int bookCount;
         private int totalBooks;
         private volatile int pagesCount;
-
-        // For testing. If >0 overrules the result of GetUnconvertedBooks
-        private const int maxBooks = 0;
-        // For testing. If >0 overrules the result of GetNumberOfThreads
-        private const int maxThreads = 1;
-
+   
         // Try to be as lenient as possible (and Trim the results).
         private Regex _publisherTitleRegex = new(@"(\[)(?<publisher>.*?)(\])(?<title>.*)");
 
@@ -124,9 +122,7 @@ namespace AzwConverter
             Dictionary<string, FileInfo> titles, Dictionary<string, FileInfo> convertedTitles,
             ArchiveDb archive, TitleSyncer syncer)
         {
-
-            var numberOfThreads = GetNumberOfThreads();
-            var options = new ParallelOptions { MaxDegreeOfParallelism = numberOfThreads };
+            var options = new ParallelOptions { MaxDegreeOfParallelism = Settings.NumberOfThreads };
 
             var converter = new ConverterEngine();
 
@@ -311,17 +307,7 @@ namespace AzwConverter
             }
             return unConvertedBooks;
         }
-
-        private static int GetNumberOfThreads()
-        {
-            var numberOfThreads = Math.Min(Settings.NumberOfThreads, Environment.ProcessorCount);
-            if (maxThreads > 0)
-            {
-                numberOfThreads = maxThreads;
-            }
-            return numberOfThreads;
-        }
-
+        
         private void PrintCbzState(string cbzFile, CbzState state)
         {
             Interlocked.Add(ref pagesCount, state.Pages);

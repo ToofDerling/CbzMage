@@ -5,6 +5,9 @@ namespace AzwConverter
 {
     public class Settings
     {
+        // For testing. If >0 overrules the result of GetNumberOfThreads
+        private const int maxThreads = 0;
+
         public static void ReadAppSettings(IConfiguration config)
         {
             //AzwDir
@@ -68,9 +71,10 @@ namespace AzwConverter
             var numberOfThreads = config.GetValue<int>("NumberOfThreads");
             if (numberOfThreads == default)
             {
+                // Tests shows this is a good value for a HDD. Need to test an SSD as well. 
                 numberOfThreads = 3;
             }
-            NumberOfThreads = numberOfThreads;
+            _numberOfThreads = numberOfThreads;
 
             //CompressionLevel
             var compressionLevel = config.GetValue<CompressionLevel>("CompressionLevel");
@@ -92,8 +96,20 @@ namespace AzwConverter
 
         public static string CbzDir { get; private set; }
 
-        // Tests shows this is a good value for a HDD. Need to test an SSD as well. 
-        public static int NumberOfThreads { get; private set; }
+        private static int _numberOfThreads { get; set; }   
+
+        public static int NumberOfThreads => GetNumberOfThreads();
+
+        private static int GetNumberOfThreads()
+        {
+            var numberOfThreads = Math.Min(_numberOfThreads, Environment.ProcessorCount);
+            if (maxThreads > 0)
+            {
+                numberOfThreads = maxThreads;
+            }
+            return numberOfThreads;
+        }
+
 
         public static CompressionLevel CompressionLevel { get; private set; }
 
