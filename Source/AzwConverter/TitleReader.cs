@@ -1,4 +1,6 @@
-﻿namespace AzwConverter
+﻿using System.Collections.Concurrent;
+
+namespace AzwConverter
 {
     public class TitleReader
     {
@@ -24,15 +26,29 @@
         public Dictionary<string, FileInfo> ReadTitles()
         {
             var directoryInfo = new DirectoryInfo(Settings.TitlesDir);
+            var files = directoryInfo.EnumerateFiles().Where(f => f.Name != ArchiveDb.DbName);
 
-            return directoryInfo.EnumerateFiles().Where(f => f.Name != "archive.db").ToDictionary(f => File.ReadAllText(f.FullName), f => f);
+            return ReadFiles(files);
         }
 
         public Dictionary<string, FileInfo> ReadConvertedTitles()
         {
             var directoryInfo = new DirectoryInfo(Settings.ConvertedTitlesDir);
 
-            return directoryInfo.EnumerateFiles().ToDictionary(f => File.ReadAllText(f.FullName), f => f);
+            return ReadFiles(directoryInfo.EnumerateFiles());
+        }
+
+        private Dictionary<string, FileInfo> ReadFiles(IEnumerable<FileInfo> files)
+        {
+            var dict = new ConcurrentDictionary<string, FileInfo>();
+
+            var options = new ParallelOptions { MaxDegreeOfParallelism = Settings.NumberOfThreads };
+            Parallel.ForEach(files, options, file =>
+            {
+                dict[File.ReadAllText(file.FullName)] = file;
+            });
+
+            return new Dictionary<string, FileInfo>(dict);
         }
     }
 }

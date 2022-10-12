@@ -11,13 +11,13 @@ namespace AzwConverter
     public class AzwConverter
     {
         // For testing. If >0 overrules the result of GetUnconvertedBooks
-        private const int maxBooks = 0;        
-        
+        private const int maxBooks = 0;
+
         // Global veriables updated by processing threads
         private volatile int bookCount;
         private int totalBooks;
         private volatile int pagesCount;
-   
+
         // Try to be as lenient as possible (and Trim the results).
         private Regex _publisherTitleRegex = new(@"(\[)(?<publisher>.*?)(\])(?<title>.*)");
 
@@ -29,12 +29,12 @@ namespace AzwConverter
         {
             using IHost host = Host.CreateDefaultBuilder().Build();
             var config = host.Services.GetRequiredService<IConfiguration>();
-          
+
             Settings.ReadAppSettings(config);
 
-            Console.WriteLine($"Azw files: {Settings.AzwDir}");
-            Console.WriteLine($"Title files: {Settings.TitlesDir}");
-            Console.WriteLine($"Cbz backups: {Settings.CbzDir}");
+            ProgressReporter.Info($"Azw files: {Settings.AzwDir}");
+            ProgressReporter.Info($"Title files: {Settings.TitlesDir}");
+            ProgressReporter.Info($"Cbz backups: {Settings.CbzDir}");
             Console.WriteLine();
 
             _action = action;
@@ -148,7 +148,9 @@ namespace AzwConverter
                     ProgressReporter.Info($"Converting {unconvertedBooks.Count} book{unconvertedBooks.SIf1()}:");
 
                     Parallel.ForEach(unconvertedBooks, options, book =>
-                        ConvertBook(book.Key, book.Value, titles[book.Key], convertedTitles, converter, syncer, archive));
+                        ConvertBook(book.Key, book.Value, titles[book.Key],
+                        convertedTitles.ContainsKey(book.Key) ? convertedTitles[book.Key] : null,
+                        converter, syncer, archive));
                 }
                 else if (_action == AzwAction.AzwScan)
                 {
@@ -161,7 +163,7 @@ namespace AzwConverter
         }
 
         private void ConvertBook(string bookId, FileInfo[] dataFiles,
-            FileInfo titleFile, Dictionary<string, FileInfo> convertedTitles,
+            FileInfo titleFile, FileInfo? convertedTitleFile,
             ConverterEngine converter, TitleSyncer syncer, ArchiveDb archive)
         {
             // Validate the titlefile
@@ -181,9 +183,9 @@ namespace AzwConverter
             var state = converter.ConvertBook(bookId, dataFiles, cbzFile);
 
             var newTitleFile = RemoveMarker(titleFile);
-            syncer.SyncConvertedTitle(bookId, newTitleFile, convertedTitles);
+            syncer.SyncConvertedTitle(bookId, newTitleFile, convertedTitleFile);
 
-            // Title may have been renamed between scanning and converting, so sync it again.
+            // Title may have been renamed between scanning and converting, so update the archive.
             state.Name = Path.GetFileName(newTitleFile);
             archive.SetState(bookId, state);
 
@@ -307,7 +309,7 @@ namespace AzwConverter
             }
             return unConvertedBooks;
         }
-        
+
         private void PrintCbzState(string cbzFile, CbzState state)
         {
             Interlocked.Add(ref pagesCount, state.Pages);

@@ -116,27 +116,22 @@ namespace AzwConverter
             return archivedTitleCount;
         }
 
-        public string SyncConvertedTitle(string bookId, string titleFile, Dictionary<string, FileInfo> convertedTitles)
+        public string SyncConvertedTitle(string bookId, string titleFile, FileInfo? convertedTitleFile)
         {
-            var foundExisting = convertedTitles.TryGetValue(bookId, out var existingTitleFile);
-
-            // Prevent duplicate bookId 
-            if (foundExisting)
+            if (convertedTitleFile != null)
             {
-                existingTitleFile.Delete();
+                convertedTitleFile.Delete();
             }
 
             var name = Path.GetFileName(titleFile);
-            name = name.RemoveAllMarkers();
+            name = name.RemoveAllMarkers().Trim();
 
-            name = name.Trim();
             var dest = Path.Combine(Settings.ConvertedTitlesDir, name);
             
             File.Copy(titleFile, dest);
             File.SetLastWriteTime(dest, DateTime.Now);
 
             // Update with the synced title 
-            convertedTitles[bookId] = new(dest);
             return name;
         }
     }
