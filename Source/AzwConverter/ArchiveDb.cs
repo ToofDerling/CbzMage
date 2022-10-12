@@ -6,7 +6,7 @@ namespace AzwConverter
 {
     public class ArchiveDb
     {
-        private const string dbName = "archive.db";
+        public static string DbName => "archive.db";
 
         private readonly string _dbFile;
 
@@ -16,7 +16,7 @@ namespace AzwConverter
 
         public ArchiveDb()
         {
-            _dbFile = Path.Combine(Settings.TitlesDir, dbName);
+            _dbFile = Path.Combine(Settings.TitlesDir, DbName);
             _db = new();
 
             if (File.Exists(_dbFile))
