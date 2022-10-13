@@ -16,6 +16,8 @@ Download CbzMage to your hard drive and unpack it anywhere. Open appsettings.jso
 
 You can have a look at the other configuration options in appsettings.json, they are all thoroughly documented there (I hope). Or you can open a command shell and run CbzMage right away: 
 
+**Important:** Close Kdl before running CbzMage. Kdl locks some (all?) of the azw files when it's running, so there's a high chance that CbzMage will crash because it can't read a locked azw file.
+
 **Running CbzMage with the "AzwConvert" parameter:**
 
 * In the titles directory (TitlesDir in appsettings.json) you will find a small file with the title and publisher of each comic book currently in the azw directory.  
