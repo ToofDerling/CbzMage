@@ -27,9 +27,10 @@ You can have a look at the other configuration options in appsettings.json, they
 
 **Notes**
 
-* **Updated Titles.** This means a title that has been improved, ie it now has a HD cover or a larger amount of HD images. CbzMage will scan the azw files and detect if any of them have been updated (and add the ".UPDATED" marker to any updated title). I don't know if an update can happen automatically. I *think* I saw it happen once, but it may only happen when you redownload a file to Kdl.
-* **The directories.** The titles directory will always reflect the comic books currently in Kdl, it's updated each time you run CbzMage. The converted titles directory contains every converted title ever. To reconvert a title you must delete the file in that directory.
+* **Updated Title.** This means a title that has been improved, ie it now has a HD cover or more HD images than before. CbzMage will scan the azw files and detect if any of them have been updated (and add the ".UPDATED" marker to any updated title). I don't know if an update can happen automatically. I *think* I saw it happen once, but it may only happen when you redownload a file to Kdl.
+* **The titles directory** will always reflect the comic books currently in Kdl and is updated each time you run CbzMage. If you edit publisher or name of a title the values will be used when the title is converted 
+* **The converted titles directory.** contains every converted title ever. To reconvert a title you must delete the file in that directory. 
 * **The database.** In the titles directory there's a database file with the state of every title that has passed through CbzMage. It's used when checking if a title has been updated and to store the new name and publisher of the title if you edit these values.
-* **The "GUI" mode** This simply means that if you run CbzMage by doubleclicking the exe it will detect that and make the window hang around until you press enter. You can also create a shortcut for each of the modes. Open Properties for the shortcut and add the parameter in Target, and have one file to doubleclick on for scan and one for convert.      
+* **The "GUI" mode** This simply means that if you run CbzMage by doubleclicking the exe it will detect that and make the window hang around until you press enter. You can also create a shortcut for each of the modes (open Properties for the shortcut and add the parameter in Target) and have one file to doubleclick on for scan and one for convert.      
 
-That's it. If you have any questions or want to request a feature use Discussions. If you want to report a bug use Issues. Have fun converting.
+That's it. If you have any questions or want to request a feature use Discussions. If you want to report a bug use Issues. Happy converting.
