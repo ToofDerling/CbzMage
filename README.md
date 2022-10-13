@@ -19,7 +19,7 @@ You can have a look at the other configuration options in appsettings.json, they
 **Running CbzMage with the "AzwConvert" parameter:**
 
 * In the titles directory (TitlesDir in appsettings.json) you will find a small file with the title and publisher of each comic book currently in the azw directory.  
-* In a subdirectory of the titles directory you will find a directory with a similar file for each converted title. If you ever want **to reconvert a title simply delete the title file from the converted titles directory.**
+* In a subdirectory of the titles directory you will find a similar file for each converted title. If you ever want **to reconvert a title simply delete the title file from the converted titles directory.**
 * In the cbz directory (CbzDir in appsettings.json) you will find the converted comic books sorted by publisher. 
 
 **Running CbzMage with the "AzwScan" parameter:**
