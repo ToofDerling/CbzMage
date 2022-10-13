@@ -1,2 +1,35 @@
-# CoreComicsConverter
-Convert pdf comics files to cbz
+# CbzMage
+CzbMage is a comic book converter. It aims to do exactly two things:
+1. Convert azw files - like the ones found in Kdl for PC (or Mac) - to cbz files, ready to read in your favorite cbz reader. If CbzMage finds a matching azw.res file it will merge in any HD images found for the highest possible quality. Comic title and publisher will be read from the azw file, running CbzMage in scan mode will allow you to edit the values before the conversion. **This all works fully in CbzMage 0.1.**
+2. Convert pdf files to high quality cbz files. This does not work yet.
+
+CbzMage is a commandline tool written in c#. It requires no installation, very little configuration and no drm plugin/tool (the last part may change in the future). It does require that **.NET 6** is installed on your commputer.
+
+Note that this release is for Windows. If I get a request for it, I'll be happy to create a Mac release. Since the Kdl app is PC or Mac only I don't think it makes sense to do a release that targets Linux.
+
+## Azw conversion.
+
+Download CbzMage to your hard drive and unpack it anywhere. Open appsettings.json in a text editor and **configure AzwDir**. Please note the comment about moving the azw directory, **running CbzMage for the first time will require double the size of your azw directory.**
+
+You can have a look at the other configuration options in appsettings.json, they are all thoroughly documented there (I hope). Or you can open a command shell and run CbzMage right away: 
+
+**Running CbzMage with the "AzwConvert" parameter:**
+
+* In the titles directory (TitlesDir in appsettings.json) you will find a small file with the title and publisher of each comic book currently in the azw directory.  
+* In a subdirectory of the titles directory you will find a directory with a similar file for each converted title. If you ever want **to reconvert a title simply delete the title file from the converted titles directory.**
+* In the cbz directory (CbzDir in appsettings.json) you will find the converted comic books sorted by publisher. 
+
+**Running CbzMage with the "AzwScan" parameter:**
+
+* Like the conversion, in the titles directory you will find a small file with the title and publisher of each comic book currently in the azw directory.  
+* Unlike the conversion, each new title will have a ".NEW" marker and each updated title will have an ".UPDATED" marker. 
+* You can now edit the publishers and titles as you like and the values will be used when you run AzwConvert. You don't have to remove the markers, the conversion will handle it automatically.
+
+**Notes**
+
+* **Updated Titles.** This means a title that has been improved, ie it now has a HD cover or a larger amount of HD images. CbzMage will scan the azw files and detect if any of them have been updated (and add the ".UPDATED" marker to any updated title). I don't know if an update can happen automatically. I *think* I saw it happen once, but it may only happen when you redownload a file to Kdl.
+* **The directories.** The titles directory will always reflect the comic books currently in Kdl, it's updated each time you run CbzMage. The converted titles directory contains every converted title ever. To reconvert a title you must delete the file in that directory.
+* **The database.** In the titles directory there's a database file with the state of every title that has passed through CbzMage. It's used when checking if a title has been updated and to store the new name and publisher of the title if you edit these values.
+* **The "GUI" mode** This simply means that if you run CbzMage by doubleclicking the exe it will detect that and make the window hang around until you press enter. You can also create a shortcut for each of the modes. Open Properties for the shortcut and add the parameter in Target, and have one file to doubleclick on for scan and one for convert.      
+
+That's it. If you have any questions or want to request a feature use Discussions. If you want to report a bug use Issues. Have fun converting.
