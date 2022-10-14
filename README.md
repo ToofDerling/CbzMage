@@ -3,7 +3,7 @@ CzbMage is a comic book converter. It aims to do exactly two things:
 1. **Convert azw files to nice cbz files**, ready to read in your favorite cbz reader. Azw files just like the ones found in Kdl for PC (or Mac). 
 Also, if CbzMage finds a matching azw.res file it will **merge in any HD images found for the highest possible quality**. 
 Comic title and publisher will be read from the azw file, running CbzMage in scan mode will allow you to edit the values before the conversion. 
-**All of this works fully in [CbzMage Version 0.5](https://github.com/ToofDerling/CbzMage/releases/tag/v0.4).**
+**All of this works fully in [CbzMage Version 0.6](https://github.com/ToofDerling/CbzMage/releases/tag/v0.6).**
 2. Convert pdf files to high quality cbz files. This does not work yet.
 
 CbzMage is a commandline tool written in c#. It requires no installation, very little configuration and no drm plugin/tool (the last part may change in the future). It does require that **[.NET 6](https://dotnet.microsoft.com/en-us/download)** is installed on your commputer.
@@ -23,6 +23,7 @@ You can have a look at the other configuration options in appsettings.json, they
 * In the titles directory (TitlesDir in appsettings.json) you will find a small file with the title and publisher of each comic book currently in the azw directory.  
 * In a subdirectory of the titles directory you will find a similar file for each converted title. If you ever want **to reconvert a title simply delete the title file from the converted titles directory.**
 * In the cbz directory (CbzDir in appsettings.json) you will find the converted comic books sorted by publisher. 
+* If you set SaveCover to true in appsettings.json CbzMage will save a copy of the cover image together with the cbz file. If you specify SaveCoverDir the cover image will be saved there instead.
 
 **Running CbzMage with the "AzwScan" parameter:**
 
