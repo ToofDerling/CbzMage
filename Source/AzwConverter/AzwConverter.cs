@@ -35,6 +35,11 @@ namespace AzwConverter
             ProgressReporter.Info($"Azw files: {Settings.AzwDir}");
             ProgressReporter.Info($"Title files: {Settings.TitlesDir}");
             ProgressReporter.Info($"Cbz backups: {Settings.CbzDir}");
+            if (Settings.SaveCover && Settings.SaveCoverDir != null)
+            {
+                ProgressReporter.Info($"Saved covers: {Settings.SaveCoverDir}");
+            }
+
             Console.WriteLine();
 
             _action = action;
@@ -86,7 +91,7 @@ namespace AzwConverter
             {
                 if (updatedBooks.Count > 0 || unconvertedBooks.Count > 0)
                 {
-                    RunActionsInParallel(updatedBooks, unconvertedBooks, titles, convertedTitles, archive, syncer);
+                    RunActionsInParallel(updatedBooks, unconvertedBooks, titles, convertedTitles, syncer, archive);
                 }
             }
             finally
@@ -96,8 +101,7 @@ namespace AzwConverter
             stopWatch.Stop();
             Console.WriteLine();
 
-            if ((_action == AzwAction.AzwConvert)
-                && pagesCount > 0)
+            if (_action == AzwAction.AzwConvert && pagesCount > 0)
             {
                 var elapsed = stopWatch.Elapsed;
                 var secsPerPage = elapsed.TotalSeconds / pagesCount;
@@ -113,7 +117,7 @@ namespace AzwConverter
         private void RunActionsInParallel(List<KeyValuePair<string, FileInfo[]>> updatedBooks,
             List<KeyValuePair<string, FileInfo[]>> unconvertedBooks,
             Dictionary<string, FileInfo> titles, Dictionary<string, FileInfo> convertedTitles,
-            ArchiveDb archive, TitleSyncer syncer)
+            TitleSyncer syncer, ArchiveDb archive)
         {
             if (updatedBooks.Count > 0)
             {
@@ -170,14 +174,7 @@ namespace AzwConverter
             publisherDir.CreateDirIfNotExists();
 
             var cbzFile = Path.Combine(publisherDir, $"{title}.cbz");
-
-            string coverFile = null;
-            if (Settings.SaveCover)
-            {
-                coverFile = Settings.SaveCoverDir != null
-                    ? Path.Combine(Settings.SaveCoverDir, $"{titleFile.Name.RemoveAnyMarker()}.jpg")
-                    : Path.ChangeExtension(cbzFile, ".jpg");
-            }
+            var coverFile = GetCoverFile(titleFile, cbzFile);
 
             var converter = new ConverterEngine();
             var state = converter.ConvertBook(bookId, dataFiles, cbzFile, coverFile);
@@ -190,6 +187,18 @@ namespace AzwConverter
             archive.SetState(bookId, state);
 
             PrintCbzState(cbzFile, state);
+        }
+
+        private string GetCoverFile(FileInfo titleFile, string cbzFile)
+        {
+            if (Settings.SaveCover)
+            {
+                return Settings.SaveCoverDir != null
+                    ? Path.Combine(Settings.SaveCoverDir, $"{titleFile.Name.RemoveAnyMarker()}.jpg")
+                    : Path.ChangeExtension(cbzFile, ".jpg");
+            }
+
+            return null;
         }
 
         private string BookCountOutputHelper(string path, out StringBuilder sb)
