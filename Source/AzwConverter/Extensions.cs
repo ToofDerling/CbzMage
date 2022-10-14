@@ -33,20 +33,11 @@ namespace AzwConverter
             return name;
         }
 
-        public static string AddMarker(this string name, string marker)
-        {
-            return !name.StartsWith(marker) ? $"{marker} {name}" : name;
-        }
+        public static string AddMarker(this string name, string marker) => !name.StartsWith(marker) ? $"{marker} {name}" : name;
 
-        public static string SIf1(this int count)
-        {
-            return count != 1 ? "s" : string.Empty;
-        }
+        public static string SIf1(this int count) => count != 1 ? "s" : string.Empty;
 
-        public static string SIf1<T>(this IEnumerable<T> enu)
-        {
-            return enu.Count().SIf1();
-        }
+        public static string SIf1<T>(this IEnumerable<T> enu) => enu.Count().SIf1();
 
         public static void CreateDirIfNotExists(this string dir)
         {
@@ -56,14 +47,8 @@ namespace AzwConverter
             }
         }
 
-        public static bool IsAzwFile(this FileInfo fileInfo)
-        {
-            return fileInfo.FullName.EndsWith(Settings.AzwExt);
-        }
+        public static bool IsAzwFile(this FileInfo fileInfo) => fileInfo.FullName.EndsWith(Settings.AzwExt);
 
-        public static bool IsAzwResFile(this FileInfo fileInfo)
-        {
-            return fileInfo.FullName.EndsWith(Settings.AzwResExt);
-        }
+        public static bool IsAzwResFile(this FileInfo fileInfo) => fileInfo.FullName.EndsWith(Settings.AzwResExt);
     }
 }
