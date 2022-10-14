@@ -8,7 +8,7 @@ Comic title and publisher will be read from the azw file, running CbzMage in sca
 
 CbzMage is a commandline tool written in c#. It requires no installation, very little configuration and no drm plugin/tool (the last part may change in the future). It does require that **[.NET 6](https://dotnet.microsoft.com/en-us/download)** is installed on your commputer.
 
-Note that this release is for Windows. If I get a request for it, I'll be happy to create a Mac release. Since the Kdl app is PC or Mac only I don't think it makes sense to do a release that targets Linux.
+Note that this release is for Windows. If I get a request for it, I'll be happy to create a Mac release. Since the Kdl app is PC or Mac only I don't think it makes much sense to do a release that targets Linux.
 
 ## Azw conversion.
 
