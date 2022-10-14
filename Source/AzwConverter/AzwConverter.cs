@@ -175,7 +175,7 @@ namespace AzwConverter
             if (Settings.SaveCover)
             {
                 coverFile = Settings.SaveCoverDir != null
-                    ? Path.Combine(Settings.SaveCoverDir, $"{titleFile.Name}.jpg")
+                    ? Path.Combine(Settings.SaveCoverDir, $"{titleFile.Name.RemoveAnyMarker()}.jpg")
                     : Path.ChangeExtension(cbzFile, ".jpg");
             }
 
