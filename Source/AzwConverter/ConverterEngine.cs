@@ -8,18 +8,15 @@ namespace AzwConverter
 {
     public class ConverterEngine
     {
-        private bool _createCbz = true;
-        private string _cbzFile;
-
-        private string _coverFile;
+        private string? _cbzFile;
+        private string? _coverFile;
 
         public CbzState ScanBook(string bookId, FileInfo[] dataFiles)
         {
-            _createCbz = false;
             return ConvertBook(bookId, dataFiles, null, null);
         }
 
-        public CbzState ConvertBook(string bookId, FileInfo[] dataFiles, string cbzFile, string coverFile)
+        public CbzState ConvertBook(string bookId, FileInfo[] dataFiles, string? cbzFile, string? coverFile)
         {
             _cbzFile = cbzFile;
             _coverFile = coverFile;
@@ -38,9 +35,10 @@ namespace AzwConverter
                 using var hdStream = hdMappedFile.CreateViewStream();
 
                 metadata.ReadHDImageRecords(hdStream);
-                if (_createCbz)
+                
+                if (_cbzFile != null)
                 {
-                    return CreateCbz(cbzFile, metadata.PageRecordsHD, metadata.PageRecords);
+                    return CreateCbz(metadata.PageRecordsHD, metadata.PageRecords);
                 }
                 else
                 {
@@ -53,11 +51,12 @@ namespace AzwConverter
                 sb.AppendLine();
                 sb.Append(bookId).Append(" / ").Append(metadata.MobiHeader.FullName);
                 sb.Append(": no HD image container");
+
                 ProgressReporter.Warning(sb.ToString());
 
-                if (_createCbz)
+                if (_cbzFile != null)
                 {
-                    return CreateCbz(cbzFile, null, metadata.PageRecords);
+                    return CreateCbz(null, metadata.PageRecords);
                 }
                 else
                 {
@@ -66,23 +65,23 @@ namespace AzwConverter
             }
         }
 
-        private CbzState CreateCbz(string cbzFile, PageRecords? hdImageRecords, PageRecords sdImageRecords)
+        private CbzState CreateCbz(PageRecords? hdImageRecords, PageRecords sdImageRecords)
         {
-            var tempFile = $"{cbzFile}.temp";
+            var tempFile = $"{_cbzFile}.temp";
             File.Delete(tempFile);
 
             var state = ReadAndCompress(tempFile, hdImageRecords, sdImageRecords);
 
-            File.Delete(cbzFile);
-            File.Move(tempFile, cbzFile);
+            File.Delete(_cbzFile);
+            File.Move(tempFile, _cbzFile);
 
             return state;
         }
 
-        private CbzState ReadAndCompress(string cbzFile, PageRecords? hdImageRecords, PageRecords sdImageRecords)
+        private CbzState ReadAndCompress(string tempFile, PageRecords? hdImageRecords, PageRecords sdImageRecords)
         {
-            using var zipArchive = ZipFile.Open(cbzFile, ZipArchiveMode.Create);
-            return ReadAndCompressPages(zipArchive, hdImageRecords, sdImageRecords, cbzFile);
+            using var zipArchive = ZipFile.Open(tempFile, ZipArchiveMode.Create);
+            return ReadAndCompressPages(zipArchive, hdImageRecords, sdImageRecords);
         }
 
         private CbzState ReadPages(PageRecords? hdImageRecords, PageRecords sdImageRecords)
@@ -91,7 +90,7 @@ namespace AzwConverter
             return ReadAndCompressPages(null, hdImageRecords, sdImageRecords);
         }
 
-        private CbzState ReadAndCompressPages(ZipArchive? zipArchive, PageRecords? hdImageRecords, PageRecords sdImageRecords, string cbzFile = null)
+        private CbzState ReadAndCompressPages(ZipArchive? zipArchive, PageRecords? hdImageRecords, PageRecords sdImageRecords)
         {
             var state = new CbzState();
 
@@ -110,7 +109,7 @@ namespace AzwConverter
             {
                 coverRecord = sdImageRecords.CoverRecord;
             }
-            
+
             if (coverRecord != null)
             {
                 WriteData(zipArchive, coverName, coverRecord, isCover: true);
