@@ -46,8 +46,8 @@ namespace AzwConverter
                             continue;
                         }
 
-                        var title = CleanString(metadata.MobiHeader.FullName);
-                        var publisher = CleanString(metadata.MobiHeader.EXTHHeader.Publisher);
+                        var title = Clean(metadata.MobiHeader.FullName);
+                        var publisher = Clean(metadata.MobiHeader.EXTHHeader.Publisher);
 
                         // Normalize publisher names
                         foreach (var trimmedName in Settings.TrimPublishers)
@@ -72,7 +72,7 @@ namespace AzwConverter
                         syncedBookCount++;
                     }
 
-                    static string CleanString(string str)
+                    static string Clean(string str)
                     { 
                         str = WebUtility.HtmlDecode(str);
                         return str.ToFileSystemString();
