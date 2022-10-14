@@ -96,7 +96,7 @@ namespace AzwConverter
             stopWatch.Stop();
             Console.WriteLine();
 
-            if ((_action == AzwAction.AzwConvert) 
+            if ((_action == AzwAction.AzwConvert)
                 && pagesCount > 0)
             {
                 var elapsed = stopWatch.Elapsed;
@@ -110,13 +110,11 @@ namespace AzwConverter
             }
         }
 
-        private void RunActionsInParallel(List<KeyValuePair<string, FileInfo[]>> updatedBooks, 
+        private void RunActionsInParallel(List<KeyValuePair<string, FileInfo[]>> updatedBooks,
             List<KeyValuePair<string, FileInfo[]>> unconvertedBooks,
             Dictionary<string, FileInfo> titles, Dictionary<string, FileInfo> convertedTitles,
             ArchiveDb archive, TitleSyncer syncer)
         {
-            var converter = new ConverterEngine();
-
             if (updatedBooks.Count > 0)
             {
                 totalBooks = updatedBooks.Count;
@@ -125,8 +123,8 @@ namespace AzwConverter
                 Console.WriteLine();
                 ProgressReporter.Info($"Scanning {updatedBooks.Count} updated book{updatedBooks.SIf1()} for changes:");
 
-                Parallel.ForEach(updatedBooks, Settings.ParallelOptions, book => 
-                    ScanUpdatedBook(converter, archive, book.Key, book.Value, titles[book.Key]));
+                Parallel.ForEach(updatedBooks, Settings.ParallelOptions, book =>
+                    ScanUpdatedBook(book.Key, book.Value, titles[book.Key], archive));
             }
 
             if (unconvertedBooks.Count > 0)
@@ -142,22 +140,21 @@ namespace AzwConverter
                     Parallel.ForEach(unconvertedBooks, Settings.ParallelOptions, book =>
                         ConvertBook(book.Key, book.Value, titles[book.Key],
                         convertedTitles.ContainsKey(book.Key) ? convertedTitles[book.Key] : null,
-                        converter, syncer, archive));
+                        syncer, archive));
                 }
                 else if (_action == AzwAction.AzwScan)
                 {
                     Console.WriteLine();
                     ProgressReporter.Info($"Listing {unconvertedBooks.Count} unconverted book{unconvertedBooks.SIf1()}:");
 
-                    Parallel.ForEach(unconvertedBooks, Settings.ParallelOptions, book => 
+                    Parallel.ForEach(unconvertedBooks, Settings.ParallelOptions, book =>
                         SyncNewBook(book.Key, titles[book.Key], archive));
                 }
             }
         }
 
-        private void ConvertBook(string bookId, FileInfo[] dataFiles,
-            FileInfo titleFile, FileInfo? convertedTitleFile,
-            ConverterEngine converter, TitleSyncer syncer, ArchiveDb archive)
+        private void ConvertBook(string bookId, FileInfo[] dataFiles, FileInfo titleFile, FileInfo? convertedTitleFile,
+            TitleSyncer syncer, ArchiveDb archive)
         {
             // Validate the titlefile
             var match = _publisherTitleRegex.Match(titleFile.Name);
@@ -173,7 +170,17 @@ namespace AzwConverter
             publisherDir.CreateDirIfNotExists();
 
             var cbzFile = Path.Combine(publisherDir, $"{title}.cbz");
-            var state = converter.ConvertBook(bookId, dataFiles, cbzFile, Settings.SaveCoverWithCbz);
+
+            string coverFile = null;
+            if (Settings.SaveCover)
+            {
+                coverFile = Settings.SaveCoverDir != null
+                    ? Path.Combine(Settings.SaveCoverDir, $"{titleFile.Name}.jpg")
+                    : Path.ChangeExtension(cbzFile, ".jpg");
+            }
+
+            var converter = new ConverterEngine();
+            var state = converter.ConvertBook(bookId, dataFiles, cbzFile, coverFile);
 
             var newTitleFile = RemoveMarkerFromFile(titleFile);
             syncer.SyncConvertedTitle(bookId, newTitleFile, convertedTitleFile);
@@ -199,9 +206,9 @@ namespace AzwConverter
             return insert;
         }
 
-        private void ScanUpdatedBook(ConverterEngine converter, ArchiveDb archive,
-            string bookId, FileInfo[] dataFiles, FileInfo titleFile)
+        private void ScanUpdatedBook(string bookId, FileInfo[] dataFiles, FileInfo titleFile, ArchiveDb archive)
         {
+            var converter = new ConverterEngine();
             var state = converter.ScanBook(bookId, dataFiles);
 
             state.Name = titleFile.Name;

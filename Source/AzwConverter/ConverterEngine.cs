@@ -9,18 +9,21 @@ namespace AzwConverter
     public class ConverterEngine
     {
         private bool _createCbz = true;
+        private string _cbzFile;
 
-        private bool _saveCover = false;
+        private string _coverFile;
 
         public CbzState ScanBook(string bookId, FileInfo[] dataFiles)
         {
             _createCbz = false;
-            return ConvertBook(bookId, dataFiles, null, saveCover: false);
+            return ConvertBook(bookId, dataFiles, null, null);
         }
 
-        public CbzState ConvertBook(string bookId, FileInfo[] dataFiles, string cbzFile, bool saveCover)
+        public CbzState ConvertBook(string bookId, FileInfo[] dataFiles, string cbzFile, string coverFile)
         {
-            _saveCover = saveCover;
+            _cbzFile = cbzFile;
+            _coverFile = coverFile;
+
             var azwFile = dataFiles.First(file => file.IsAzwFile());
 
             using var mappedFile = MemoryMappedFile.CreateFromFile(azwFile.FullName);
@@ -110,7 +113,7 @@ namespace AzwConverter
             
             if (coverRecord != null)
             {
-                Write(zipArchive, coverName, coverRecord, isCover: true);
+                WriteData(zipArchive, coverName, coverRecord, isCover: true);
             }
 
             // Pages
@@ -136,31 +139,28 @@ namespace AzwConverter
                     pageRecord = sdImageRecords.ContentRecords[i];
                 }
 
-                Write(zipArchive, page, pageRecord, isCover: coverRecord == null && firstPage);
+                WriteData(zipArchive, page, pageRecord, isCover: coverRecord == null && firstPage);
                 firstPage = false;
             }
 
             return state;
+        }
 
-            void Write(ZipArchive? zip, string name, PageRecord record, bool isCover = false)
+        private void WriteData(ZipArchive? zip, string name, PageRecord record, bool isCover = false)
+        {
+            if (zip != null)
             {
-                if (zip != null)
+                var data = record.ReadData();
+
+                if (isCover && _coverFile != null)
                 {
-                    var data = record.ReadData();
-
-                    if (_saveCover && isCover && cbzFile != null)
-                    {
-                        var coverFile = Path.ChangeExtension(cbzFile, ".jpg");
-                        using var coverStrem = File.Open(coverFile, FileMode.Create, FileAccess.Write);
-
-                        coverStrem.Write(data);
-                    }
-
-                    var entry = zip.CreateEntry(name, Settings.CompressionLevel);
-                    using var stream = entry.Open();
-
-                    stream.Write(data);
+                    using var coverStream = File.Open(_coverFile, FileMode.Create, FileAccess.Write);
+                    coverStream.Write(data);
                 }
+
+                var entry = zip.CreateEntry(name, Settings.CompressionLevel);
+                using var stream = entry.Open();
+                stream.Write(data);
             }
         }
     }

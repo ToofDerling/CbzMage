@@ -24,7 +24,7 @@ Pdf:
         static void Main(string[] args)
         {
 #if DEBUG
-            args = new[] {"AzwScan"};
+            args = new[] {"AzwConvert"};
 #endif
             var validAction = false;
 
