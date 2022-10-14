@@ -1,7 +1,6 @@
 ﻿using CbzMage.Shared.Extensions;
 using CbzMage.Shared.Helpers;
 using ImageMagick;
-using PdfConverter.CbzFlow;
 using PdfConverter.Model;
 using PdfConverter.PdfFlow;
 using System;
@@ -14,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace PdfConverter
 {
-    public class ComicConverter
+    public class PdfConverter
     {
         private readonly Stopwatch _stopwatch = new Stopwatch();
 
@@ -52,19 +51,6 @@ namespace PdfConverter
             CompressPages(pdfComic, convertedPages);
 
             ConversionEnd(pdfComic);
-        }
-
-        public void ConversionFlow(CbzComic cbzComic)
-        {
-            ConversionBegin(cbzComic);
-
-            var cbzFlow = new CbzFlow();
-
-            cbzFlow.ExtractCbz(cbzComic);
-
-            cbzFlow.CreatePdf(cbzComic);
-
-            ConversionEnd(cbzComic);
         }
 
         private void ConversionBegin(Comic comic)

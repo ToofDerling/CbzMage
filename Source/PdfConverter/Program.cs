@@ -1,12 +1,10 @@
 using CbzMage.Shared.Extensions;
 using CbzMage.Shared.Helpers;
 using PdfConverter.AppVersions;
-using PdfConverter.CbzFlow;
 using PdfConverter.PdfFlow;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
 namespace PdfConverter
 {
@@ -45,32 +43,22 @@ namespace PdfConverter
             Console.ReadLine();
         }
 
-        private static readonly ComicConverter converter = new ComicConverter();
+        private static readonly PdfConverter pdfConverter = new();
 
         private static bool Convert(List<PdfComic> pdfComics)
         {
             if (Settings.Initialize(App.Ghostscript, App.SevenZip))
             {
-                pdfComics.ForEach(comic => { converter.ConversionFlow(comic); });
-            }
-            return true;
-        }
-
-        private static bool Convert(List<CbzComic> cbzComics)
-        {
-            if (Settings.Initialize(App.SevenZip))
-            {
-                cbzComics.ForEach(comic => { converter.ConversionFlow(comic); });
+                pdfComics.ForEach(comic => { pdfConverter.ConversionFlow(comic); });
             }
             return true;
         }
 
         private static bool StartConvert(string path)
         {
-            var directory = new DirectoryInfo(path);
-            if (directory.Exists)
+            if (Directory.Exists(path))
             {
-                return StartConvertDirectory(directory);
+                return StartConvertDirectory(path);
 
             }
             else if (File.Exists(path))
@@ -82,62 +70,26 @@ namespace PdfConverter
             return false;
         }
 
-        private static bool StartConvertDirectory(DirectoryInfo directory, bool recursiveCall = false)
+        private static bool StartConvertDirectory(string directory)
         {
-            var entries = directory.GetFileSystemInfos();
-            if (entries.Length == 0)
+            var pdfFiles = Directory.GetFiles(directory, "*.pdf");
+            if (pdfFiles.Length == 0)
             {
                 // Nothing to do
                 return false;
             }
 
-            if (entries.All(e => e.IsDirectory()))
-            {
-                if (recursiveCall)
-                {
-                    return false;
-                }
-
-                foreach (var entry in entries)
-                {
-                    var entryDirectory = new DirectoryInfo(entry.FullName);
-                    return StartConvertDirectory(entryDirectory, recursiveCall: true);
-                }
-            }
-
-            var files = entries.Select(e => e.FullName).ToArray();
-
-            if (FilesAre(FileExt.Pdf, files))
-            {
-                return Convert(PdfComic.List(files));
-            }
-
-            if (FilesAre(FileExt.Cbz, files))
-            {
-                return Convert(CbzComic.List(files));
-            }
-
-            return false;
+            return Convert(PdfComic.List(pdfFiles));
         }
 
         private static bool StartConvertFile(string file)
         {
-            if (FilesAre(FileExt.Pdf, file))
+            if (file.EndsWithIgnoreCase(".pdf"))
             {
                 return Convert(PdfComic.List(file));
             }
 
-            if (FilesAre(FileExt.Cbz, file))
-            {
-                return Convert(CbzComic.List(file));
-            }
-
             return false;
-        }
-
-        private static bool FilesAre(string ext, params string[] files)
-        {
-            return files.All(f => f.EndsWithIgnoreCase(ext));
         }
 
         private static string GetPath(string[] args)

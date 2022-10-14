@@ -1,6 +1,5 @@
 ﻿using CbzMage.Shared.Extensions;
 using CbzMage.Shared.Helpers;
-using CoreComicsConverter.PdfFlow;
 using PdfConverter.Model;
 using System;
 using System.Collections.Concurrent;
