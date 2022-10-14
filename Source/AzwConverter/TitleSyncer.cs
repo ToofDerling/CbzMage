@@ -46,11 +46,8 @@ namespace AzwConverter
                             continue;
                         }
 
-                        var title = metadata.MobiHeader.FullName.ToFileSystemString();
-                        title = WebUtility.HtmlDecode(title);
-
-                        var publisher = metadata.MobiHeader.EXTHHeader.Publisher.ToFileSystemString();
-                        publisher = WebUtility.HtmlDecode(publisher);   
+                        var title = CleanString(metadata.MobiHeader.FullName);
+                        var publisher = CleanString(metadata.MobiHeader.EXTHHeader.Publisher);
 
                         // Normalize publisher names
                         foreach (var trimmedName in Settings.TrimPublishers)
@@ -73,6 +70,12 @@ namespace AzwConverter
                         // Add archived/scanned title to list of current titles
                         titles[bookId] = new FileInfo(file);
                         syncedBookCount++;
+                    }
+
+                    static string CleanString(string str)
+                    { 
+                        str = WebUtility.HtmlDecode(str);
+                        return str.ToFileSystemString();
                     }
                 }
             }

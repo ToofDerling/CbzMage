@@ -96,7 +96,8 @@ namespace AzwConverter
             stopWatch.Stop();
             Console.WriteLine();
 
-            if (_action == AzwAction.AzwConvert && pagesCount > 0)
+            if ((_action == AzwAction.AzwConvert) 
+                && pagesCount > 0)
             {
                 var elapsed = stopWatch.Elapsed;
                 var secsPerPage = elapsed.TotalSeconds / pagesCount;
@@ -172,7 +173,7 @@ namespace AzwConverter
             publisherDir.CreateDirIfNotExists();
 
             var cbzFile = Path.Combine(publisherDir, $"{title}.cbz");
-            var state = converter.ConvertBook(bookId, dataFiles, cbzFile);
+            var state = converter.ConvertBook(bookId, dataFiles, cbzFile, Settings.SaveCoverWithCbz);
 
             var newTitleFile = RemoveMarkerFromFile(titleFile);
             syncer.SyncConvertedTitle(bookId, newTitleFile, convertedTitleFile);

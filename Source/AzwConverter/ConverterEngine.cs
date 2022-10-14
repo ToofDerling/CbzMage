@@ -10,14 +10,17 @@ namespace AzwConverter
     {
         private bool _createCbz = true;
 
+        private bool _saveCover = false;
+
         public CbzState ScanBook(string bookId, FileInfo[] dataFiles)
         {
             _createCbz = false;
-            return ConvertBook(bookId, dataFiles, null);
+            return ConvertBook(bookId, dataFiles, null, saveCover: false);
         }
 
-        public CbzState ConvertBook(string bookId, FileInfo[] dataFiles, string cbzFile)
+        public CbzState ConvertBook(string bookId, FileInfo[] dataFiles, string cbzFile, bool saveCover)
         {
+            _saveCover = saveCover;
             var azwFile = dataFiles.First(file => file.IsAzwFile());
 
             using var mappedFile = MemoryMappedFile.CreateFromFile(azwFile.FullName);
@@ -76,7 +79,7 @@ namespace AzwConverter
         private CbzState ReadAndCompress(string cbzFile, PageRecords? hdImageRecords, PageRecords sdImageRecords)
         {
             using var zipArchive = ZipFile.Open(cbzFile, ZipArchiveMode.Create);
-            return ReadAndCompressPages(zipArchive, hdImageRecords, sdImageRecords);
+            return ReadAndCompressPages(zipArchive, hdImageRecords, sdImageRecords, cbzFile);
         }
 
         private CbzState ReadPages(PageRecords? hdImageRecords, PageRecords sdImageRecords)
@@ -85,7 +88,7 @@ namespace AzwConverter
             return ReadAndCompressPages(null, hdImageRecords, sdImageRecords);
         }
 
-        private CbzState ReadAndCompressPages(ZipArchive? zipArchive, PageRecords? hdImageRecords, PageRecords sdImageRecords)
+        private CbzState ReadAndCompressPages(ZipArchive? zipArchive, PageRecords? hdImageRecords, PageRecords sdImageRecords, string cbzFile = null)
         {
             var state = new CbzState();
 
@@ -98,20 +101,21 @@ namespace AzwConverter
             if (state.HdCover)
             {
                 coverRecord = hdImageRecords.CoverRecord;
-
             }
             // Then the SD cover
             else if ((state.SdCover = sdImageRecords.CoverRecord != null))
             {
                 coverRecord = sdImageRecords.CoverRecord;
             }
+            
             if (coverRecord != null)
             {
-                Write(zipArchive, coverName, coverRecord);
+                Write(zipArchive, coverName, coverRecord, isCover: true);
             }
 
             // Pages
             PageRecord pageRecord;
+            var firstPage = true;
 
             for (int i = 0, sz = sdImageRecords.ContentRecords.Count; i < sz; i++)
             {
@@ -131,19 +135,31 @@ namespace AzwConverter
                     state.SdImages++;
                     pageRecord = sdImageRecords.ContentRecords[i];
                 }
-                Write(zipArchive, page, pageRecord);
+
+                Write(zipArchive, page, pageRecord, isCover: coverRecord == null && firstPage);
+                firstPage = false;
             }
 
             return state;
 
-            static void Write(ZipArchive? zip, string name, PageRecord record)
+            void Write(ZipArchive? zip, string name, PageRecord record, bool isCover = false)
             {
                 if (zip != null)
                 {
-                    var entry = zip.CreateEntry(name, Settings.CompressionLevel);
+                    var data = record.ReadData();
 
+                    if (_saveCover && isCover && cbzFile != null)
+                    {
+                        var coverFile = Path.ChangeExtension(cbzFile, ".jpg");
+                        using var coverStrem = File.Open(coverFile, FileMode.Create, FileAccess.Write);
+
+                        coverStrem.Write(data);
+                    }
+
+                    var entry = zip.CreateEntry(name, Settings.CompressionLevel);
                     using var stream = entry.Open();
-                    stream.Write(record.ReadData());
+
+                    stream.Write(data);
                 }
             }
         }
