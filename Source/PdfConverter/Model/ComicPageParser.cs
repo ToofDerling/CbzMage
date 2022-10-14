@@ -1,9 +1,9 @@
 ﻿using CbzMage.Shared.Helpers;
-using CoreComicsConverter.Events;
+using PdfConverter.Events;
 using System;
 using System.Collections.Generic;
 
-namespace CoreComicsConverter.Model
+namespace PdfConverter.Model
 {
     public abstract class ComicPageParser
     {

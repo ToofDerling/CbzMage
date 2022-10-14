@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace CoreComicsConverter.Model
+namespace PdfConverter.Model
 {
     public abstract class Comic
     {
@@ -30,7 +30,7 @@ namespace CoreComicsConverter.Model
         public int PageCountLength { get; private set; }
 
         public int ImageCount { get; set; }
-        
+
         public virtual string GetJpgPageString(int pageNumber)
         {
             return GetPageString("page-", pageNumber, FileExt.Jpg);
@@ -41,7 +41,7 @@ namespace CoreComicsConverter.Model
             var page = pageNumber.ToString().PadLeft(PageCountLength, '0');
             return $"{pageBase}{page}{extension}";
         }
-        
+
         public void CleanOutputDirectory()
         {
             if (Directory.Exists(OutputDirectory))

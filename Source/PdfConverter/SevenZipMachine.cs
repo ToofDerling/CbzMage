@@ -1,14 +1,14 @@
 ﻿using CbzMage.Shared.Extensions;
 using CbzMage.Shared.Helpers;
-using CoreComicsConverter.Events;
-using CoreComicsConverter.Model;
+using PdfConverter.Events;
+using PdfConverter.Model;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
-namespace CoreComicsConverter
+namespace PdfConverter
 {
     public class SevenZipMachine
     {

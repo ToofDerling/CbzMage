@@ -1,8 +1,8 @@
 ﻿using CbzMage.Shared.Helpers;
-using CoreComicsConverter.AppVersions;
+using PdfConverter.AppVersions;
 using System;
 
-namespace CoreComicsConverter
+namespace PdfConverter
 {
     public static class Settings
     {

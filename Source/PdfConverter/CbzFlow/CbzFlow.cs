@@ -1,6 +1,7 @@
 ﻿using CbzMage.Shared.Helpers;
+using CoreComicsConverter;
 
-namespace CoreComicsConverter.CbzCbrFlow
+namespace PdfConverter.CbzFlow
 {
     public class CbzFlow
     {

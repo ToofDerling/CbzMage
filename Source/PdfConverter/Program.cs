@@ -1,14 +1,14 @@
 using CbzMage.Shared.Extensions;
 using CbzMage.Shared.Helpers;
-using CoreComicsConverter.AppVersions;
-using CoreComicsConverter.CbzCbrFlow;
-using CoreComicsConverter.PdfFlow;
+using PdfConverter.AppVersions;
+using PdfConverter.CbzFlow;
+using PdfConverter.PdfFlow;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace CoreComicsConverter
+namespace PdfConverter
 {
     public static class Program
     {

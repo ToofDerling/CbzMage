@@ -1,4 +1,4 @@
-﻿namespace CoreComicsConverter.AppVersions
+﻿namespace PdfConverter.AppVersions
 {
     public enum App
     {

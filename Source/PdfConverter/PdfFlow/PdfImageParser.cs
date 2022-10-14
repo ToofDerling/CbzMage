@@ -1,14 +1,14 @@
 ﻿using CbzMage.Shared.Extensions;
-using CoreComicsConverter.Events;
-using CoreComicsConverter.Model;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser;
 using iText.Kernel.Pdf.Canvas.Parser.Data;
 using iText.Kernel.Pdf.Canvas.Parser.Listener;
+using PdfConverter.Events;
+using PdfConverter.Model;
 using System;
 using System.Collections.Generic;
 
-namespace CoreComicsConverter.PdfFlow
+namespace PdfConverter.PdfFlow
 {
     public class PdfImageParser : ComicPageParser, IEventListener, IDisposable
     {
@@ -89,11 +89,11 @@ namespace CoreComicsConverter.PdfFlow
 
                 if (!_imageMap.TryGetValue(_pageNumber, out var page))
                 {
-                    _imageMap[_pageNumber] = new ComicPage 
-                    { 
-                        Number = _pageNumber, 
-                        Width = newWidth, 
-                        Height = newHeight, 
+                    _imageMap[_pageNumber] = new ComicPage
+                    {
+                        Number = _pageNumber,
+                        Width = newWidth,
+                        Height = newHeight,
                     };
                 }
                 else if (newWidth * newHeight > page.Width * page.Height)

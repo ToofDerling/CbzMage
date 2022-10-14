@@ -7,7 +7,7 @@ using CbzMage.Shared.Extensions;
 using CbzMage.Shared.Helpers;
 using Microsoft.Win32;
 
-namespace CoreComicsConverter.AppVersions
+namespace PdfConverter.AppVersions
 {
     public static class SevenZipVersion
     {

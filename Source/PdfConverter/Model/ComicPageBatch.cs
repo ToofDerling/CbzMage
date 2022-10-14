@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace CoreComicsConverter.Model
+namespace PdfConverter.Model
 {
-    public class ComicPageBatch 
+    public class ComicPageBatch
     {
         public string BatchId { get; set; }
 

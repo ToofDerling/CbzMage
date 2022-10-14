@@ -1,8 +1,9 @@
-﻿using CoreComicsConverter.Model;
+﻿using PdfConverter;
+using PdfConverter.Model;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace CoreComicsConverter.CbzCbrFlow
+namespace PdfConverter.CbzFlow
 {
     public class CbzComic : Comic
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace CoreComicsConverter.PdfFlow
+namespace PdfConverter.PdfFlow
 {
     public class PdfEncryptedException : Exception
     {

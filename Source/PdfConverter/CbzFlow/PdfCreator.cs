@@ -1,14 +1,14 @@
-﻿using CoreComicsConverter.Events;
-using CoreComicsConverter.Model;
+﻿using CoreComicsConverter.Model;
 using iText.IO.Image;
 using iText.Kernel.Geom;
 using iText.Kernel.Pdf;
 using iText.Layout;
 using iText.Layout.Element;
+using PdfConverter.Events;
 using System;
 using System.IO;
 
-namespace CoreComicsConverter.CbzCbrFlow
+namespace PdfConverter.CbzFlow
 {
     public class PdfCreator
     {

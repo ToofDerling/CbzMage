@@ -1,11 +1,11 @@
 ﻿using CbzMage.Shared.Extensions;
 using CbzMage.Shared.Helpers;
-using CoreComicsConverter.Model;
+using PdfConverter.Model;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace CoreComicsConverter.PdfFlow
+namespace PdfConverter.PdfFlow
 {
     public class GhostscriptMachine
     {

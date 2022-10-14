@@ -1,6 +1,6 @@
 ﻿using ImageMagick;
 
-namespace CoreComicsConverter.Model
+namespace PdfConverter.Model
 {
     public class ComicPage
     {

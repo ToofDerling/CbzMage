@@ -1,6 +1,7 @@
 ﻿using CbzMage.Shared.Extensions;
 using CbzMage.Shared.Helpers;
-using CoreComicsConverter.Model;
+using CoreComicsConverter.PdfFlow;
+using PdfConverter.Model;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CoreComicsConverter.PdfFlow
+namespace PdfConverter.PdfFlow
 {
     public class PdfConversionFlow
     {

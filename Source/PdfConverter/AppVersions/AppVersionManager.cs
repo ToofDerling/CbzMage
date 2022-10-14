@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace CoreComicsConverter.AppVersions
+namespace PdfConverter.AppVersions
 {
     public static class AppVersionManager
     {

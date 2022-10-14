@@ -1,8 +1,8 @@
-﻿using CoreComicsConverter.Model;
+﻿using PdfConverter.Model;
 using System;
 using System.Collections.Generic;
 
-namespace CoreComicsConverter.Events
+namespace PdfConverter.Events
 {
     public class PagesEventArgs : EventArgs
     {

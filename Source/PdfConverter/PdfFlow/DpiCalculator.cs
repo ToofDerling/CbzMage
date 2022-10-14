@@ -1,8 +1,8 @@
-﻿using CoreComicsConverter.Model;
+﻿using PdfConverter.Model;
 using System;
 using System.IO;
 
-namespace CoreComicsConverter.PdfFlow
+namespace PdfConverter.PdfFlow
 {
     public class DpiCalculator
     {

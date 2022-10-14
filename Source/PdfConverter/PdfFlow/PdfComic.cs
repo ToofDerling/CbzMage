@@ -1,8 +1,8 @@
-﻿using CoreComicsConverter.Model;
+﻿using PdfConverter.Model;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace CoreComicsConverter.PdfFlow
+namespace PdfConverter.PdfFlow
 {
     public class PdfComic : Comic
     {
@@ -11,7 +11,7 @@ namespace CoreComicsConverter.PdfFlow
             OutputDirectory = System.IO.Path.ChangeExtension(path, null);
             OutputFile = System.IO.Path.ChangeExtension(path, FileExt.Cbz);
         }
-              
+
         public static List<PdfComic> List(params string[] paths) => new List<PdfComic>(paths.Select(x => new PdfComic(x)));
     }
 }

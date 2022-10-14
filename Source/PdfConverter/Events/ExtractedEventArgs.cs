@@ -1,4 +1,4 @@
-﻿namespace CoreComicsConverter.Events
+﻿namespace PdfConverter.Events
 {
     public class ExtractedEventArgs
     {

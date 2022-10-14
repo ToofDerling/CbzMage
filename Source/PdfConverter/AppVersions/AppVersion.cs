@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace CoreComicsConverter.AppVersions
+namespace PdfConverter.AppVersions
 {
     public class AppVersion
     {
@@ -10,7 +10,7 @@ namespace CoreComicsConverter.AppVersions
 
             Exe = exe;
         }
-  
+
         public Version Version { get; }
 
         public string Exe { get; }
