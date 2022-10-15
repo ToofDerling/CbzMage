@@ -23,7 +23,7 @@ You can have a look at the other configuration options in appsettings.json, they
 * In the titles directory (TitlesDir in appsettings.json) you will find a small file with the title and publisher of each comic book currently in the azw directory.  
 * In a subdirectory of the titles directory you will find a similar file for each converted title. If you ever want **to reconvert a title simply delete the title file from the converted titles directory.**
 * In the cbz directory (CbzDir in appsettings.json) you will find the converted comic books sorted by publisher. 
-* If you set SaveCover to true in appsettings.json CbzMage will save a copy of the cover image together with the cbz file. If you specify SaveCoverDir the cover image will be saved there instead. There's even a SaveCoverOnly if you just want the covers.
+* If you set SaveCover to true in appsettings.json CbzMage will save a copy of the cover image together with the cbz file. If you specify SaveCoverDir the cover image will be saved there instead. There's even a SaveCoverOnly option if you just want the covers.
 
 **Running CbzMage with the "AzwScan" parameter:**
 
