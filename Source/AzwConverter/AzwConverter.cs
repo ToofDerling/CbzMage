@@ -101,12 +101,19 @@ namespace AzwConverter
             stopWatch.Stop();
             Console.WriteLine();
 
-            if (_action == AzwAction.AzwConvert && pagesCount > 0 && !Settings.SaveCoverOnly)
+            if (_action == AzwAction.AzwConvert && pagesCount > 0)
             {
                 var elapsed = stopWatch.Elapsed;
                 var secsPerPage = elapsed.TotalSeconds / pagesCount;
 
-                Console.WriteLine($"{pagesCount} pages converted in {elapsed.TotalSeconds:F3} seconds ({secsPerPage:F3} per page)");
+                if (Settings.SaveCoverOnly)
+                {
+                    Console.WriteLine($"{bookCount} covers saved in {elapsed.TotalSeconds:F3} seconds");
+                }
+                else
+                {
+                    Console.WriteLine($"{pagesCount} pages converted in {elapsed.TotalSeconds:F3} seconds ({secsPerPage:F3} per page)");
+                }
             }
             else
             {
