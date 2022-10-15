@@ -101,7 +101,7 @@ namespace AzwConverter
             stopWatch.Stop();
             Console.WriteLine();
 
-            if (_action == AzwAction.AzwConvert && pagesCount > 0)
+            if (_action == AzwAction.AzwConvert && pagesCount > 0 && !Settings.SaveCoverOnly)
             {
                 var elapsed = stopWatch.Elapsed;
                 var secsPerPage = elapsed.TotalSeconds / pagesCount;
@@ -177,7 +177,10 @@ namespace AzwConverter
             var coverFile = GetCoverFile(titleFile, cbzFile);
 
             var converter = new ConverterEngine();
-            var state = converter.ConvertBook(bookId, dataFiles, cbzFile, coverFile);
+
+            var state = coverFile != null && Settings.SaveCoverOnly 
+                ? converter.SaveCover(bookId, dataFiles, coverFile)
+                : converter.ConvertBook(bookId, dataFiles, cbzFile, coverFile);
 
             var newTitleFile = RemoveMarkerFromFile(titleFile);
             syncer.SyncConvertedTitle(bookId, newTitleFile, convertedTitleFile);

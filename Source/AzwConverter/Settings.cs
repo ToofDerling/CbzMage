@@ -11,7 +11,9 @@ namespace AzwConverter
         // Defaults
         private const string defaultTitlesDir = "Titles";
         private const string defaultCbzDir = "Cbz Backups";
+        
         private const bool defaultSaveCover = false;
+        private const bool defaultSaveCoverOnly = false;
 
         private const string defaultConvertedTitlesDirName = "Converted Titles";
         private const string defaultNewTitleMarker = ".NEW";
@@ -40,8 +42,9 @@ namespace AzwConverter
             titlesDir.CreateDirIfNotExists();
             TitlesDir = titlesDir;
 
-            //SaveCoverWithCbz
+            //SaveCover
             SaveCover = config.GetValue("SaveCover", defaultSaveCover);
+            SaveCoverOnly = config.GetValue("SaveCoverOnly", defaultSaveCoverOnly);
 
             //SaveCoverDir
             if (SaveCover)
@@ -110,7 +113,8 @@ namespace AzwConverter
         public static string CbzDir { get; private set; }
 
         public static bool SaveCover { get; private set; }
-        public static string SaveCoverDir { get; private set; }
+        public static bool SaveCoverOnly { get; private set; }
+        public static string? SaveCoverDir { get; private set; }
 
         private static int numberOfThreads;
 

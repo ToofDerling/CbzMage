@@ -16,6 +16,11 @@ namespace AzwConverter
             return ConvertBook(bookId, dataFiles, null, null);
         }
 
+        public CbzState SaveCover(string bookId, FileInfo[] dataFiles, string coverFile)
+        {
+            return ConvertBook(bookId, dataFiles, null, coverFile);
+        }
+
         public CbzState ConvertBook(string bookId, FileInfo[] dataFiles, string? cbzFile, string? coverFile)
         {
             _cbzFile = cbzFile;
@@ -35,7 +40,7 @@ namespace AzwConverter
                 using var hdStream = hdMappedFile.CreateViewStream();
 
                 metadata.ReadHDImageRecords(hdStream);
-                
+
                 if (_cbzFile != null)
                 {
                     return CreateCbz(metadata.PageRecordsHD, metadata.PageRecords);
@@ -145,18 +150,23 @@ namespace AzwConverter
             return state;
         }
 
-        private void WriteData(ZipArchive? zip, string name, PageRecord record, bool isCover = false)
+        private void WriteData(ZipArchive? zip, string name, PageRecord record, bool isCover)
         {
+            // Only read data when we want to use it
+            if (zip == null && (_coverFile == null || !isCover))
+            {
+                return;
+            }
+            var data = record.ReadData();
+
+            if (isCover && _coverFile != null)
+            {
+                using var coverStream = File.Open(_coverFile, FileMode.Create, FileAccess.Write);
+                coverStream.Write(data);
+            }
+
             if (zip != null)
             {
-                var data = record.ReadData();
-
-                if (isCover && _coverFile != null)
-                {
-                    using var coverStream = File.Open(_coverFile, FileMode.Create, FileAccess.Write);
-                    coverStream.Write(data);
-                }
-
                 var entry = zip.CreateEntry(name, Settings.CompressionLevel);
                 using var stream = entry.Open();
                 stream.Write(data);
