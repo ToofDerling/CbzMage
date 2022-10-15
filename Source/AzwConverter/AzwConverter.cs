@@ -320,7 +320,6 @@ namespace AzwConverter
             if (maxBooks > 0)
             {
                 unConvertedBooks = unConvertedBooks.Take(maxBooks).ToList();
-
             }
             return unConvertedBooks;
         }

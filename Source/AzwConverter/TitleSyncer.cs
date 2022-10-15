@@ -135,7 +135,6 @@ namespace AzwConverter
             File.Copy(titleFile, dest);
             File.SetLastWriteTime(dest, DateTime.Now);
 
-            // Update with the synced title 
             return name;
         }
     }
