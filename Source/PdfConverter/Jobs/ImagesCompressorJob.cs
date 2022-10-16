@@ -1,6 +1,5 @@
-﻿using PdfConverter.ManagedBuffers;
-using System.Collections.Generic;
-using System.IO;
+﻿using ImageMagick;
+using PdfConverter.Helpers;
 using System.IO.Compression;
 
 namespace PdfConverter.Jobs
@@ -9,11 +8,9 @@ namespace PdfConverter.Jobs
     {
         private readonly ZipArchive _compressor;
 
-        private readonly IDictionary<string, Stream> _inputMap;
+        private readonly IDictionary<string, MagickImage> _inputMap;
 
-        //TODO: Write MagicImage data directly into the compressor
-
-        public ImagesCompressorJob(ZipArchive compressor, IDictionary<string, Stream> inputMap)
+        public ImagesCompressorJob(ZipArchive compressor, IDictionary<string, MagickImage> inputMap)
         {
             _compressor = compressor;
 
@@ -25,17 +22,13 @@ namespace PdfConverter.Jobs
             foreach (var page in _inputMap)
             {
                 var entry = _compressor.CreateEntry(page.Key, CompressionLevel.Fastest);
-                using (var archiveStream = entry.Open())
-                {
-                    var dataStream = (ManagedMemoryStream)page.Value;
-                    
-                    // Doesn't work...
-                    //var buffer = dataStream.GetBuffer();
-                    //archiveStream.Write(buffer, 0, (int)dataStream.Length);
+                using var archiveStream = entry.Open();
                 
-                    dataStream.CopyTo(archiveStream);   
-                    dataStream.Release();
-                }
+                var image = page.Value;
+                image.Write(archiveStream);
+                image.Dispose();
+
+                StatsCount.AddJpg((int)archiveStream.Position);
             }
 
             return _inputMap.Keys;

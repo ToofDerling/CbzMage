@@ -1,10 +1,8 @@
-﻿using PdfConverter.Ghostscript;
+﻿using ImageMagick;
+using PdfConverter.Ghostscript;
 using PdfConverter.Jobs;
 using PdfConverter.ManagedBuffers;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.IO;
 
 namespace PdfConverter
 {
@@ -15,9 +13,9 @@ namespace PdfConverter
 
         private readonly Pdf _pdf;
         private readonly Queue<int> _pageQueue;
-        private readonly ConcurrentDictionary<string, Stream> _convertedPages;
+        private readonly ConcurrentDictionary<string, MagickImage> _convertedPages;
 
-        public PageConverter(Pdf pdf, Queue<int> pageQueue, ConcurrentDictionary<string, Stream> convertedPages)
+        public PageConverter(Pdf pdf, Queue<int> pageQueue, ConcurrentDictionary<string, MagickImage> convertedPages)
         {
             _pdf = pdf;
             _pageQueue = pageQueue;

@@ -1,10 +1,7 @@
-﻿using PdfConverter.Jobs;
-using System;
+﻿using ImageMagick;
+using PdfConverter.Jobs;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.IO;
 using System.IO.Compression;
-using System.Linq;
 
 namespace PdfConverter
 {
@@ -14,7 +11,7 @@ namespace PdfConverter
 
         private readonly ConcurrentQueue<int> _pageNumbers;
 
-        private readonly ConcurrentDictionary<string, Stream> _convertedPages;
+        private readonly ConcurrentDictionary<string, MagickImage> _convertedPages;
 
         private readonly JobExecutor<IEnumerable<string>> _compressorExecutor;
 
@@ -28,7 +25,7 @@ namespace PdfConverter
 
         private readonly string _cbzFile;
 
-        public PagesCompressor(Pdf pdf, ConcurrentDictionary<string, Stream> convertedPages)
+        public PagesCompressor(Pdf pdf, ConcurrentDictionary<string, MagickImage> convertedPages)
         {
             _pdf = pdf;
             _convertedPages = convertedPages;
@@ -45,7 +42,6 @@ namespace PdfConverter
             Console.WriteLine(Path.GetFileName(_cbzFile));
 
             File.Delete(_cbzFile);
-
             _compressor = ZipFile.Open(_cbzFile, ZipArchiveMode.Create);
         }
 
@@ -83,7 +79,7 @@ namespace PdfConverter
         {
             var key = _pdf.GetPageString(_nextPageNumber);
 
-            var inputMap = new SortedDictionary<string, Stream>();
+            var inputMap = new SortedDictionary<string, MagickImage>();
 
             while (_convertedPages.TryRemove(key, out var stream))
             {

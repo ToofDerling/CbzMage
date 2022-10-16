@@ -1,13 +1,9 @@
-﻿using PdfConverter.Exceptions;
+﻿using ImageMagick;
+using PdfConverter.Exceptions;
 using PdfConverter.Extensions;
 using PdfConverter.Ghostscript;
 using PdfConverter.Helpers;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace PdfConverter
 {
@@ -110,7 +106,7 @@ namespace PdfConverter
             // Each converter is assigned an image converter job thread. The thread reads from the pipe and converts the png data to jpg files and saves them to memory.
             // The page compressor job thread picks up converted images as they are saved (in page order) and creates the cbz file.
 
-            var convertedPages = new ConcurrentDictionary<string, Stream>(pageLists.Length, pdf.PageCount);
+            var convertedPages = new ConcurrentDictionary<string, MagickImage>(pageLists.Length, pdf.PageCount);
 
             var progressReporter = new ProgressReporter(pdf.PageCount * 2); // Both converting and compressing is counted
 
