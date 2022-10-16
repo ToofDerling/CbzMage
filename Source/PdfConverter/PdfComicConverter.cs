@@ -89,7 +89,7 @@ namespace PdfConverter
         private List<int>[] CreatePageLists(Pdf pdf)
         {
             // While testing new pipe reading code
-            var parallelThreads = Math.Max(1, Environment.ProcessorCount / 2);
+            var parallelThreads = 3; // Math.Max(1, Environment.ProcessorCount / 2);
 
             var pageChunker = new PageChunker();
             var pageLists = pageChunker.CreatePageLists(pdf.PageCount, parallelThreads);

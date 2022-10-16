@@ -18,8 +18,16 @@ namespace PdfConverter.Jobs
 
         private Thread _jobExecutorThread;
 
+        private ThreadPriority _threadPriority;
+
         private InternalJobWaiter _jobWaiter;
-        
+
+        public JobExecutor(ThreadPriority priority = ThreadPriority.Normal)
+        { 
+            _threadPriority = priority;
+        }
+
+
         public JobWaiter Start(bool withWaiter)
         {
             _runningQueue = new BlockingCollection<IJob<T>>();
@@ -29,7 +37,10 @@ namespace PdfConverter.Jobs
                 _jobWaiter = new InternalJobWaiter();
             }
 
-            _jobExecutorThread = new Thread(new ThreadStart(JobExecutorLoop));
+            _jobExecutorThread = new Thread(new ThreadStart(JobExecutorLoop))
+            {
+                Priority = _threadPriority
+            };
             _jobExecutorThread.Start();
 
             return _jobWaiter;
