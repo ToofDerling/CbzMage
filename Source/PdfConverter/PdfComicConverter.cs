@@ -3,7 +3,6 @@ using CbzMage.Shared.Helpers;
 using ImageMagick;
 using PdfConverter.Exceptions;
 using PdfConverter.Ghostscript;
-using PdfConverter.Helpers;
 using System.Collections.Concurrent;
 
 namespace PdfConverter
@@ -20,12 +19,12 @@ namespace PdfConverter
         public void ConvertToCbz(Pdf pdf, PdfImageParser pdfParser)
         {
             var sortedImageSizes = ParsePdfImages(pdf, pdfParser);
-            var wantedImageWidth = ParseImageSizes(sortedImageSizes);
+            var wantedWidth = ParseImageSizes(sortedImageSizes);
 
-            var dpi = CalculateDpiForImageSize(pdf, wantedImageWidth);
+            var (dpi, wantedHeight) = CalculateDpiForImageSize(pdf, wantedWidth);
 
             var pageRanges = CreatePageLists(pdf);
-            var fileCount = ConvertPages(pdf, pageRanges, dpi);
+            var fileCount = ConvertPages(pdf, pageRanges, dpi, wantedHeight);
 
             if (fileCount != pdf.PageCount)
             {
@@ -50,29 +49,6 @@ namespace PdfConverter
             return imageSizesMap;
         }
 
-        private int ParseImageSizesH(List<(int width, int height, int count)> sortedImageSizes)
-        {
-            var mostOfThisSize = sortedImageSizes.First();
-
-            var wantedHeight = mostOfThisSize.height;
-            Console.WriteLine($"Target height: {wantedHeight} ({mostOfThisSize.count})");
-
-            var largestSizes = sortedImageSizes.Where(x => x.width >= mostOfThisSize.width && x.width - mostOfThisSize.width <= 50).OrderByDescending(x => x.width);
-            var largestSize = largestSizes.First();
-
-            var largestSizesByCount = largestSizes.OrderByDescending(x => x.count);
-            var largestSizeWithLargestCount = largestSizesByCount.First(x => x.width == largestSize.width);
-
-            var padLen = mostOfThisSize.count.ToString().Length;
-
-            foreach (var (width, height, count) in largestSizesByCount.TakeWhile(x => x.count >= largestSizeWithLargestCount.count))
-            {
-                Console.WriteLine($" {count.ToString().PadLeft(padLen, ' ')} {width} x {height}");
-            }
-
-            return largestSize.width;
-        }
-
         private int ParseImageSizes(List<(int width, int height, int count)> sortedImageSizes)
         {
             var mostOfThisSize = sortedImageSizes.First();
@@ -87,43 +63,48 @@ namespace PdfConverter
 
             foreach (var (width, height, count) in largestSizesByCount.TakeWhile(x => x.count >= largestSizeWithLargestCount.count))
             {
-                Console.WriteLine($" {count.ToString().PadLeft(padLen, ' ')} {width} x {height}");
+                Console.WriteLine($" {count.ToString().PadLeft(padLen, ' ')} in {width} x {height}");
             }
 
             return largestSize.width;
         }
 
-        private int CalculateDpiForImageSize(Pdf pdf, int wantedImageWidth)
+        private (int dpi, int wantedHeight) CalculateDpiForImageSize(Pdf pdf, int wantedImageWidth)
         {
             Console.WriteLine($"Wanted width: {wantedImageWidth}");
 
             var pageMachine = _pageMachineManager.StartMachine();
 
+            int wantedHeight = 0;
+
             var dpiCalculator = new DpiCalculator(pageMachine, pdf, wantedImageWidth);
-            dpiCalculator.DpiCalculated += (s, e) => Console.WriteLine($" {e.Dpi} ({e.MinimumDpi}) -> {e.Width}");
+            dpiCalculator.DpiCalculated += (s, e) =>
+            {
+                wantedHeight = e.Height;
+                Console.WriteLine($" {e.Dpi} ({e.MinimumDpi}) -> {e.Width} x {wantedHeight}");
+            };
 
             var dpi = dpiCalculator.CalculateDpi();
 
             _pageMachineManager.StopMachine(pageMachine);
 
             Console.WriteLine($"Selected dpi: {dpi}");
-            return dpi;
+            return (dpi, wantedHeight);
         }
 
         private List<int>[] CreatePageLists(Pdf pdf)
         {
-            // While testing new pipe reading code
-            var parallelThreads = 3; // Math.Max(1, Environment.ProcessorCount / 2);
+            var parallelThreads = Program.Settings.ThreadCount;
 
             var pageChunker = new PageChunker();
             var pageLists = pageChunker.CreatePageLists(pdf.PageCount, parallelThreads);
 
-            Array.ForEach(pageLists, p => Console.WriteLine($" {p.First()} - {p.Count}"));
+            Array.ForEach(pageLists, p => Console.WriteLine($" Reader{p.First()}: {p.Count} pages"));
 
             return pageLists;
         }
 
-        private int ConvertPages(Pdf pdf, List<int>[] pageLists, int dpi)
+        private int ConvertPages(Pdf pdf, List<int>[] pageLists, int dpi, int wantedHeight)
         {
             var pagesCompressed = 0;
 
@@ -147,7 +128,7 @@ namespace PdfConverter
             Parallel.ForEach(pageLists, (pageList) =>
             {
                 var pageQueue = new Queue<int>(pageList);
-                var pageConverter = new PageConverter(pdf, pageQueue, convertedPages);
+                var pageConverter = new PageConverter(pdf, pageQueue, convertedPages, wantedHeight);
 
                 pageConverter.PageConverted += (s, e) => pageCompressor.OnPageConverted(e);
 

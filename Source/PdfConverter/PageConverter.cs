@@ -10,14 +10,18 @@ namespace PdfConverter
     {
         private readonly Pdf _pdf;
         private readonly Queue<int> _pageQueue;
+
         private readonly ConcurrentDictionary<string, MagickImage> _convertedPages;
-        
-        public PageConverter(Pdf pdf, Queue<int> pageQueue, ConcurrentDictionary<string, MagickImage> convertedPages)
+        private readonly int _wantedHeight;
+
+        public PageConverter(Pdf pdf, Queue<int> pageQueue, 
+            ConcurrentDictionary<string, MagickImage> convertedPages, int wantedHeight)
         {
             _pdf = pdf;
             _pageQueue = pageQueue;
 
             _convertedPages = convertedPages;
+            _wantedHeight = wantedHeight;
         }
 
         public void WaitForPagesConverted()
@@ -37,15 +41,15 @@ namespace PdfConverter
 
             image.Format = MagickFormat.Jpg;
             image.Interlace = Interlace.Plane;
-            image.Quality = Program.QualityConstants.JpegQuality;
+            image.Quality = Program.Settings.JpegQuality;
 
-            if (image.Height > Program.QualityConstants.MaxHeight)
+            if (image.Height > _wantedHeight)
             {
                 image.Resize(new MagickGeometry
                 {
                     Greater = true,
                     Less = false,
-                    Height = Program.QualityConstants.StandardHeight
+                    Height = _wantedHeight
                 });
             }
 

@@ -9,25 +9,14 @@ namespace PdfConverter
 {
     public class Program
     {
-        public static class QualityConstants
+        public static class Settings
         {
             public static int MinimumDpi => 300;
 
             public static int JpegQuality => 95;
 
-            public static int MaxHeight => 4150;
-
-            public static int StandardHeight => 3075;
+            public static int ThreadCount => 3;
         }
-
-        /*public static readonly int MinimumDpi = 300;
-
-        public static readonly int JpegQuality = 95;
-
-        public static readonly int StandardHeight = 3075;
-
-        public static readonly int MaximumHeight = 4150;
-        */
 
 #if DEBUG
         private static readonly string _testPdf = @"M:\Data\Pdf\Test";
@@ -78,6 +67,7 @@ namespace PdfConverter
             var passed = stopWatch.Elapsed;
 
             Console.WriteLine($"{passed.Minutes} min {passed.Seconds} sec");
+            Console.WriteLine();
         }
 
         private static List<Pdf> InitializePdfPath(string[] args)

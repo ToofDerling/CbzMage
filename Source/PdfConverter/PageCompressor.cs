@@ -1,4 +1,5 @@
-﻿using CbzMage.Shared.Jobs;
+﻿using CbzMage.Shared.Helpers;
+using CbzMage.Shared.Jobs;
 using ImageMagick;
 using System.Collections.Concurrent;
 using System.IO.Compression;
@@ -39,7 +40,7 @@ namespace PdfConverter
             _jobWaiter = _compressorExecutor.Start(withWaiter: true);
 
             _cbzFile = Path.ChangeExtension(pdf.Path, ".cbz");
-            Console.WriteLine(Path.GetFileName(_cbzFile));
+            ProgressReporter.Done(_cbzFile);
 
             File.Delete(_cbzFile);
             _compressor = ZipFile.Open(_cbzFile, ZipArchiveMode.Create);

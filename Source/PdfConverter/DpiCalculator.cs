@@ -21,7 +21,7 @@ namespace PdfConverter
 
         public int CalculateDpi()
         {
-            var dpi = Program.QualityConstants.MinimumDpi;
+            var dpi = Program.Settings.MinimumDpi;
 
             var width = GetImageWidth(dpi);
 
@@ -59,7 +59,7 @@ namespace PdfConverter
                     var nextDiff = wantedWidth - nextWidth;
                     var bigStep = CalculateBigStep(diff, nextDiff, step);
 
-                    dpi = Program.QualityConstants.MinimumDpi + bigStep;
+                    dpi = Program.Settings.MinimumDpi + bigStep;
                     nextWidth = GetImageWidth(dpi);
                 }
                 // Go down if big step put us above wanted width
@@ -104,8 +104,10 @@ namespace PdfConverter
 
             var image = imageHandler.WaitForImageDate();
             var width = image.Width;    
+            var height = image.Height;
+            image.Dispose();
 
-            DpiCalculated?.Invoke(this, new DpiCalculatedEventArgs(dpi, Program.QualityConstants.MinimumDpi, width));
+            DpiCalculated?.Invoke(this, new DpiCalculatedEventArgs(dpi, Program.Settings.MinimumDpi, width, height));
             return width;
         }
 
