@@ -25,42 +25,26 @@ namespace PdfConverter.Ghostscript
             var dllFile = new FileInfo(version.DllPath);
 
             using (var mappedFile = MemoryMappedFile.CreateFromFile(dllFile.FullName, FileMode.Open))
-            using (var view = mappedFile.CreateViewAccessor(0, dllFile.Length))
+            //using (var view = mappedFile.CreateViewAccessor(0, dllFile.Length))
+            using (var stream = mappedFile.CreateViewStream(0, dllFile.Length))
             {
-                //Do the bitness check here where we have the memory mapped file - and fail fast
-                //No need to check each time the library is loaded
+                // Do the bitness check here where we have the memory mapped file - and fail fast
+                // No need to check each time the library is loaded
                 if (Environment.Is64BitProcess != Is64BitLibrary())
                 {
                     throw new BadImageFormatException(version.DllPath);
                 }
 
-                _handle = view.SafeMemoryMappedViewHandle;
+                _handle = stream.SafeMemoryMappedViewHandle;
                 unsafe
                 {
                     _handle.AcquirePointer(ref _libraryPtr);
                 }
 
-                // Adapted from NativeLibraryHelper.cs
                 bool Is64BitLibrary()
                 {
-                    var e_lfanew = view.ReadUInt32(0x3c);
-                    var signature = view.ReadUInt32(e_lfanew);
-                    // check if it's a signature we can handle
-                    if (signature != WinNT.IMAGE_NT_SIGNATURE)
-                    {
-                        return false;
-                    }
-
-                    var machine = view.ReadUInt16(e_lfanew + sizeof(uint));
-                    switch (machine)
-                    {
-                        case WinNT.IMAGE_FILE_MACHINE_AMD64:
-                        case WinNT.IMAGE_FILE_MACHINE_IA64:
-                            return true;
-                        case WinNT.IMAGE_FILE_MACHINE_I386:
-                        default:
-                            return false;
-                    }
+                    var machine = NativeLibraryHelper.GetImageFileMachineType(stream);
+                    return NativeLibraryHelper.Is64BitMachineValue(machine);
                 };
             }
 
