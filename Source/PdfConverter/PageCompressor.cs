@@ -85,9 +85,9 @@ namespace PdfConverter
 
             var inputMap = new SortedDictionary<string, MagickImage>();
 
-            while (_convertedPages.TryRemove(key, out var stream))
+            while (_convertedPages.TryRemove(key, out var image))
             {
-                inputMap.Add(key, stream);
+                inputMap.Add(key, image);
 
                 _pageNumbers.TryDequeue(out _nextPageNumber);
 

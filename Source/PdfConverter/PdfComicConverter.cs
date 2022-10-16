@@ -89,7 +89,7 @@ namespace PdfConverter
         private List<int>[] CreatePageLists(Pdf pdf)
         {
             // While testing new pipe reading code
-            var parallelThreads = 1;// 3;// Math.Max(1, Environment.ProcessorCount / 2);
+            var parallelThreads = 2;// 3;// Math.Max(1, Environment.ProcessorCount / 2);
 
             var pageChunker = new PageChunker();
             var pageLists = pageChunker.CreatePageLists(pdf.PageCount, parallelThreads);
@@ -103,9 +103,15 @@ namespace PdfConverter
         {
             var pagesCompressed = 0;
 
-            // Each page converter is given a range of pages that are continously read and converted to png. The converted data is written to a pipe (one per converter).
-            // Each converter is assigned an image converter job thread. The thread reads from the pipe and converts the png data to jpg files and saves them to memory.
-            // The page compressor job thread picks up converted images as they are saved (in page order) and creates the cbz file.
+            var pageSum = pageLists.Sum(p => p.Count);
+            if (pageSum != pdf.PageCount)
+            {
+                throw new ApplicationException($"{nameof(pageLists)} pageSum {pageSum} should be {pdf.PageCount}");
+            }
+
+            // Each page converter is given a range of pages that are continously read and saved as png images.
+            // The page compressor job thread picks up converted images as they are saved (in page order)
+            // and creates the cbz file.
 
             var convertedPages = new ConcurrentDictionary<string, MagickImage>(pageLists.Length, pdf.PageCount);
 
@@ -126,7 +132,7 @@ namespace PdfConverter
 
                 _pageMachineManager.StopMachine(pageMachine);
 
-                //pageConverter.WaitForPagesConverted();
+                pageConverter.WaitForPagesConverted();
             });
 
             pageCompressor.SignalAllPagesConverted();

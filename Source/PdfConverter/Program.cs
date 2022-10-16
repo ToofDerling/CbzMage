@@ -1,3 +1,4 @@
+using CbzMage.Shared.Extensions;
 using Ghostscript.NET;
 using PdfConverter.Ghostscript;
 using PdfConverter.Helpers;
@@ -18,6 +19,15 @@ namespace PdfConverter
 
             public static int MaxHeight => 3056;
         }
+
+        /*public static readonly int MinimumDpi = 300;
+
+        public static readonly int JpegQuality = 95;
+
+        public static readonly int StandardHeight = 3075;
+
+        public static readonly int MaximumHeight = 4150;
+        */
 
 #if DEBUG
         private static readonly string _testPdf = @"M:\Data\Pdf\Test";
@@ -93,7 +103,7 @@ namespace PdfConverter
                         return Pdf.List(files.ToArray());
                     }
                 }
-                else if (File.Exists(path) && path.EndsWith(".pdf", StringComparison.InvariantCultureIgnoreCase))
+                else if (File.Exists(path) && path.EndsWithIgnoreCase(".pdf"))
                 {
                     return Pdf.List(path);
                 }

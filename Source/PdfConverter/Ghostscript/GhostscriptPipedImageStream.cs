@@ -69,7 +69,7 @@ namespace PdfConverter.Ghostscript
 
                         var image = new MagickImage(writer.WrittenSpan);
                         _imageDatahandler.HandleImageData(image);
-
+                        
                         // Prepare writer for reuse
                         writer.Clear();
                         var startOfNextImage = writer.GetSpan(pipeBufferSize);
