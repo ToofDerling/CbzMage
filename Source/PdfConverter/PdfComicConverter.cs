@@ -1,4 +1,5 @@
 ﻿using CbzMage.Shared.Extensions;
+using CbzMage.Shared.Helpers;
 using ImageMagick;
 using PdfConverter.Exceptions;
 using PdfConverter.Ghostscript;

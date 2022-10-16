@@ -1,4 +1,5 @@
 ﻿using CbzMage.Shared.Extensions;
+using CbzMage.Shared.Helpers;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser;
 using iText.Kernel.Pdf.Canvas.Parser.Data;

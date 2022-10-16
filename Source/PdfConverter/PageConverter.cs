@@ -1,7 +1,7 @@
-﻿using ImageMagick;
+﻿using CbzMage.Shared.Jobs;
+using ImageMagick;
 using PdfConverter.Exceptions;
 using PdfConverter.Ghostscript;
-using PdfConverter.Jobs;
 using System.Collections.Concurrent;
 
 namespace PdfConverter

@@ -1,10 +1,6 @@
-﻿using ImageMagick;
-using PdfConverter.Ghostscript;
-using PdfConverter.Helpers;
-using PdfConverter.Jobs;
-using System;
+﻿using CbzMage.Shared.Jobs;
+using ImageMagick;
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.IO.Compression;
 
 namespace PdfConverter

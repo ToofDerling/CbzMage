@@ -1,8 +1,9 @@
-﻿using ImageMagick;
+﻿using CbzMage.Shared.Jobs;
+using ImageMagick;
 using PdfConverter.Helpers;
 using System.IO.Compression;
 
-namespace PdfConverter.Jobs
+namespace PdfConverter
 {
     public class ImageCompressorJob : IJob<IEnumerable<string>>
     {
@@ -23,10 +24,10 @@ namespace PdfConverter.Jobs
             {
                 var entry = _compressor.CreateEntry(page.Key, CompressionLevel.Fastest);
                 using var archiveStream = entry.Open();
-                
+
                 var image = page.Value;
                 image.Write(archiveStream);
-                
+
                 image.Dispose();
                 StatsCount.AddJpg((int)archiveStream.Position);
             }
