@@ -1,11 +1,8 @@
 ﻿using Ghostscript.NET;
 using Ghostscript.NET.Processor;
 using Microsoft.Win32.SafeHandles;
-using Microsoft.WinAny;
 using PdfConverter.Helpers;
-using System;
 using System.Collections.Concurrent;
-using System.IO;
 using System.IO.MemoryMappedFiles;
 
 namespace PdfConverter.Ghostscript
@@ -24,29 +21,28 @@ namespace PdfConverter.Ghostscript
         {
             var dllFile = new FileInfo(version.DllPath);
 
-            using (var mappedFile = MemoryMappedFile.CreateFromFile(dllFile.FullName, FileMode.Open))
-            //using (var view = mappedFile.CreateViewAccessor(0, dllFile.Length))
-            using (var stream = mappedFile.CreateViewStream(0, dllFile.Length))
+            using var mappedFile = MemoryMappedFile.CreateFromFile(dllFile.FullName, FileMode.Open);
+            var stream = mappedFile.CreateViewStream();
+
+            // The NativeLibrary calls below closes the stream so this needs to run first.
+            _handle = stream.SafeMemoryMappedViewHandle;
+            unsafe
             {
-                // Do the bitness check here where we have the memory mapped file - and fail fast
-                // No need to check each time the library is loaded
-                if (Environment.Is64BitProcess != Is64BitLibrary())
-                {
-                    throw new BadImageFormatException(version.DllPath);
-                }
-
-                _handle = stream.SafeMemoryMappedViewHandle;
-                unsafe
-                {
-                    _handle.AcquirePointer(ref _libraryPtr);
-                }
-
-                bool Is64BitLibrary()
-                {
-                    var machine = NativeLibraryHelper.GetImageFileMachineType(stream);
-                    return NativeLibraryHelper.Is64BitMachineValue(machine);
-                };
+                _handle.AcquirePointer(ref _libraryPtr);
             }
+
+            // Do the bitness check here where we have the memory mapped file
+            // and fail fast. No need to check each time the library is loaded
+            if (Environment.Is64BitProcess != Is64BitLibrary())
+            {
+                throw new BadImageFormatException(version.DllPath);
+            }
+
+            bool Is64BitLibrary()
+            {
+                var machine = NativeLibraryHelper.GetImageFileMachineType(stream);
+                return NativeLibraryHelper.Is64BitMachineValue(machine);
+            };
 
             _stoppedMachines = new ConcurrentBag<GhostscriptPageMachine>();
             _runningMachines = new ConcurrentDictionary<GhostscriptPageMachine, object>();

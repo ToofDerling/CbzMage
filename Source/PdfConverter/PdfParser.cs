@@ -38,6 +38,8 @@ namespace PdfConverter
             _pdfComic.PageCount = _pdfDoc.GetNumberOfPages();
 
             _parserErrors = new List<Exception>();
+        
+            _imageMap = new Dictionary<int, (int width, int height)>();
         }
 
         public List<(int width, int height, int count)> ParseImages()
