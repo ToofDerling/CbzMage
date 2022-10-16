@@ -8,7 +8,7 @@ using PdfConverter.Helpers;
 
 namespace PdfConverter
 {
-    public class PdfParser : IEventListener, IDisposable
+    public class PdfImageParser : IEventListener, IDisposable
     {
         // Largest image on a given page
         private readonly Dictionary<int, (int width, int height)> _imageMap;
@@ -23,7 +23,7 @@ namespace PdfConverter
         private int _pageNumber;
         private int _imageCount;
 
-        public PdfParser(Pdf pdfComic)
+        public PdfImageParser(Pdf pdfComic)
         {
             _pdfComic = pdfComic;
 
@@ -59,7 +59,6 @@ namespace PdfConverter
                 pdfDocParser.ProcessContent(_pageNumber, this);
 
                 // Handle pages with no images
-                //TODO: Text only pages are skipped! See WashDay publisher info page.
                 if (!_imageMap.TryGetValue(_pageNumber, out var _))
                 {
                     _imageMap[_pageNumber] = (0, 0);
@@ -67,7 +66,6 @@ namespace PdfConverter
 
                 PageParsed?.Invoke(this, new PageParsedEventArgs(_pageNumber));
             }
-
             _pdfComic.ImageCount = _imageCount;
 
             if (_imageMap.Count != _pdfComic.PageCount)
@@ -76,9 +74,15 @@ namespace PdfConverter
             }
 
             var imageSizesMap = BuildImageSizesMap();
+            var sortedImagesList = imageSizesMap.Values.OrderByDescending(x => x.count).AsList();
 
-            var list = imageSizesMap.Values.OrderByDescending(x => x.count).AsList();
-            return list;
+            var pageSum = sortedImagesList.Sum(i => i.count);
+            if (pageSum != _pdfComic.PageCount)
+            {
+                throw new ApplicationException($"{nameof(sortedImagesList)} pageSum {pageSum} should be {_pdfComic.PageCount}");
+            }
+
+            return sortedImagesList;
         }
 
         public List<Exception> GetImageParserErrors()
@@ -92,11 +96,6 @@ namespace PdfConverter
 
             foreach (var (width, height) in _imageMap.Values)
             {
-                if (width == 0 || height == 0)
-                {
-                    continue;
-                }
-
                 var key = $"{width} x {height}";
 
                 var count = imageSizesMap.TryGetValue(key, out var existingImageSize)
@@ -113,8 +112,6 @@ namespace PdfConverter
 
         public void EventOccurred(IEventData data, EventType type)
         {
-            //TODO: Maybe data contains the page number?
-
             try
             {
                 var renderInfo = data as ImageRenderInfo;

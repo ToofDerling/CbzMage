@@ -57,7 +57,7 @@ namespace PdfConverter
         {
             var stopWatch = Stopwatch.StartNew();
 
-            using var pdfParser = new PdfParser(pdf);
+            using var pdfParser = new PdfImageParser(pdf);
 
             Console.WriteLine(pdf.Path);
             Console.WriteLine($"{pdf.PageCount} pages");

@@ -16,7 +16,7 @@ namespace PdfConverter
             _pageMachineManager = pageMachineManager;
         }
 
-        public void ConvertToCbz(Pdf pdf, PdfParser pdfParser)
+        public void ConvertToCbz(Pdf pdf, PdfImageParser pdfParser)
         {
             var sortedImageSizes = ParsePdfImages(pdf, pdfParser);
             var wantedImageWidth = ParseImageSizes(sortedImageSizes);
@@ -32,7 +32,7 @@ namespace PdfConverter
             }
         }
 
-        private List<(int width, int height, int count)> ParsePdfImages(Pdf pdf, PdfParser pdfImageParser)
+        private List<(int width, int height, int count)> ParsePdfImages(Pdf pdf, PdfImageParser pdfImageParser)
         {
             var progressReporter = new ProgressReporter(pdf.PageCount);
 
@@ -109,7 +109,7 @@ namespace PdfConverter
 
             var convertedPages = new ConcurrentDictionary<string, MagickImage>(pageLists.Length, pdf.PageCount);
 
-            var progressReporter = new ProgressReporter(pdf.PageCount * 2); // Both converting and compressing is counted
+            var progressReporter = new ProgressReporter(pdf.PageCount);
 
             var pageCompressor = new PageCompressor(pdf, convertedPages);
             pageCompressor.PagesCompressed += (s, e) => OnPagesCompressed(e);
@@ -119,7 +119,6 @@ namespace PdfConverter
                 var pageQueue = new Queue<int>(pageList);
                 var pageConverter = new PageConverter(pdf, pageQueue, convertedPages);
 
-                //pageConverter.PageConverted += (s, e) => progressReporter.ShowProgress($"Converted {e.Page}");
                 pageConverter.PageConverted += (s, e) => pageCompressor.OnPageConverted(e);
 
                 var pageMachine = _pageMachineManager.StartMachine();
