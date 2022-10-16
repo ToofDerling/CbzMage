@@ -7,11 +7,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CbzMage", "Source\CbzMage\C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PdfConverter", "Source\PdfConverter\PdfConverter.csproj", "{8FCD5823-D2C7-4E36-8432-FDFB07FC3886}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CbzMage.Shared", "Source\CbzMage.Shared\CbzMage.Shared.csproj", "{391C0C20-EB3F-452C-A683-353243BAE7EB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CbzMage.Shared", "Source\CbzMage.Shared\CbzMage.Shared.csproj", "{391C0C20-EB3F-452C-A683-353243BAE7EB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzwConverter", "Source\AzwConverter\AzwConverter.csproj", "{A03C4A66-534E-4C23-94E9-5EFC38A220E2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzwConverter", "Source\AzwConverter\AzwConverter.csproj", "{A03C4A66-534E-4C23-94E9-5EFC38A220E2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzwMetadata", "Source\AzwMetadata\AzwMetadata.csproj", "{E72F7C97-2FE8-4380-BDBF-58FC5F7C7232}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzwMetadata", "Source\AzwMetadata\AzwMetadata.csproj", "{E72F7C97-2FE8-4380-BDBF-58FC5F7C7232}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ghostscript.Core", "Source\Ghostscript.Core\Ghostscript.Core.csproj", "{71FF3439-A52B-4B4D-8BF7-F3339D79B8F5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -83,6 +85,18 @@ Global
 		{E72F7C97-2FE8-4380-BDBF-58FC5F7C7232}.Release|x64.Build.0 = Release|Any CPU
 		{E72F7C97-2FE8-4380-BDBF-58FC5F7C7232}.Release|x86.ActiveCfg = Release|Any CPU
 		{E72F7C97-2FE8-4380-BDBF-58FC5F7C7232}.Release|x86.Build.0 = Release|Any CPU
+		{71FF3439-A52B-4B4D-8BF7-F3339D79B8F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{71FF3439-A52B-4B4D-8BF7-F3339D79B8F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{71FF3439-A52B-4B4D-8BF7-F3339D79B8F5}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{71FF3439-A52B-4B4D-8BF7-F3339D79B8F5}.Debug|x64.Build.0 = Debug|Any CPU
+		{71FF3439-A52B-4B4D-8BF7-F3339D79B8F5}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{71FF3439-A52B-4B4D-8BF7-F3339D79B8F5}.Debug|x86.Build.0 = Debug|Any CPU
+		{71FF3439-A52B-4B4D-8BF7-F3339D79B8F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{71FF3439-A52B-4B4D-8BF7-F3339D79B8F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{71FF3439-A52B-4B4D-8BF7-F3339D79B8F5}.Release|x64.ActiveCfg = Release|Any CPU
+		{71FF3439-A52B-4B4D-8BF7-F3339D79B8F5}.Release|x64.Build.0 = Release|Any CPU
+		{71FF3439-A52B-4B4D-8BF7-F3339D79B8F5}.Release|x86.ActiveCfg = Release|Any CPU
+		{71FF3439-A52B-4B4D-8BF7-F3339D79B8F5}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

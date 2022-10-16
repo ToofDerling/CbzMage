@@ -1,0 +1,107 @@
+﻿using PdfConverter.Jobs;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
+using System.Linq;
+
+namespace PdfConverter
+{
+    public class PagesCompressor
+    {
+        private readonly Pdf _pdf;
+
+        private readonly ConcurrentQueue<int> _pageNumbers;
+
+        private readonly ConcurrentDictionary<string, Stream> _convertedPages;
+
+        private readonly JobExecutor<IEnumerable<string>> _compressorExecutor;
+
+        private readonly JobWaiter _jobWaiter;
+
+        private readonly ZipArchive _compressor;
+
+        private bool _addedJob = false;
+
+        private int _nextPageNumber;
+
+        private readonly string _cbzFile;
+
+        public PagesCompressor(Pdf pdf, ConcurrentDictionary<string, Stream> convertedPages)
+        {
+            _pdf = pdf;
+            _convertedPages = convertedPages;
+
+            _pageNumbers = new ConcurrentQueue<int>(Enumerable.Range(1, pdf.PageCount));
+            _pageNumbers.TryDequeue(out _nextPageNumber);
+
+            _compressorExecutor = new JobExecutor<IEnumerable<string>>();
+            _compressorExecutor.JobExecuted += (s, e) => OnImagesCompressed(e);
+
+            _jobWaiter = _compressorExecutor.Start(withWaiter: true);
+
+            _cbzFile = Path.ChangeExtension(pdf.Path, ".cbz");
+            Console.WriteLine(Path.GetFileName(_cbzFile));
+
+            File.Delete(_cbzFile);
+
+            _compressor = ZipFile.Open(_cbzFile, ZipArchiveMode.Create);
+        }
+
+        public void WaitForPagesCompressed()
+        {
+            _jobWaiter.WaitForJobsToFinish();
+            _compressor.Dispose();
+        }
+
+        public void OnPageConverted(PageConvertedEventArgs _)
+        {
+            if (!_addedJob)
+            {
+                _addedJob = AddCompressorJob();
+            }
+        }
+
+        public void SignalAllPagesConverted()
+        {
+            AddCompressorJob();
+
+            _compressorExecutor.Stop();
+        }
+
+        private void OnImagesCompressed(JobEventArgs<IEnumerable<string>> eventArgs)
+        {
+            PagesCompressed?.Invoke(this, new PagesCompressedEventArgs(eventArgs.Result));
+
+            _addedJob = AddCompressorJob();
+        }
+
+        public event EventHandler<PagesCompressedEventArgs> PagesCompressed;
+
+        private bool AddCompressorJob()
+        {
+            var key = _pdf.GetPageString(_nextPageNumber);
+
+            var inputMap = new SortedDictionary<string, Stream>();
+
+            while (_convertedPages.TryRemove(key, out var stream))
+            {
+                inputMap.Add(key, stream);
+
+                _pageNumbers.TryDequeue(out _nextPageNumber);
+
+                key = _pdf.GetPageString(_nextPageNumber);
+            }
+
+            if (inputMap.Count > 0)
+            {
+                var job = new ImagesCompressorJob(_compressor, inputMap);
+                _compressorExecutor.AddJob(job);
+
+                return true;
+            }
+            return false;
+        }
+    }
+}

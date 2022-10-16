@@ -1,107 +1,119 @@
-using CbzMage.Shared.Extensions;
-using CbzMage.Shared.Helpers;
-using PdfConverter.AppVersions;
-using PdfConverter.PdfFlow;
+using Ghostscript.NET;
+using PdfConverter.Ghostscript;
+using PdfConverter.Helpers;
+using PdfConverter.ManagedBuffers;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 
 namespace PdfConverter
 {
-    public static class Program
+    public class Program
     {
+        public static class QualityConstants
+        {
+            public const int MinimumDpi = 300;
+
+            public const int JpegQuality = 98;
+
+            public const int MaxHeightThreshold = 3100;
+
+            public const int MaxHeight = 3056;
+        }
+
 #if DEBUG
-        private static readonly string[] _testArgs = new[] { @"M:\Data\Pdf\Test" };
+        private static readonly string _testPdf = @"M:\Data\Pdf\Test";
 #else
-        private static readonly string[] _testArgs = null;
+        private static readonly string _testPdf = null;
 #endif
+
+        // Holds png files read from pdf. Will be expanded if needed (largest png reported so far: 15 MB)
+        // Holds converted jpgs as backing buffers for ManagedMemoryStream. Will not be expanded! (largest jpg so far: 5 MB)
+        private const int BufferSize = 20000000;
+
         public static void Main(string[] args)
         {
-            if (_testArgs != null)
-            {
-                args = _testArgs;
-            }
+            var pdfList = InitializePdfPath(args);
 
-            try
+            if (pdfList.Any())
             {
-                var path = GetPath(args);
-                if (path == null || !StartConvert(path))
+                var bin = Assembly.GetExecutingAssembly().Location;
+                var gsPath = Path.Combine(Path.GetDirectoryName(bin), "gsdll64.dll");
+
+                var version = new GhostscriptVersionInfo(gsPath);
+
+                // Throws if wrong 32/64 version of Ghostscript installed
+                using (var pageMachineManager = new GhostscriptPageMachineManager(version))
                 {
-                    Console.WriteLine("CoreComicsConverter <directory|comic>");
+                    using (var bufferCache = new BufferCache(BufferSize))
+                    {
+                        var converter = new PdfComicConverter(pageMachineManager);
+                        pdfList.ForEach(pdf => ConvertPdf(pdf, converter));
+                    }
                 }
+
+                StatsCount.ShowStats();
             }
-            catch (PdfEncryptedException)
+            else
             {
-                ProgressReporter.Error("Fatal error: pdf is encrypted!");
-            }
-            catch (Exception ex)
-            {
-                ProgressReporter.Error(ex.TypeAndMessage());
-                ProgressReporter.Info(ex.StackTrace);
+                Console.WriteLine("PdfConverter <directory|pdf_file>");
             }
 
             Console.ReadLine();
         }
 
-        private static readonly PdfConverter pdfConverter = new();
-
-        private static bool Convert(List<PdfComic> pdfComics)
+        private static void ConvertPdf(Pdf pdf, PdfComicConverter converter)
         {
-            if (Settings.Initialize(App.Ghostscript, App.SevenZip))
-            {
-                pdfComics.ForEach(comic => { pdfConverter.ConversionFlow(comic); });
-            }
-            return true;
+            var stopWatch = Stopwatch.StartNew();
+
+            var pdfParser = new PdfParser();
+            pdfParser.SetPageCount(pdf);
+
+            Console.WriteLine(pdf.Path);
+            Console.WriteLine($"{pdf.PageCount} pages");
+
+            converter.ConvertToCbz(pdf);
+
+            stopWatch.Stop();
+            var passed = stopWatch.Elapsed;
+
+            Console.WriteLine($"{passed.Minutes} min {passed.Seconds} sec");
         }
 
-        private static bool StartConvert(string path)
+        private static List<Pdf> InitializePdfPath(string[] args)
         {
-            if (Directory.Exists(path))
+            var path = (string)null;
+
+            if (!string.IsNullOrEmpty(_testPdf))
             {
-                return StartConvertDirectory(path);
-
+                path = _testPdf;
             }
-            else if (File.Exists(path))
-            {
-                return StartConvertFile(path);
-            }
-
-            // Nothing to do
-            return false;
-        }
-
-        private static bool StartConvertDirectory(string directory)
-        {
-            var pdfFiles = Directory.GetFiles(directory, "*.pdf");
-            if (pdfFiles.Length == 0)
-            {
-                // Nothing to do
-                return false;
-            }
-
-            return Convert(PdfComic.List(pdfFiles));
-        }
-
-        private static bool StartConvertFile(string file)
-        {
-            if (file.EndsWithIgnoreCase(".pdf"))
-            {
-                return Convert(PdfComic.List(file));
-            }
-
-            return false;
-        }
-
-        private static string GetPath(string[] args)
-        {
-            string path = null;
-
-            if (args.Length > 0)
+            else if (args.Length > 0)
             {
                 path = args[0];
             }
 
-            return !string.IsNullOrEmpty(path) ? path : null;
+            if (!string.IsNullOrEmpty(path))
+            {
+                if (Directory.Exists(path))
+                {
+                    var files = Directory.GetFiles(path, "*.pdf"); //Search pattern is case insensitive
+                    if (files.Length > 0)
+                    {
+                        return Pdf.List(files.ToArray());
+                    }
+                }
+                else if (File.Exists(path) && path.EndsWith(".pdf", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return Pdf.List(path);
+                }
+            }
+
+            //Nothing to do
+            return Pdf.List();
         }
     }
 }
