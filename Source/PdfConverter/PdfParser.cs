@@ -1,5 +1,8 @@
-﻿using iTextSharp.text.pdf;
-using iTextSharp.text.pdf.parser;
+﻿using iText.Kernel.Pdf;
+using iText.Kernel.Pdf.Canvas.Parser;
+using iText.Kernel.Pdf.Canvas.Parser.Data;
+using iText.Kernel.Pdf.Canvas.Parser.Listener;
+using PdfConverter.Exceptions;
 using PdfConverter.Extensions;
 using System;
 using System.Collections.Concurrent;
@@ -9,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace PdfConverter
 {
-    public class PdfParser : IRenderListener
+    public class PdfParser : IEventListener, IDisposable
     {
         private ConcurrentQueue<int> _pageQueue;
 
@@ -17,26 +20,32 @@ namespace PdfConverter
 
         private List<Exception> _parserErrors;
 
-        public void SetPageCount(Pdf pdf)
-        {
-            using (var pdfReader = new PdfReader(pdf.Path))
-            {
-                if (pdfReader.IsEncrypted())
-                {
-                    throw new ApplicationException(pdf.Path + " is encrypted.");
-                }
+        private readonly Pdf _pdfComic;
 
-                pdf.PageCount = pdfReader.NumberOfPages;
+        private readonly PdfReader _pdfReader;
+        private readonly PdfDocument _pdfDoc;
+
+        private readonly List<string> _parserWarnings;
+
+        public PdfParser(Pdf pdfComic)
+        {
+            _pdfComic = pdfComic;
+
+            _pdfReader = new PdfReader(_pdfComic.Path);
+            _pdfDoc = new PdfDocument(_pdfReader);
+
+            if (_pdfReader.IsEncrypted())
+            {
+                throw new PdfEncryptedException();
             }
+
+            _pdfComic.PageCount = _pdfDoc.GetNumberOfPages();
+
+            _parserWarnings = new List<string>();
         }
 
         public List<(int width, int height, int count)> ParseImages(Pdf pdf)
         {
-            if (pdf.PageCount == 0)
-            {
-                SetPageCount(pdf);
-            }
-
             var pages = Enumerable.Range(1, pdf.PageCount);
             _pageQueue = new ConcurrentQueue<int>(pages);
 
@@ -117,17 +126,50 @@ namespace PdfConverter
             }
         }
 
-        #region empty IRenderListener methods
+        public void EventOccurred(IEventData data, EventType type)
+        {
+            throw new NotImplementedException();
+        }
 
-        public void BeginTextBlock()
-        { }
+        public ICollection<EventType> GetSupportedEvents()
+        {
+            throw new NotImplementedException();
+        }
 
-        public void EndTextBlock()
-        { }
+        #region Dispose
 
-        public void RenderText(TextRenderInfo renderInfo)
-        { }
+        private bool disposedValue;
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    _pdfReader?.Close();
+                    _pdfDoc?.Close();
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+                // TODO: set large fields to null
+                disposedValue = true;
+            }
+        }
+
+        // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
+        // ~PdfImageParser()
+        // {
+        //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        //     Dispose(disposing: false);
+        // }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+        
         #endregion
     }
 }

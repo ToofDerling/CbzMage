@@ -69,7 +69,7 @@ namespace PdfConverter
         {
             var stopWatch = Stopwatch.StartNew();
 
-            var pdfParser = new PdfParser();
+            var pdfParser = new PdfParser(pdf);
             pdfParser.SetPageCount(pdf);
 
             Console.WriteLine(pdf.Path);
