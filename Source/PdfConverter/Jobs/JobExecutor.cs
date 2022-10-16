@@ -27,7 +27,6 @@ namespace PdfConverter.Jobs
             _threadPriority = priority;
         }
 
-
         public JobWaiter Start(bool withWaiter)
         {
             _runningQueue = new BlockingCollection<IJob<T>>();

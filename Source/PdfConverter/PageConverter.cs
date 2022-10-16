@@ -39,13 +39,13 @@ namespace PdfConverter
             image.Interlace = Interlace.Plane;
             image.Quality = Program.QualityConstants.JpegQuality;
 
-            if (image.Height > Program.QualityConstants.MaxHeightThreshold)
+            if (image.Height > Program.QualityConstants.MaxHeight)
             {
                 image.Resize(new MagickGeometry
                 {
                     Greater = true,
                     Less = false,
-                    Height = Program.QualityConstants.MaxHeight
+                    Height = Program.QualityConstants.StandardHeight
                 });
             }
 

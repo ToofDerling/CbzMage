@@ -49,6 +49,29 @@ namespace PdfConverter
             return imageSizesMap;
         }
 
+        private int ParseImageSizesH(List<(int width, int height, int count)> sortedImageSizes)
+        {
+            var mostOfThisSize = sortedImageSizes.First();
+
+            var wantedHeight = mostOfThisSize.height;
+            Console.WriteLine($"Target height: {wantedHeight} ({mostOfThisSize.count})");
+
+            var largestSizes = sortedImageSizes.Where(x => x.width >= mostOfThisSize.width && x.width - mostOfThisSize.width <= 50).OrderByDescending(x => x.width);
+            var largestSize = largestSizes.First();
+
+            var largestSizesByCount = largestSizes.OrderByDescending(x => x.count);
+            var largestSizeWithLargestCount = largestSizesByCount.First(x => x.width == largestSize.width);
+
+            var padLen = mostOfThisSize.count.ToString().Length;
+
+            foreach (var (width, height, count) in largestSizesByCount.TakeWhile(x => x.count >= largestSizeWithLargestCount.count))
+            {
+                Console.WriteLine($" {count.ToString().PadLeft(padLen, ' ')} {width} x {height}");
+            }
+
+            return largestSize.width;
+        }
+
         private int ParseImageSizes(List<(int width, int height, int count)> sortedImageSizes)
         {
             var mostOfThisSize = sortedImageSizes.First();

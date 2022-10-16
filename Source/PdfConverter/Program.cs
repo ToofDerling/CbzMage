@@ -13,11 +13,11 @@ namespace PdfConverter
         {
             public static int MinimumDpi => 300;
 
-            public static int JpegQuality => 98;
+            public static int JpegQuality => 95;
 
-            public static int MaxHeightThreshold => 3100;
+            public static int MaxHeight => 4150;
 
-            public static int MaxHeight => 3056;
+            public static int StandardHeight => 3075;
         }
 
         /*public static readonly int MinimumDpi = 300;

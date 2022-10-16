@@ -37,7 +37,7 @@ namespace PdfConverter
             _pageNumbers = new ConcurrentQueue<int>(Enumerable.Range(1, pdf.PageCount));
             _pageNumbers.TryDequeue(out _nextPageNumber);
 
-            _compressorExecutor = new JobExecutor<IEnumerable<string>>(ThreadPriority.AboveNormal);
+            _compressorExecutor = new JobExecutor<IEnumerable<string>>(ThreadPriority.Highest);
             _compressorExecutor.JobExecuted += (s, e) => OnImagesCompressed(e);
 
             _jobWaiter = _compressorExecutor.Start(withWaiter: true);
@@ -96,7 +96,7 @@ namespace PdfConverter
 
             if (inputMap.Count > 0)
             {
-                var job = new ImagesCompressorJob(_compressor, inputMap);
+                var job = new ImageCompressorJob(_compressor, inputMap);
                 _compressorExecutor.AddJob(job);
 
                 return true;

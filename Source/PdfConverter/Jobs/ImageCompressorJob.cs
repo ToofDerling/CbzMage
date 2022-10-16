@@ -4,13 +4,13 @@ using System.IO.Compression;
 
 namespace PdfConverter.Jobs
 {
-    public class ImagesCompressorJob : IJob<IEnumerable<string>>
+    public class ImageCompressorJob : IJob<IEnumerable<string>>
     {
         private readonly ZipArchive _compressor;
 
         private readonly IDictionary<string, MagickImage> _inputMap;
 
-        public ImagesCompressorJob(ZipArchive compressor, IDictionary<string, MagickImage> inputMap)
+        public ImageCompressorJob(ZipArchive compressor, IDictionary<string, MagickImage> inputMap)
         {
             _compressor = compressor;
 
