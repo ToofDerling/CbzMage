@@ -9,6 +9,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="ManagedBuffers\**" />
+    <EmbeddedResource Remove="ManagedBuffers\**" />
+    <None Remove="ManagedBuffers\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Jobs\ImageConverterJob.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="..\..\lib\gsdll64.dll" Link="gsdll64.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -21,6 +31,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Ghostscript.Core\Ghostscript.NET\Ghostscript.Core.csproj" />
+    <ProjectReference Include="..\CbzMage.Shared\CbzMage.Shared.csproj" />
   </ItemGroup>
 
 </Project>

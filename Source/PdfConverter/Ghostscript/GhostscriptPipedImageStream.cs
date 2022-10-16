@@ -1,58 +1,29 @@
-﻿//
-// GhostscriptPipedOutput.cs
-// This file is part of Ghostscript.NET library
-//
-// Author: Josip Habjan (habjan@gmail.com, http://www.linkedin.com/in/habjan) 
-// Copyright (c) 2013-2016 by Josip Habjan. All rights reserved.
-//
-// Permission is hereby granted, free of charge, to any person obtaining
-// a copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to
-// permit persons to whom the Software is furnished to do so, subject to
-// the following conditions:
-//
-// The above copyright notice and this permission notice shall be
-// included in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
+﻿using ImageMagick;
 using PdfConverter.Helpers;
-using PdfConverter.ManagedBuffers;
-using System;
-using System.IO;
+using System.Buffers;
 using System.IO.Pipes;
-using System.Threading;
 
 namespace PdfConverter.Ghostscript
 {
-    //Adapted from Ghostscript.Net GhostscriptPipedOutput.cs
     public class GhostscriptPipedImageStream : IDisposable
     {
-        private bool _disposed = false;
-        private AnonymousPipeServerStream _pipe;
-        private Thread _thread = null;
+        private static readonly byte[] pngHeader = new byte[] { 0x89, 0x50, 0x4e, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }; // PNG "\x89PNG\x0D\0xA\0x1A\0x0A"
 
-        private readonly byte[] _imageHeader;
-
-        //StatsCount haven't reported reads above 500000 bytes so this should be enough
-        private const int PipeBufferSize = 1000000;
+        private const int pipeBufferSize = 65536;
+        private const int imageDataSize = 5242880;
 
         private readonly IPipedImageDataHandler _imageDatahandler;
 
-        public GhostscriptPipedImageStream(byte[] imageHeader, IPipedImageDataHandler imageDatahandler)
+        private AnonymousPipeServerStream _pipe;
+        private bool _disposed = false;
+
+        private readonly Thread _thread;
+
+        public GhostscriptPipedImageStream(IPipedImageDataHandler imageDatahandler)
         {
-            _imageHeader = imageHeader;
             _imageDatahandler = imageDatahandler;
 
-            _pipe = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable, PipeBufferSize);
+            _pipe = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable, pipeBufferSize);
 
             _thread = new Thread(new ThreadStart(ReadGhostscriptPipedOutput));
             _thread.Start();
@@ -67,49 +38,61 @@ namespace PdfConverter.Ghostscript
 
         private void ReadGhostscriptPipedOutput()
         {
-            var currentBuffer = new ManagedBuffer();
+            var writer = new ArrayBufferWriter<byte>(imageDataSize);
+
             var firstImage = true;
+            var pngSpan = pngHeader.AsSpan();
 
-            var offset = 0;
-            int readCount;
-
-            while ((readCount = currentBuffer.ReadFrom(_pipe)) > 0)
+            while (true)
             {
+                var data = writer.GetSpan(pipeBufferSize);
+
+                var readCount = _pipe.Read(data);
+                if (readCount == 0)
+                {
+                    break;
+                }
+
                 StatsCount.AddRead(readCount);
 
                 //Image header is found at the start position of a read
-                if (currentBuffer.StartsWith(offset, readCount, _imageHeader))
+                if (readCount > pngSpan.Length && data.StartsWith(pngSpan))
                 {
                     //Buffer contains a full image plus the first read of the next
                     if (!firstImage)
                     {
-                        //Create next buffer and copy next image bytes into it
-                        var nextBuffer = new ManagedBuffer(currentBuffer, offset, readCount);
+                        // Save the first bit of the next image
+                        var nextImageData = new byte[readCount].AsSpan();
+                        data[..readCount].CopyTo(nextImageData);
 
-                        _imageDatahandler.HandleImageData(currentBuffer);
-                        StatsCount.AddPng(offset);
+                        StatsCount.AddPng(writer.WrittenCount);
 
-                        currentBuffer = nextBuffer;
-                        offset = readCount; //We already have readCount bytes in new buffer
+                        var image = new MagickImage(writer.WrittenSpan);
+                        _imageDatahandler.HandleImageData(image);
+
+                        // Prepare writer for reuse
+                        writer.Clear();
+                        var startOfNextImage = writer.GetSpan(pipeBufferSize);
+
+                        // Write the first bit of the next image
+                        nextImageData.CopyTo(startOfNextImage);
+                        writer.Advance(readCount);
                     }
                     else
                     {
-                        //Keep reading if it's the first image
+                        // Keep reading if it's the first image
                         firstImage = false;
-                        offset += readCount;
+                        writer.Advance(readCount);
                     }
                 }
                 else
                 {
-                    offset += readCount;
+                    writer.Advance(readCount);
                 }
             }
 
-            if (offset > 0)
-            {
-                _imageDatahandler.HandleImageData(currentBuffer);
-                StatsCount.AddPng(offset);
-            }
+            var lastImage = new MagickImage(writer.WrittenSpan);
+            _imageDatahandler.HandleImageData(lastImage);
 
             _imageDatahandler.HandleImageData(null);
         }
@@ -149,17 +132,17 @@ namespace PdfConverter.Ghostscript
                         _pipe = null;
                     }
 
-                    if (_thread != null)
-                    {
-                        // check if the thread is still running
-                        if (_thread.ThreadState == ThreadState.Running)
-                        {
-                            // abort the thread
-                            _thread.Abort();
-                        }
+                    //    if (_thread != null)
+                    //    {
+                    //        // check if the thread is still running
+                    //        if (_thread.ThreadState == ThreadState.Running)
+                    //        {
+                    //            // abort the thread
+                    //            _thread.Abort();
+                    //        }
 
-                        _thread = null;
-                    }
+                    //        _thread = null;
+                    //    }
                 }
 
                 _disposed = true;

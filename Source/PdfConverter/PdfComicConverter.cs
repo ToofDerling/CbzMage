@@ -1,6 +1,6 @@
-﻿using ImageMagick;
+﻿using CbzMage.Shared.Extensions;
+using ImageMagick;
 using PdfConverter.Exceptions;
-using PdfConverter.Extensions;
 using PdfConverter.Ghostscript;
 using PdfConverter.Helpers;
 using System.Collections.Concurrent;
@@ -88,7 +88,8 @@ namespace PdfConverter
 
         private List<int>[] CreatePageLists(Pdf pdf)
         {
-            var parallelThreads = 3;// Math.Max(1, Environment.ProcessorCount / 2);
+            // While testing new pipe reading code
+            var parallelThreads = 1;// 3;// Math.Max(1, Environment.ProcessorCount / 2);
 
             var pageChunker = new PageChunker();
             var pageLists = pageChunker.CreatePageLists(pdf.PageCount, parallelThreads);
@@ -110,27 +111,27 @@ namespace PdfConverter
 
             var progressReporter = new ProgressReporter(pdf.PageCount * 2); // Both converting and compressing is counted
 
-            var pagesCompressor = new PagesCompressor(pdf, convertedPages);
-            pagesCompressor.PagesCompressed += (s, e) => OnPagesCompressed(e);
+            var pageCompressor = new PageCompressor(pdf, convertedPages);
+            pageCompressor.PagesCompressed += (s, e) => OnPagesCompressed(e);
 
             Parallel.ForEach(pageLists, (pageList) =>
             {
                 var pageQueue = new Queue<int>(pageList);
                 var pageConverter = new PageConverter(pdf, pageQueue, convertedPages);
 
-                pageConverter.PageConverted += (s, e) => progressReporter.ShowProgress($"Converted {e.Page}");
-                pageConverter.PageConverted += (s, e) => pagesCompressor.OnPageConverted(e);
+                //pageConverter.PageConverted += (s, e) => progressReporter.ShowProgress($"Converted {e.Page}");
+                pageConverter.PageConverted += (s, e) => pageCompressor.OnPageConverted(e);
 
                 var pageMachine = _pageMachineManager.StartMachine();
                 pageMachine.ReadPageList(pdf, pageList, dpi, pageConverter);
 
                 _pageMachineManager.StopMachine(pageMachine);
 
-                pageConverter.WaitForPagesConverted();
+                //pageConverter.WaitForPagesConverted();
             });
 
-            pagesCompressor.SignalAllPagesConverted();
-            pagesCompressor.WaitForPagesCompressed();
+            pageCompressor.SignalAllPagesConverted();
+            pageCompressor.WaitForPagesCompressed();
 
             Console.WriteLine();
             return pagesCompressed;

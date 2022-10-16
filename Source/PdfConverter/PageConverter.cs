@@ -1,16 +1,12 @@
 ﻿using ImageMagick;
+using PdfConverter.Exceptions;
 using PdfConverter.Ghostscript;
-using PdfConverter.Jobs;
-using PdfConverter.ManagedBuffers;
 using System.Collections.Concurrent;
 
 namespace PdfConverter
 {
     public class PageConverter : IPipedImageDataHandler
     {
-        private readonly JobExecutor<string> _converterExecutor;
-        private readonly JobWaiter _jobWaiter;
-
         private readonly Pdf _pdf;
         private readonly Queue<int> _pageQueue;
         private readonly ConcurrentDictionary<string, MagickImage> _convertedPages;
@@ -21,36 +17,38 @@ namespace PdfConverter
             _pageQueue = pageQueue;
 
             _convertedPages = convertedPages;
-
-            _converterExecutor = new JobExecutor<string>();
-            _converterExecutor.JobExecuted += (s, e) => OnImageConverted(e);
-
-            _jobWaiter = _converterExecutor.Start(withWaiter: true);
         }
 
-        public void WaitForPagesConverted()
+        public void HandleImageData(MagickImage image)
         {
-            _jobWaiter.WaitForJobsToFinish();
-        }
-
-        public void HandleImageData(ManagedBuffer buffer)
-        {
-            if (buffer == null)
+            if (image == null)
             {
-                _converterExecutor.Stop();
                 return;
             }
 
             var pageNumber = _pageQueue.Dequeue();
             var page = _pdf.GetPageString(pageNumber);
 
-            var job = new ImageConverterJob(buffer, _convertedPages, page);
-            _converterExecutor.AddJob(job);
-        }
-        
-        private void OnImageConverted(JobEventArgs<string> eventArgs)
-        {
-            PageConverted?.Invoke(this, new PageConvertedEventArgs(eventArgs.Result));
+            image.Format = MagickFormat.Jpg;
+            image.Interlace = Interlace.Plane;
+            image.Quality = Program.QualityConstants.JpegQuality;
+
+            if (image.Height > Program.QualityConstants.MaxHeightThreshold)
+            {
+                image.Resize(new MagickGeometry
+                {
+                    Greater = true,
+                    Less = false,
+                    Height = Program.QualityConstants.MaxHeight
+                });
+            }
+
+            if (!_convertedPages.TryAdd(page, image))
+            {
+                throw new SomethingWentWrongException($"{page} already converted?");
+            }
+
+            PageConverted?.Invoke(this, new PageConvertedEventArgs(page));
         }
 
         public event EventHandler<PageConvertedEventArgs> PageConverted;

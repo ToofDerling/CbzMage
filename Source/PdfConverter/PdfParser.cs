@@ -1,9 +1,9 @@
-﻿using iText.Kernel.Pdf;
+﻿using CbzMage.Shared.Extensions;
+using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser;
 using iText.Kernel.Pdf.Canvas.Parser.Data;
 using iText.Kernel.Pdf.Canvas.Parser.Listener;
 using PdfConverter.Exceptions;
-using PdfConverter.Extensions;
 using PdfConverter.Helpers;
 
 namespace PdfConverter
@@ -59,6 +59,7 @@ namespace PdfConverter
                 pdfDocParser.ProcessContent(_pageNumber, this);
 
                 // Handle pages with no images
+                //TODO: Text only pages are skipped! See WashDay publisher info page.
                 if (!_imageMap.TryGetValue(_pageNumber, out var _))
                 {
                     _imageMap[_pageNumber] = (0, 0);

@@ -1,7 +1,9 @@
 ﻿using ImageMagick;
 using PdfConverter.Exceptions;
+using PdfConverter.Helpers;
 using PdfConverter.ManagedBuffers;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 
 namespace PdfConverter.Jobs
 {
@@ -24,6 +26,9 @@ namespace PdfConverter.Jobs
 
         public string Execute()
         {
+            var stopwatch = new Stopwatch();
+
+            stopwatch.Start();
             var image = new MagickImage(_buffer.Buffer, 0, _buffer.Count)
             {
                 Format = MagickFormat.Jpg,
@@ -40,6 +45,9 @@ namespace PdfConverter.Jobs
                     Height = Program.QualityConstants.MaxHeight
                 });
             }
+            stopwatch.Stop();
+
+            StatsCount.AddMagicReadTime(stopwatch.ElapsedMilliseconds);
 
             _buffer.Release();
 

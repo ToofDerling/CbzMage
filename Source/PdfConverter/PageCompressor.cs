@@ -1,11 +1,15 @@
 ﻿using ImageMagick;
+using PdfConverter.Ghostscript;
+using PdfConverter.Helpers;
 using PdfConverter.Jobs;
+using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.IO.Compression;
 
 namespace PdfConverter
 {
-    public class PagesCompressor
+    public class PageCompressor
     {
         private readonly Pdf _pdf;
 
@@ -25,7 +29,7 @@ namespace PdfConverter
 
         private readonly string _cbzFile;
 
-        public PagesCompressor(Pdf pdf, ConcurrentDictionary<string, MagickImage> convertedPages)
+        public PageCompressor(Pdf pdf, ConcurrentDictionary<string, MagickImage> convertedPages)
         {
             _pdf = pdf;
             _convertedPages = convertedPages;

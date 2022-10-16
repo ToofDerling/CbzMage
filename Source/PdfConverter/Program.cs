@@ -1,12 +1,7 @@
 using Ghostscript.NET;
 using PdfConverter.Ghostscript;
 using PdfConverter.Helpers;
-using PdfConverter.ManagedBuffers;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Reflection;
 
 namespace PdfConverter
@@ -15,13 +10,13 @@ namespace PdfConverter
     {
         public static class QualityConstants
         {
-            public const int MinimumDpi = 300;
+            public static int MinimumDpi => 300;
 
-            public const int JpegQuality = 98;
+            public static int JpegQuality => 98;
 
-            public const int MaxHeightThreshold = 3100;
+            public static int MaxHeightThreshold => 3100;
 
-            public const int MaxHeight = 3056;
+            public static int MaxHeight => 3056;
         }
 
 #if DEBUG
@@ -29,10 +24,6 @@ namespace PdfConverter
 #else
         private static readonly string _testPdf = null;
 #endif
-
-        // Holds png files read from pdf. Will be expanded if needed (largest png reported so far: 15 MB)
-        // Holds converted jpgs as backing buffers for ManagedMemoryStream. Will not be expanded! (largest jpg so far: 5 MB)
-        private const int BufferSize = 20000000;
 
         public static void Main(string[] args)
         {
@@ -48,11 +39,8 @@ namespace PdfConverter
                 // Throws if wrong 32/64 version of Ghostscript installed
                 using (var pageMachineManager = new GhostscriptPageMachineManager(version))
                 {
-                    using (var bufferCache = new BufferCache(BufferSize))
-                    {
-                        var converter = new PdfComicConverter(pageMachineManager);
-                        pdfList.ForEach(pdf => ConvertPdf(pdf, converter));
-                    }
+                    var converter = new PdfComicConverter(pageMachineManager);
+                    pdfList.ForEach(pdf => ConvertPdf(pdf, converter));
                 }
 
                 StatsCount.ShowStats();

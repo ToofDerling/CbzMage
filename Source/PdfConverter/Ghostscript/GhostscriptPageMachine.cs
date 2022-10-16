@@ -1,6 +1,4 @@
 ﻿using Ghostscript.NET.Processor;
-using System;
-using System.Collections.Generic;
 using System.Text;
 
 namespace PdfConverter.Ghostscript
@@ -8,8 +6,6 @@ namespace PdfConverter.Ghostscript
     public class GhostscriptPageMachine : IDisposable
     {
         private readonly GhostscriptProcessor _processor;
-
-        private static readonly byte[] pngHeader = new byte[] { 0x89, 0x50, 0x4e, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }; // PNG "\x89PNG\x0D\0xA\0x1A\0x0A"
 
         public GhostscriptPageMachine(GhostscriptProcessor processor)
         {
@@ -54,7 +50,7 @@ namespace PdfConverter.Ghostscript
 
         public void ReadPageList(Pdf pdf, List<int> pageNumbers, int dpi, IPipedImageDataHandler imageDataHandler)
         {
-            using (var gsPipedOutput = new GhostscriptPipedImageStream(pngHeader, imageDataHandler))
+            using (var gsPipedOutput = new GhostscriptPipedImageStream(imageDataHandler))
             {
                 var pdfFile = pdf.Path;
                 var pageList = CreatePageList(pageNumbers);

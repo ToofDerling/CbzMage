@@ -1,55 +1,79 @@
-﻿using System;
-
-namespace PdfConverter.Helpers
+﻿namespace PdfConverter.Helpers
 {
     public class StatsCount
     {
-        public static int LargestPng = 0;
+        private static int largestPng = 0;
+
+        private static int pngCount = 0;
+
+        private static long totalPngSize = 0;
 
         public static void AddPng(int png)
         {
-            if (png > LargestPng)
+            pngCount++;
+
+            totalPngSize += png;
+
+            if (png > largestPng)
             {
-                LargestPng = png;
+                largestPng = png;
             }
         }
 
-        public static int LargestJpg = 0;
+        private static int largestJpg = 0;
 
         public static void AddJpg(int jpg)
         {
-            if (jpg > LargestJpg)
+            if (jpg > largestJpg)
             {
-                LargestJpg = jpg;
+                largestJpg = jpg;
             }
         }
 
-        public static int LargestRead = 0;
+        private static int largestRead = 0;
 
         public static void AddRead(int read)
         {
-            if (read > LargestRead)
+            if (read > largestRead)
             {
-                LargestRead = read;
+                largestRead = read;
             }
         }
 
-        public static int NewBuffers = 0;
-        public static int CachedBuffers = 0;
+        public static volatile int NewBuffers = 0;
+        public static volatile int CachedBuffers = 0;
 
-        public static int NewPageMachines = 0;
-        public static int CachedPageMachines = 0;
+        public static volatile int NewPageMachines = 0;
+        public static volatile int CachedPageMachines = 0;
+
+        private static long magickTotalReadTime = 0;
+        private static int magickReadCount = 0;
+        public static void AddMagicReadTime(long ms)
+        {
+            magickReadCount++;
+            magickTotalReadTime += ms;
+        }
+
+        private static long magickTotalWriteTime = 0;
+        private static int magickWriteCount = 0;
+
+        public static void AddMagicWriteTime(long ms)
+        {
+            magickWriteCount++;
+            magickTotalWriteTime += ms;
+        }
 
         public static void ShowStats()
         {
-            if (LargestPng > 0)
+            if (largestPng > 0)
             {
-                Console.WriteLine($"Largest png: {LargestPng} read: {LargestRead}");
+                Console.WriteLine($"Largest png: {largestPng} Largest pipe read: {largestRead}");
+                Console.WriteLine($"Png count: {pngCount} Average size: {totalPngSize / pngCount}");
             }
 
-            if (LargestJpg > 0)
+            if (largestJpg > 0)
             {
-                Console.WriteLine($"Largest jpg: {LargestJpg}");
+                Console.WriteLine($"Largest jpg: {largestJpg}");
             }
 
             if (NewBuffers > 0)
@@ -59,7 +83,17 @@ namespace PdfConverter.Helpers
 
             if (NewPageMachines > 0)
             {
-                Console.WriteLine($"Cached/new page machines: {CachedPageMachines}/{NewPageMachines}");
+                Console.WriteLine($"Cached/new pagemachines: {CachedPageMachines}/{NewPageMachines}");
+            }
+
+            if (magickReadCount > 0)
+            {
+                Console.WriteLine($"Magick reads: {magickReadCount} Average ms: {magickTotalReadTime / magickReadCount}");
+            }
+
+            if (magickWriteCount > 0)
+            {
+                Console.WriteLine($"Magick writes: {magickWriteCount} Average ms: {magickTotalWriteTime / magickWriteCount}");
             }
         }
     }
