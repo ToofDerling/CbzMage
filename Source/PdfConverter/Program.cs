@@ -69,13 +69,12 @@ namespace PdfConverter
         {
             var stopWatch = Stopwatch.StartNew();
 
-            var pdfParser = new PdfParser(pdf);
-            pdfParser.SetPageCount(pdf);
+            using var pdfParser = new PdfParser(pdf);
 
             Console.WriteLine(pdf.Path);
             Console.WriteLine($"{pdf.PageCount} pages");
 
-            converter.ConvertToCbz(pdf);
+            converter.ConvertToCbz(pdf, pdfParser);
 
             stopWatch.Stop();
             var passed = stopWatch.Elapsed;

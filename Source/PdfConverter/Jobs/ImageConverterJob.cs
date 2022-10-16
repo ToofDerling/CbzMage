@@ -1,4 +1,5 @@
 ﻿using ImageMagick;
+using PdfConverter.Exceptions;
 using PdfConverter.Helpers;
 using PdfConverter.ManagedBuffers;
 using System.Collections.Concurrent;

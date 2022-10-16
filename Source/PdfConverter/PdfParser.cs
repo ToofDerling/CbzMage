@@ -4,28 +4,24 @@ using iText.Kernel.Pdf.Canvas.Parser.Data;
 using iText.Kernel.Pdf.Canvas.Parser.Listener;
 using PdfConverter.Exceptions;
 using PdfConverter.Extensions;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using PdfConverter.Helpers;
 
 namespace PdfConverter
 {
     public class PdfParser : IEventListener, IDisposable
     {
-        private ConcurrentQueue<int> _pageQueue;
+        // Largest image on a given page
+        private readonly Dictionary<int, (int width, int height)> _imageMap;
 
-        private ConcurrentBag<(int width, int height)> _imageSizes;
-
-        private List<Exception> _parserErrors;
+        private readonly List<Exception> _parserErrors;
 
         private readonly Pdf _pdfComic;
 
         private readonly PdfReader _pdfReader;
         private readonly PdfDocument _pdfDoc;
 
-        private readonly List<string> _parserWarnings;
+        private int _pageNumber;
+        private int _imageCount;
 
         public PdfParser(Pdf pdfComic)
         {
@@ -41,20 +37,40 @@ namespace PdfConverter
 
             _pdfComic.PageCount = _pdfDoc.GetNumberOfPages();
 
-            _parserWarnings = new List<string>();
+            _parserErrors = new List<Exception>();
         }
 
-        public List<(int width, int height, int count)> ParseImages(Pdf pdf)
+        public List<(int width, int height, int count)> ParseImages()
         {
-            var pages = Enumerable.Range(1, pdf.PageCount);
-            _pageQueue = new ConcurrentQueue<int>(pages);
+            if (_pdfComic.PageCount == 0)
+            {
+                throw new ApplicationException("Comic pageCount is 0");
+            }
 
-            _imageSizes = new ConcurrentBag<(int, int)>();
-            _parserErrors = new List<Exception>();
+            var progressReporter = new ProgressReporter(_pdfComic.PageCount);
+            PageParsed += (s, e) => progressReporter.ShowProgress($"Parsing page {e.CurrentPage}");
 
-            Parallel.For(0, Environment.ProcessorCount, (index, state) => ProcessPages(pdf, state));
+            var pdfDocParser = new PdfDocumentContentParser(_pdfDoc);
 
-            pdf.ImageCount = _imageSizes.Count;
+            for (_pageNumber = 1; _pageNumber <= _pdfComic.PageCount; _pageNumber++)
+            {
+                pdfDocParser.ProcessContent(_pageNumber, this);
+
+                // Handle pages with no images
+                if (!_imageMap.TryGetValue(_pageNumber, out var _))
+                {
+                    _imageMap[_pageNumber] = (0, 0);
+                }
+
+                PageParsed?.Invoke(this, new PageParsedEventArgs(_pageNumber));
+            }
+
+            _pdfComic.ImageCount = _imageCount;
+
+            if (_imageMap.Count != _pdfComic.PageCount)
+            {
+                throw new ApplicationException($"{nameof(_imageMap)} is {_imageMap.Count} should be {_pdfComic.PageCount}");
+            }
 
             var imageSizesMap = BuildImageSizesMap();
 
@@ -71,11 +87,18 @@ namespace PdfConverter
         {
             var imageSizesMap = new Dictionary<string, (int, int, int count)>();
 
-            foreach (var (width, height) in _imageSizes)
+            foreach (var (width, height) in _imageMap.Values)
             {
+                if (width == 0 || height == 0)
+                {
+                    continue;
+                }
+
                 var key = $"{width} x {height}";
 
-                var count = imageSizesMap.TryGetValue(key, out var existingImageSize) ? existingImageSize.count + 1 : 1;
+                var count = imageSizesMap.TryGetValue(key, out var existingImageSize)
+                    ? existingImageSize.count + 1
+                    : 1;
 
                 imageSizesMap[key] = (width, height, count);
             }
@@ -83,42 +106,28 @@ namespace PdfConverter
             return imageSizesMap;
         }
 
-        private void ProcessPages(Pdf pdf, ParallelLoopState loopState)
-        {
-            if (_pageQueue.IsEmpty)
-            {
-                loopState.Stop();
-                return;
-            }
-
-            using (var pdfReader = new PdfReader(pdf.Path))
-            {
-                var pdfParser = new PdfReaderContentParser(pdfReader);
-
-                while (!_pageQueue.IsEmpty)
-                {
-                    if (_pageQueue.TryDequeue(out var currentPage))
-                    {
-                        pdfParser.ProcessContent(currentPage, this);
-
-                        PageParsed?.Invoke(this, new PageParsedEventArgs(currentPage));
-                    }
-                }
-            }
-        }
-
         public event EventHandler<PageParsedEventArgs> PageParsed;
 
-        public void RenderImage(ImageRenderInfo renderInfo)
+        public void EventOccurred(IEventData data, EventType type)
         {
+            //TODO: Maybe data contains the page number?
+
             try
             {
+                var renderInfo = data as ImageRenderInfo;
                 var imageObject = renderInfo.GetImage();
 
-                var width = imageObject.Get(PdfName.WIDTH);
-                var height = imageObject.Get(PdfName.HEIGHT);
+                var newWidth = Convert.ToInt32(imageObject.GetWidth());
+                var newHeight = Convert.ToInt32(imageObject.GetHeight());
 
-                _imageSizes.Add((width.ToInt(), height.ToInt()));
+                // We want the largest image on any given page.
+                if (!_imageMap.TryGetValue(_pageNumber, out var page)
+                    || (newWidth * newHeight > page.width * page.height))
+                {
+                    _imageMap[_pageNumber] = (newWidth, newHeight);
+                }
+
+                _imageCount++;
             }
             catch (Exception ex)
             {
@@ -126,14 +135,9 @@ namespace PdfConverter
             }
         }
 
-        public void EventOccurred(IEventData data, EventType type)
-        {
-            throw new NotImplementedException();
-        }
-
         public ICollection<EventType> GetSupportedEvents()
         {
-            throw new NotImplementedException();
+            return new[] { EventType.RENDER_IMAGE };
         }
 
         #region Dispose
@@ -169,7 +173,7 @@ namespace PdfConverter
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
-        
+
         #endregion
     }
 }

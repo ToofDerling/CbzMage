@@ -1,4 +1,5 @@
-﻿using PdfConverter.Extensions;
+﻿using PdfConverter.Exceptions;
+using PdfConverter.Extensions;
 using PdfConverter.Ghostscript;
 using PdfConverter.Helpers;
 using System;
@@ -19,9 +20,9 @@ namespace PdfConverter
             _pageMachineManager = pageMachineManager;
         }
 
-        public void ConvertToCbz(Pdf pdf)
+        public void ConvertToCbz(Pdf pdf, PdfParser pdfParser)
         {
-            var sortedImageSizes = ParsePdfImages(pdf);
+            var sortedImageSizes = ParsePdfImages(pdf, pdfParser);
             var wantedImageWidth = ParseImageSizes(sortedImageSizes);
 
             var dpi = CalculateDpiForImageSize(pdf, wantedImageWidth);
@@ -35,14 +36,13 @@ namespace PdfConverter
             }
         }
 
-        private List<(int width, int height, int count)> ParsePdfImages(Pdf pdf)
+        private List<(int width, int height, int count)> ParsePdfImages(Pdf pdf, PdfParser pdfImageParser)
         {
             var progressReporter = new ProgressReporter(pdf.PageCount);
 
-            var pdfImageParser = new PdfParser();
             pdfImageParser.PageParsed += (s, e) => progressReporter.ShowProgress($"Parsing page-{e.CurrentPage}");
 
-            var imageSizesMap = pdfImageParser.ParseImages(pdf);
+            var imageSizesMap = pdfImageParser.ParseImages();
 
             Console.WriteLine();
             Console.WriteLine($"{pdf.ImageCount} images");
