@@ -9,6 +9,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="..\..\lib\gsdll64.dll" Link="gsdll64.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="itext7" Version="7.2.3" />
     <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="12.2.0" />
   </ItemGroup>
 
