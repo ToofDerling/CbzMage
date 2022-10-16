@@ -50,16 +50,17 @@ namespace PdfConverter.Ghostscript
 
         public void ReadPageList(Pdf pdf, List<int> pageNumbers, int dpi, IPipedImageDataHandler imageDataHandler)
         {
-            using (var gsPipedOutput = new GhostscriptPipedImageStream(imageDataHandler))
-            {
-                var pdfFile = pdf.Path;
-                var pageList = CreatePageList(pageNumbers);
+            //using (var gsPipedOutput = new GhostscriptPipedImageStream(imageDataHandler))
+            var gsPipedOutput = new GhostscriptPipedImageStream(imageDataHandler);
+            //{
+            //var pdfFile = pdf.Path;
+            var pageList = CreatePageList(pageNumbers);
 
-                var outputPipeHandle = gsPipedOutput.GetOutputPipeHandle();
-                var switches = GetSwitches(pdf.Path, pageList, dpi, outputPipeHandle);
+            var outputPipeHandle = gsPipedOutput.GetOutputPipeHandle();
+            var switches = GetSwitches(pdf.Path, pageList, dpi, outputPipeHandle);
 
-                _processor.StartProcessing(switches, null);
-            }
+            _processor.StartProcessing(switches, null);
+            //}
         }
 
         #region IDisposable Support
