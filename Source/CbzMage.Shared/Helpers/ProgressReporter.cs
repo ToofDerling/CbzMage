@@ -63,17 +63,17 @@ namespace CbzMage.Shared.Helpers
 
         public static void Done(string message)
         {
-            Show(message, ConsoleColor.Green);
+            Show(message, ConsoleColor.DarkGreen);
         }
 
         public static void Info(string message)
         {
-           Show(message, ConsoleColor.White);
+            Console.WriteLine(message);
         }
 
         public static void Warning(string message)
         {
-            Show(message, ConsoleColor.Yellow);
+            Show(message, ConsoleColor.DarkYellow);
         }
 
         public static void DumpErrors(IEnumerable<string> errorLines)
@@ -92,7 +92,7 @@ namespace CbzMage.Shared.Helpers
 
         public static void Error(string message)
         {
-            Show(message, ConsoleColor.Red);
+            Show(message, ConsoleColor.DarkRed);
         }
 
         private static readonly object showLock = new();
@@ -101,16 +101,19 @@ namespace CbzMage.Shared.Helpers
         {
             lock (showLock)
             {
+                ConsoleColor? previousColor = null;
+
                 if (color != Console.ForegroundColor)
                 {
+                    previousColor = Console.ForegroundColor;
                     Console.ForegroundColor = color;
                 }
 
                 Console.WriteLine(message);
 
-                if (Console.ForegroundColor != ConsoleColor.White)
+                if (previousColor.HasValue)
                 {
-                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.ForegroundColor = previousColor.Value;
                 }
             }
         }
