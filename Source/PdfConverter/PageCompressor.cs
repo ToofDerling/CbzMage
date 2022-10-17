@@ -27,6 +27,8 @@ namespace PdfConverter
 
         private readonly string _cbzFile;
 
+        private readonly ProgressReporter _progressReporter;
+
         public PageCompressor(Pdf pdf, ConcurrentDictionary<string, MagickImage> convertedPages)
         {
             _pdf = pdf;
@@ -45,6 +47,8 @@ namespace PdfConverter
 
             File.Delete(_cbzFile);
             _compressor = ZipFile.Open(_cbzFile, ZipArchiveMode.Create);
+
+            _progressReporter = new ProgressReporter(pdf.PageCount);
         }
 
         public void WaitForPagesCompressed()
@@ -94,7 +98,7 @@ namespace PdfConverter
 
             if (inputMap.Count > 0)
             {
-                var job = new ImageCompressorJob(_compressor, inputMap);
+                var job = new ImageCompressorJob(_compressor, inputMap, _progressReporter);
                 _compressorExecutor.AddJob(job);
 
                 return true;

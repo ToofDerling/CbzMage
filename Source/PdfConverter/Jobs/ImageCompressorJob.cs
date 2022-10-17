@@ -1,4 +1,5 @@
-﻿using CbzMage.Shared.Jobs;
+﻿using CbzMage.Shared.Helpers;
+using CbzMage.Shared.Jobs;
 using ImageMagick;
 using PdfConverter.Helpers;
 using System.Diagnostics;
@@ -12,11 +13,16 @@ namespace PdfConverter.Jobs
 
         private readonly IDictionary<string, MagickImage> _inputMap;
 
-        public ImageCompressorJob(ZipArchive compressor, IDictionary<string, MagickImage> inputMap)
+        private readonly ProgressReporter _progressReporter;
+
+        public ImageCompressorJob(ZipArchive compressor, IDictionary<string, MagickImage> inputMap,
+            ProgressReporter progressReporter)
         {
             _compressor = compressor;
 
             _inputMap = inputMap;
+
+            _progressReporter = progressReporter;
         }
 
         public IEnumerable<string> Execute()
@@ -37,6 +43,8 @@ namespace PdfConverter.Jobs
 
                 stopwatch.Stop();
                 StatsCount.AddMagickWrite((int)stopwatch.ElapsedMilliseconds, (int)archiveStream.Position);
+
+                _progressReporter.ShowProgress($"Converted {page.Key}");
             }
 
             return _inputMap.Keys;
