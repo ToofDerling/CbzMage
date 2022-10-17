@@ -10,16 +10,6 @@ namespace PdfConverter
 {
     public class Program
     {
-        public static class Settings
-        {
-            public static int MinimumDpi => 300;
-
-            public static int JpegQuality => 95;
-
-            public static int ThreadCount => 4;
-
-            public static int ResizeSlack => 100;
-        }
 
 #if DEBUG
         private static readonly string _testPdf = @"M:\Data\Pdf\Test";
@@ -32,6 +22,8 @@ namespace PdfConverter
 
         public static void Main(string[] args)
         {
+            var r = Convert.ToInt16(3d / 2d);
+
             var pdfList = InitializePdfPath(args);
 
             if (pdfList.Any())

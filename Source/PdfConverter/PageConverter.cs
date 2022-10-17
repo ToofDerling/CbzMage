@@ -25,9 +25,12 @@ namespace PdfConverter
 
             _convertedPages = convertedPages;
 
-            _converterExecutor = new JobExecutor<string>();
-            _converterExecutor.JobExecuted += (s, e) => OnImageConverted(e);
+            var threadCount = Math.Max(Settings.ThreadCount / 2, 1);
 
+            _converterExecutor = new JobExecutor<string>(numThreads: threadCount);
+
+            _converterExecutor.JobExecuted += (s, e) => OnImageConverted(e);
+            
             _jobWaiter = _converterExecutor.Start(withWaiter: true);
 
             _wantedHeight = wantedHeight;

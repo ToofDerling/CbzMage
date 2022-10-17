@@ -94,7 +94,7 @@ namespace PdfConverter
 
         private List<int>[] CreatePageLists(Pdf pdf)
         {
-            var parallelThreads = Program.Settings.ThreadCount;
+            var parallelThreads = Settings.ThreadCount;
 
             var pageChunker = new PageChunker();
             var pageLists = pageChunker.CreatePageLists(pdf.PageCount, parallelThreads);

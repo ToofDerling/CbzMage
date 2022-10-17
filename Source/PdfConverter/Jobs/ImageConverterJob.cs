@@ -38,11 +38,11 @@ namespace PdfConverter.Jobs
             {
                 Format = MagickFormat.Jpg,
                 Interlace = Interlace.Plane,
-                Quality = Program.Settings.JpegQuality
+                Quality = Settings.JpegQuality
             };
 
             var resize = false;
-            if (image.Height > _wantedHeight + Program.Settings.ResizeSlack)
+            if (image.Height > _wantedHeight + Settings.ResizeSlack)
             {
                 resize = true;
 
