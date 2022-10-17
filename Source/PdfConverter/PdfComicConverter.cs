@@ -96,7 +96,7 @@ namespace PdfConverter
                     // Hard cap at the maximum height setting
                     newWantedHeight = Math.Min(Settings.MaximumHeight, newWantedHeight);
 
-                    Console.WriteLine($"Adjusting wanted height {dpiHeight} -> {newWantedHeight}");
+                    Console.WriteLine($"Adjusted height {dpiHeight} -> {newWantedHeight}");
                     return newWantedHeight;
                 }
             }
@@ -104,7 +104,7 @@ namespace PdfConverter
             // Hard cap at the maximum height setting
             if (dpiHeight > Settings.MaximumHeight)
             {
-                Console.WriteLine($"Adjusting wanted height {dpiHeight} -> {Settings.MaximumHeight}");
+                Console.WriteLine($"Adjusted height {dpiHeight} -> {Settings.MaximumHeight}");
                 return Settings.MaximumHeight;
             }
 

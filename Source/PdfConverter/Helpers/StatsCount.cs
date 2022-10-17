@@ -85,12 +85,12 @@
 
             if (magickReadCount > 0)
             {
-                Console.WriteLine($"Largest Png: {largestPng} Average size: {totalPngSize / magickReadCount}");
+                Console.WriteLine($"Largest Png: {largestPng} Average: {totalPngSize / magickReadCount}");
             }
 
             if (magickWriteCount > 0)
             {
-                Console.WriteLine($"Largest Jpg: {largestJpg} Average size: {totalJpgSize / magickWriteCount}");
+                Console.WriteLine($"Largest Jpg: {largestJpg} Average: {totalJpgSize / magickWriteCount}");
             }
 
             if (NewBuffers > 0)
