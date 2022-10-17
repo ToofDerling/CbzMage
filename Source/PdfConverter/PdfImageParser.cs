@@ -50,7 +50,7 @@ namespace PdfConverter
             }
 
             var progressReporter = new ProgressReporter(_pdfComic.PageCount);
-            PageParsed += (s, e) => progressReporter.ShowProgress($"Parsing page {e.CurrentPage}");
+            PageParsed += (s, e) => progressReporter.ShowProgress($"Parsing page-{e.CurrentPage}");
 
             var pdfDocParser = new PdfDocumentContentParser(_pdfDoc);
 
