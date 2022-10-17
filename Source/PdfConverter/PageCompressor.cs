@@ -25,8 +25,6 @@ namespace PdfConverter
 
         private int _nextPageNumber;
 
-        private readonly string _cbzFile;
-
         private readonly ProgressReporter _progressReporter;
 
         public PageCompressor(Pdf pdf, ConcurrentDictionary<string, MagickImage> convertedPages)
@@ -42,13 +40,18 @@ namespace PdfConverter
 
             _jobWaiter = _compressorExecutor.Start(withWaiter: true);
 
-            _cbzFile = Path.ChangeExtension(pdf.Path, ".cbz");
+            _compressor = CreateCompressor();
+            _progressReporter = new ProgressReporter(pdf.PageCount);
+        }
+
+        private ZipArchive CreateCompressor()
+        {
+            var _cbzFile = Path.ChangeExtension(_pdf.Path, ".cbz");
+            File.Delete(_cbzFile);
+
             ProgressReporter.Done(_cbzFile);
 
-            File.Delete(_cbzFile);
-            _compressor = ZipFile.Open(_cbzFile, ZipArchiveMode.Create);
-
-            _progressReporter = new ProgressReporter(pdf.PageCount);
+            return ZipFile.Open(_cbzFile, ZipArchiveMode.Create);
         }
 
         public void WaitForPagesCompressed()
