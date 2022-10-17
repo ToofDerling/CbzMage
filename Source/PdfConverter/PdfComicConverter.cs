@@ -28,7 +28,7 @@ namespace PdfConverter
 
             if (fileCount != pdf.PageCount)
             {
-                throw new SomethingWentWrongException($"{fileCount} files generated for {pdf.PageCount} pages");
+                throw new SomethingWentWrongSorryException($"{fileCount} files generated for {pdf.PageCount} pages");
             }
         }
 

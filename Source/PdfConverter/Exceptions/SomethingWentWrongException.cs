@@ -1,8 +1,8 @@
 ﻿namespace PdfConverter.Exceptions
 {
-    public class SomethingWentWrongException : ApplicationException
+    public class SomethingWentWrongSorryException : ApplicationException
     {
-        public SomethingWentWrongException(string message) : base(message)
+        public SomethingWentWrongSorryException(string message) : base($"Sorry: {message}")
         {
         }
     }

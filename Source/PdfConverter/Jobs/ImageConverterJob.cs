@@ -62,7 +62,7 @@ namespace PdfConverter.Jobs
 
             if (!_convertedImages.TryAdd(_page, image))
             {
-                throw new SomethingWentWrongException($"{_page} already converted?");
+                throw new SomethingWentWrongSorryException($"{_page} already converted?");
             }
             return _page;
         }
