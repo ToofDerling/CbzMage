@@ -59,7 +59,6 @@ Pdf:
                 ProgressReporter.Info(_usage);
             }
 
-
             if (Environment.OSVersion.Platform == PlatformID.Win32NT)
             {
                 // If this is run as a "gui" let the console hang around
