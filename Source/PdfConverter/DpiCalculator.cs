@@ -24,7 +24,12 @@ namespace PdfConverter
         {
             var dpi = Settings.MinimumDpi;
 
-            var width = GetImageWidth(dpi);
+            var (width, height) = GetImageSize(dpi);
+
+            if (height > Settings.MaximumHeight)
+            {
+                return dpi;
+            }
 
             if (width < _wantedImageWidth)
             {
@@ -45,14 +50,28 @@ namespace PdfConverter
                 while (nextWidth < wantedWidth)
                 {
                     dpi++;
-                    nextWidth = GetImageWidth(dpi);
+
+                    var size = GetImageSize(dpi);
+                    if (size.height > Settings.MaximumHeight)
+                    {
+                        return dpi;
+                    }
+
+                    nextWidth = size.width;
                 }
             }
             else
             {
                 var step = 5;
                 dpi += step;
-                var nextWidth = GetImageWidth(dpi);
+
+                var size = GetImageSize(dpi);
+                if (size.height > Settings.MaximumHeight)
+                {
+                    return dpi;
+                }
+
+                var nextWidth = size.width;
 
                 // Calculate big step if next width produced a large enough difference 
                 if (nextWidth < wantedWidth && wantedWidth - nextWidth > 15)
@@ -61,7 +80,14 @@ namespace PdfConverter
                     var bigStep = CalculateBigStep(diff, nextDiff, step);
 
                     dpi = Settings.MinimumDpi + bigStep;
-                    nextWidth = GetImageWidth(dpi);
+                    size = GetImageSize(dpi);
+
+                    if (size.height > Settings.MaximumHeight)
+                    {
+                        return dpi;
+                    }
+
+                    nextWidth = size.width;
                 }
                 // Go down if big step put us above wanted width
                 // Go up if after big step we're still below wanted width, or the calculation was skipped
@@ -76,13 +102,25 @@ namespace PdfConverter
             while (nextWidth > wantedWidth && nextWidth - wantedWidth > 5)
             {
                 dpi--;
-                nextWidth = GetImageWidth(dpi);
+                var (width, height) = GetImageSize(dpi);
+                if (height > Settings.MaximumHeight)
+                {
+                    return dpi;
+                }
+
+                nextWidth = width;
             }
 
             while (nextWidth < wantedWidth)
             {
                 dpi++;
-                nextWidth = GetImageWidth(dpi);
+                var (width, height) = GetImageSize(dpi);
+                if (height > Settings.MaximumHeight)
+                {
+                    return dpi;
+                }
+
+                nextWidth = width;
             }
 
             return dpi;
@@ -97,7 +135,7 @@ namespace PdfConverter
             return Convert.ToInt32(bigStep);
         }
 
-        private int GetImageWidth(int dpi)
+        private (int width, int height) GetImageSize(int dpi)
         {
             var imageHandler = new GetSinglePipedImageDataHandler();
 
@@ -111,10 +149,9 @@ namespace PdfConverter
             buffer.Release();
 
             DpiCalculated?.Invoke(this, new DpiCalculatedEventArgs(dpi, Settings.MinimumDpi, image.Width, image.Height));
-            return image.Width;
+            return (image.Width, image.Height);
         }
 
         public event EventHandler<DpiCalculatedEventArgs> DpiCalculated;
-
     }
 }
