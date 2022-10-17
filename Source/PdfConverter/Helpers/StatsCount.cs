@@ -2,41 +2,22 @@
 {
     public class StatsCount
     {
-        private static int largestPng = 0;
-
-        private static int pngCount = 0;
-
+        private static volatile int largestPng = 0;
         private static long totalPngSize = 0;
 
-        public static void AddPng(int png)
+        private static volatile int largestJpg = 0;
+        private static long totalJpgSize = 0;
+
+        private static volatile int largestPipeRead = 0;
+        private static volatile int pipeReadCount = 0;
+
+        public static void AddPipeRead(int read)
         {
-            pngCount++;
+            pipeReadCount++;
 
-            totalPngSize += png;
-
-            if (png > largestPng)
+            if (read > largestPipeRead)
             {
-                largestPng = png;
-            }
-        }
-
-        private static int largestJpg = 0;
-
-        public static void AddJpg(int jpg)
-        {
-            if (jpg > largestJpg)
-            {
-                largestJpg = jpg;
-            }
-        }
-
-        private static int largestRead = 0;
-
-        public static void AddRead(int read)
-        {
-            if (read > largestRead)
-            {
-                largestRead = read;
+                largestPipeRead = read;
             }
         }
 
@@ -46,34 +27,70 @@
         public static volatile int NewPageMachines = 0;
         public static volatile int CachedPageMachines = 0;
 
-        private static long magickTotalReadTime = 0;
-        private static int magickReadCount = 0;
-        public static void AddMagicReadTime(long ms)
+        private static volatile int magickTotalReadTime = 0;
+        private static volatile int magickReadCount = 0;
+        private static volatile int magickResizeCount = 0;
+
+        public static void AddMagickRead(int ms, bool resize, int png)
         {
             magickReadCount++;
+
+            if (resize)
+            {
+                magickResizeCount++;
+            }
+
             magickTotalReadTime += ms;
+
+            totalPngSize += png;
+
+            if (png > largestPng)
+            {
+                largestPng = png;
+            }
         }
 
-        private static long magickTotalWriteTime = 0;
-        private static int magickWriteCount = 0;
+        private static volatile int magickTotalWriteTime = 0;
+        private static volatile int magickWriteCount = 0;
 
-        public static void AddMagicWriteTime(long ms)
+        public static void AddMagickWrite(int ms, int jpg)
         {
             magickWriteCount++;
             magickTotalWriteTime += ms;
+
+            totalJpgSize += jpg;
+
+            if (jpg > largestJpg)
+            {
+                largestJpg = jpg;
+            }
         }
 
         public static void ShowStats()
         {
-            if (largestPng > 0)
+            if (pipeReadCount > 0)
             {
-                Console.WriteLine($"Largest png: {largestPng} Largest pipe read: {largestRead}");
-                Console.WriteLine($"Png count: {pngCount} Average size: {totalPngSize / pngCount}");
+                Console.WriteLine($"Pipe reads: {pipeReadCount} Largest read: {largestPipeRead}");
             }
 
-            if (largestJpg > 0)
+            if (magickReadCount > 0)
             {
-                Console.WriteLine($"Largest jpg: {largestJpg}");
+                Console.WriteLine($"Magick reads: {magickReadCount} (resizes: {magickResizeCount}) Average ms: {magickTotalReadTime / magickReadCount}");
+            }
+
+            if (magickWriteCount > 0)
+            {
+                Console.WriteLine($"Magick writes: {magickWriteCount} Average ms: {magickTotalWriteTime / magickWriteCount}");
+            }
+
+            if (magickReadCount > 0)
+            {
+                Console.WriteLine($"Largest Png: {largestPng} Average size: {totalPngSize / magickReadCount}");
+            }
+
+            if (magickWriteCount > 0)
+            {
+                Console.WriteLine($"Largest Jpg: {largestJpg} Average size: {totalJpgSize / magickWriteCount}");
             }
 
             if (NewBuffers > 0)
@@ -84,16 +101,6 @@
             if (NewPageMachines > 0)
             {
                 Console.WriteLine($"Cached/new pagemachines: {CachedPageMachines}/{NewPageMachines}");
-            }
-
-            if (magickReadCount > 0)
-            {
-                Console.WriteLine($"Magick reads: {magickReadCount} Average ms: {magickTotalReadTime / magickReadCount}");
-            }
-
-            if (magickWriteCount > 0)
-            {
-                Console.WriteLine($"Magick writes: {magickWriteCount} Average ms: {magickTotalWriteTime / magickWriteCount}");
             }
         }
     }

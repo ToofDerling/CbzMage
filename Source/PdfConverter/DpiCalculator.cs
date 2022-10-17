@@ -1,4 +1,5 @@
-﻿using PdfConverter.Ghostscript;
+﻿using ImageMagick;
+using PdfConverter.Ghostscript;
 
 namespace PdfConverter
 {
@@ -102,13 +103,15 @@ namespace PdfConverter
 
             _ghostScriptPageMachine.ReadPageList(_pdf, new List<int> { 1 }, dpi, imageHandler);
 
-            var image = imageHandler.WaitForImageDate();
-            var width = image.Width;    
-            var height = image.Height;
-            image.Dispose();
+            var buffer = imageHandler.WaitForImageDate();
 
-            DpiCalculated?.Invoke(this, new DpiCalculatedEventArgs(dpi, Program.Settings.MinimumDpi, width, height));
-            return width;
+            var image = new MagickImage();
+            image.Ping(buffer.Buffer, 0, buffer.Count);
+
+            buffer.Release();
+
+            DpiCalculated?.Invoke(this, new DpiCalculatedEventArgs(dpi, Program.Settings.MinimumDpi, image.Width, image.Height));
+            return image.Width;
         }
 
         public event EventHandler<DpiCalculatedEventArgs> DpiCalculated;

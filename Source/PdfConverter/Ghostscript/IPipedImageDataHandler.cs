@@ -1,9 +1,9 @@
-﻿using ImageMagick;
+﻿using PdfConverter.ManagedBuffers;
 
 namespace PdfConverter.Ghostscript
 {
     public interface IPipedImageDataHandler
     {
-        void HandleImageData(MagickImage image);
+        void HandleImageData(ManagedBuffer image);
     }
 }

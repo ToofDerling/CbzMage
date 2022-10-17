@@ -1,4 +1,5 @@
-﻿using ImageMagick;
+﻿using CbzMage.Shared.Jobs;
+using ImageMagick;
 using PdfConverter.Exceptions;
 using PdfConverter.Helpers;
 using PdfConverter.ManagedBuffers;
@@ -15,13 +16,17 @@ namespace PdfConverter.Jobs
 
         private readonly string _page;
 
-        public ImageConverterJob(ManagedBuffer buffer, ConcurrentDictionary<string, MagickImage> convertedImages, string page)
+        private readonly int _wantedHeight;
+
+        public ImageConverterJob(ManagedBuffer buffer, ConcurrentDictionary<string, MagickImage> convertedImages, string page, int wantedHeight)
         {
             _buffer = buffer;
 
             _convertedImages = convertedImages;
 
             _page = page;
+
+            _wantedHeight = wantedHeight;   
         }
 
         public string Execute()
@@ -33,21 +38,26 @@ namespace PdfConverter.Jobs
             {
                 Format = MagickFormat.Jpg,
                 Interlace = Interlace.Plane,
-                Quality = Program.QualityConstants.JpegQuality
+                Quality = Program.Settings.JpegQuality
             };
 
-            if (image.Height > Program.QualityConstants.MaxHeightThreshold)
+            var resize = false;
+            if (image.Height > _wantedHeight + Program.Settings.ResizeSlack)
             {
+                Console.WriteLine($"{image.Height} > {_wantedHeight}");
+
+                resize = true;
                 image.Resize(new MagickGeometry
                 {
                     Greater = true,
                     Less = false,
-                    Height = Program.QualityConstants.MaxHeight
+                    Height = _wantedHeight
                 });
             }
+
             stopwatch.Stop();
 
-            StatsCount.AddMagicReadTime(stopwatch.ElapsedMilliseconds);
+            StatsCount.AddMagickRead((int)stopwatch.ElapsedMilliseconds, resize, _buffer.Count);
 
             _buffer.Release();
 

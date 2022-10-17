@@ -1,6 +1,7 @@
 ﻿using CbzMage.Shared.Helpers;
 using CbzMage.Shared.Jobs;
 using ImageMagick;
+using PdfConverter.Jobs;
 using System.Collections.Concurrent;
 using System.IO.Compression;
 
@@ -34,7 +35,7 @@ namespace PdfConverter
             _pageNumbers = new ConcurrentQueue<int>(Enumerable.Range(1, pdf.PageCount));
             _pageNumbers.TryDequeue(out _nextPageNumber);
 
-            _compressorExecutor = new JobExecutor<IEnumerable<string>>(ThreadPriority.Highest);
+            _compressorExecutor = new JobExecutor<IEnumerable<string>>(ThreadPriority.AboveNormal);
             _compressorExecutor.JobExecuted += (s, e) => OnImagesCompressed(e);
 
             _jobWaiter = _compressorExecutor.Start(withWaiter: true);
@@ -85,7 +86,7 @@ namespace PdfConverter
             while (_convertedPages.TryRemove(key, out var image))
             {
                 inputMap.Add(key, image);
-
+                
                 _pageNumbers.TryDequeue(out _nextPageNumber);
 
                 key = _pdf.GetPageString(_nextPageNumber);

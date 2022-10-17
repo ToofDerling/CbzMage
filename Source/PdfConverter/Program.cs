@@ -2,6 +2,7 @@ using CbzMage.Shared.Extensions;
 using Ghostscript.NET;
 using PdfConverter.Ghostscript;
 using PdfConverter.Helpers;
+using PdfConverter.ManagedBuffers;
 using System.Diagnostics;
 using System.Reflection;
 
@@ -15,7 +16,9 @@ namespace PdfConverter
 
             public static int JpegQuality => 95;
 
-            public static int ThreadCount => 3;
+            public static int ThreadCount => 4;
+
+            public static int ResizeSlack => 100;
         }
 
 #if DEBUG
@@ -23,6 +26,9 @@ namespace PdfConverter
 #else
         private static readonly string _testPdf = null;
 #endif
+
+        // Holds png files read from pdf. Will be expanded if needed (largest png reported so far: 15 MB)
+        private const int BufferSize = 20000000;
 
         public static void Main(string[] args)
         {
@@ -38,6 +44,8 @@ namespace PdfConverter
                 // Throws if wrong 32/64 version of Ghostscript installed
                 using (var pageMachineManager = new GhostscriptPageMachineManager(version))
                 {
+                    using var bufferCache = new BufferCache(BufferSize);
+
                     var converter = new PdfComicConverter(pageMachineManager);
                     pdfList.ForEach(pdf => ConvertPdf(pdf, converter));
                 }

@@ -1,6 +1,5 @@
-﻿using ImageMagick;
-using PdfConverter.Helpers;
-using System.Buffers;
+﻿using PdfConverter.Helpers;
+using PdfConverter.ManagedBuffers;
 using System.IO.Pipes;
 
 namespace PdfConverter.Ghostscript
@@ -9,8 +8,7 @@ namespace PdfConverter.Ghostscript
     {
         private static readonly byte[] pngHeader = new byte[] { 0x89, 0x50, 0x4e, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }; // PNG "\x89PNG\x0D\0xA\0x1A\0x0A"
 
-        private const int pipeBufferSize = 65536;
-        private const int imageDataSize = 5242880;
+        private const int pipeBufferSize = 1000000;
 
         private readonly IPipedImageDataHandler _imageDatahandler;
 
@@ -35,69 +33,53 @@ namespace PdfConverter.Ghostscript
 
         private void ReadGhostscriptPipedOutput()
         {
-            var writer = new ArrayBufferWriter<byte>(imageDataSize);
-
+            var currentBuffer = new ManagedBuffer();
             var firstImage = true;
-            var pngSpan = pngHeader.AsSpan();
 
-            while (true)
+            var offset = 0;
+            int readCount;
+
+            while ((readCount = currentBuffer.ReadFrom(_pipe)) > 0)
             {
-                var data = writer.GetSpan(pipeBufferSize);
-
-                var readCount = _pipe.Read(data);
-                if (readCount == 0)
-                {
-                    break;
-                }
-
-                StatsCount.AddRead(readCount);
+                StatsCount.AddPipeRead(readCount);
 
                 //Image header is found at the start position of a read
-                if (readCount > pngSpan.Length && data.StartsWith(pngSpan))
+                if (currentBuffer.StartsWith(offset, readCount, pngHeader))
                 {
                     //Buffer contains a full image plus the first read of the next
                     if (!firstImage)
                     {
-                        // Save the first bit of the next image
-                        var nextImageData = new byte[readCount].AsSpan();
-                        data[..readCount].CopyTo(nextImageData);
+                        //Create next buffer and copy next image bytes into it
+                        var nextBuffer = new ManagedBuffer(currentBuffer, offset, readCount);
+                        _imageDatahandler.HandleImageData(currentBuffer);
 
-                        StatsCount.AddPng(writer.WrittenCount);
-
-                        var image = new MagickImage(writer.WrittenSpan);
-                        _imageDatahandler.HandleImageData(image);
-                        
-                        // Prepare writer for reuse
-                        writer.Clear();
-                        var startOfNextImage = writer.GetSpan(pipeBufferSize);
-
-                        // Write the first bit of the next image
-                        nextImageData.CopyTo(startOfNextImage);
-                        writer.Advance(readCount);
+                        currentBuffer = nextBuffer;
+                        offset = readCount; //We already have readCount bytes in new buffer
                     }
                     else
                     {
-                        // Keep reading if it's the first image
+                        //Keep reading if it's the first image
                         firstImage = false;
-                        writer.Advance(readCount);
+                        offset += readCount;
                     }
                 }
                 else
                 {
-                    writer.Advance(readCount);
+                    offset += readCount;
                 }
             }
 
-            var lastImage = new MagickImage(writer.WrittenSpan);
-            _imageDatahandler.HandleImageData(lastImage);
+            if (offset > 0)
+            {
+                _imageDatahandler.HandleImageData(currentBuffer);
+            }
 
-            // Signal we're done reading.
+            // Signal we're done.
             _imageDatahandler.HandleImageData(null);
 
             // Close clienthandle and pipe safely when we're done reading.
             // Relying on the IDisposable pattern can cause a nullpointerexception
             // because the pipe is ripped out right under the last read.
-
             _pipe.ClientSafePipeHandle.SetHandleAsInvalid();
             _pipe.ClientSafePipeHandle.Dispose();
             

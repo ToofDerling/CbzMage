@@ -10,15 +10,17 @@
 
   <ItemGroup>
     <Compile Remove="Jobs\**" />
-    <Compile Remove="ManagedBuffers\**" />
     <EmbeddedResource Remove="Jobs\**" />
-    <EmbeddedResource Remove="ManagedBuffers\**" />
     <None Remove="Jobs\**" />
-    <None Remove="ManagedBuffers\**" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Remove="Helpers\ProgressReporter.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="Jobs\ImageCompressorJob.cs" />
+    <Compile Include="Jobs\ImageConverterJob.cs" />
   </ItemGroup>
 
   <ItemGroup>

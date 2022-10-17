@@ -1,13 +1,13 @@
-﻿using ImageMagick;
+﻿using PdfConverter.ManagedBuffers;
 using System.Collections.Concurrent;
 
 namespace PdfConverter.Ghostscript
 {
     public class GetSinglePipedImageDataHandler : IPipedImageDataHandler
     {
-        private readonly BlockingCollection<MagickImage> _queue = new();
+        private readonly BlockingCollection<ManagedBuffer> _queue = new();
 
-        public MagickImage WaitForImageDate()
+        public ManagedBuffer WaitForImageDate()
         {
             var buffer = _queue.Take();
 
@@ -16,7 +16,7 @@ namespace PdfConverter.Ghostscript
             return buffer;
         }
 
-        public void HandleImageData(MagickImage image)
+        public void HandleImageData(ManagedBuffer image)
         {
             if (image == null)
             {

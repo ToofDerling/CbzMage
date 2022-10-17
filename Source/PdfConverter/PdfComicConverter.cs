@@ -135,9 +135,9 @@ namespace PdfConverter
                 var pageMachine = _pageMachineManager.StartMachine();
                 pageMachine.ReadPageList(pdf, pageList, dpi, pageConverter);
 
-                pageConverter.WaitForPagesConverted();
-
                 _pageMachineManager.StopMachine(pageMachine);
+
+                pageConverter.WaitForPagesConverted();
             });
 
             pageCompressor.SignalAllPagesConverted();
