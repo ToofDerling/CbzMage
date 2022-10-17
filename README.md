@@ -8,7 +8,7 @@ Comic title and publisher will be read from the azw file, running CbzMage in sca
 
 CbzMage is a commandline tool written in c#. It requires no installation, very little configuration and no drm plugin/tool (the last part may change in the future). It does require that **[.NET 6](https://dotnet.microsoft.com/en-us/download)** is installed on your computer.
 
-CbzMage is released for Windows and macOS, but support for the macOS version will be limited because I don't own a Mac. Since the Kdl app is PC or Mac only I don't think it makes much sense to do a release that targets Linux.
+CbzMage is released for Windows and macOS (but support for the macOS version will be limited because I don't own a Mac). Since the Kdl app is PC or Mac only I don't think it makes much sense to do a release that targets Linux.
 
 ## Azw conversion.
 
@@ -37,7 +37,7 @@ You can have a look at the other configuration options in appsettings.json, they
 * **The titles directory** will always reflect the comic books currently in Kdl and is updated each time you run CbzMage. If you edit publisher or name of a title the values will be used when the title is converted 
 * **The converted titles directory** contains every converted title ever. To reconvert a title you must delete the file in that directory. 
 * **The database.** In the titles directory there's a database file with the state of every title that has passed through CbzMage. It's used when checking if a title has been updated and to store the new name and publisher of the title if you edit these values.
-* **The "GUI" mode.** This simply means that if you run CbzMage by doubleclicking the exe it will detect that and make the window hang around until you press enter. You can also create a shortcut for each of the modes (open Properties for the shortcut and add the parameter in Target) and have one file to doubleclick on for scan and one for convert.      
+* **The "GUI" mode.** (Windows only). This simply means that if you run CbzMage by doubleclicking the exe it will detect that and make the window hang around until you press enter. You can also create a shortcut for each of the modes (open Properties for the shortcut and add the parameter in Target) and have one file to doubleclick on for scan and one for convert.      
 
 **Credits.**
 
