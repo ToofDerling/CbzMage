@@ -59,10 +59,14 @@ Pdf:
                 ProgressReporter.Info(_usage);
             }
 
-            // If this is run as a "gui" let the console hang around
-            if (ConsoleWillBeDestroyedAtTheEnd())
+
+            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
             {
-                Console.ReadLine();
+                // If this is run as a "gui" let the console hang around
+                if (ConsoleWillBeDestroyedAtTheEnd())
+                {
+                    Console.ReadLine();
+                }
             }
         }
 
