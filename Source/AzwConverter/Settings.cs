@@ -44,7 +44,7 @@ namespace AzwConverter
 
             //SaveCover
             SaveCover = config.GetValue("SaveCover", defaultSaveCover);
-            SaveCoverOnly = config.GetValue("SaveCoverOnly", defaultSaveCoverOnly);
+            SaveCoverOnly = SaveCover && config.GetValue("SaveCoverOnly", defaultSaveCoverOnly);
 
             //SaveCoverDir
             if (SaveCover)
