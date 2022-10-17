@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace PdfConverter.Exceptions
+﻿namespace PdfConverter.Exceptions
 {
     public class SomethingWentWrongException : ApplicationException
     {

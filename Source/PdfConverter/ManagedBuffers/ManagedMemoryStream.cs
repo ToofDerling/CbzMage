@@ -1,6 +1,4 @@
-﻿using System.IO;
-
-namespace PdfConverter.ManagedBuffers
+﻿namespace PdfConverter.ManagedBuffers
 {
     public class ManagedMemoryStream : MemoryStream
     {

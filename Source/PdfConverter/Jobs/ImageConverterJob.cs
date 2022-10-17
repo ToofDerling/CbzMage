@@ -44,9 +44,8 @@ namespace PdfConverter.Jobs
             var resize = false;
             if (image.Height > _wantedHeight + Program.Settings.ResizeSlack)
             {
-                Console.WriteLine($"{image.Height} > {_wantedHeight}");
-
                 resize = true;
+
                 image.Resize(new MagickGeometry
                 {
                     Greater = true,

@@ -1,7 +1,4 @@
-﻿using System;
-using System.IO;
-
-namespace PdfConverter.ManagedBuffers
+﻿namespace PdfConverter.ManagedBuffers
 {
     public class ManagedBuffer
     {

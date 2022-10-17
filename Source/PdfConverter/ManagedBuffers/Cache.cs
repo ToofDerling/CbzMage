@@ -1,5 +1,4 @@
 ﻿using PdfConverter.Helpers;
-using System;
 using System.Collections.Concurrent;
 
 namespace PdfConverter.ManagedBuffers

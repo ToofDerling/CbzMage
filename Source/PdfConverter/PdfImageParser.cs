@@ -5,7 +5,6 @@ using iText.Kernel.Pdf.Canvas.Parser;
 using iText.Kernel.Pdf.Canvas.Parser.Data;
 using iText.Kernel.Pdf.Canvas.Parser.Listener;
 using PdfConverter.Exceptions;
-using PdfConverter.Helpers;
 
 namespace PdfConverter
 {

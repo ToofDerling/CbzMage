@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace PdfConverter
+﻿namespace PdfConverter
 {
     public class PageChunker
     {

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace PdfConverter
+﻿namespace PdfConverter
 {
     public class PageConvertedEventArgs : EventArgs
     {
