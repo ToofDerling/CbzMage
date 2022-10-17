@@ -22,8 +22,6 @@ namespace PdfConverter
 
         public static void Main(string[] args)
         {
-            var r = Convert.ToInt16(3d / 2d);
-
             var pdfList = InitializePdfPath(args);
 
             if (pdfList.Any())

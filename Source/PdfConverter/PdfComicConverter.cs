@@ -19,12 +19,13 @@ namespace PdfConverter
         public void ConvertToCbz(Pdf pdf, PdfImageParser pdfParser)
         {
             var sortedImageSizes = ParsePdfImages(pdf, pdfParser);
-            var wantedWidth = ParseImageSizes(sortedImageSizes);
+            var wantedWidth = GetWantedWidth(pdf, sortedImageSizes);
 
-            var (dpi, wantedHeight) = CalculateDpiForImageSize(pdf, wantedWidth);
+            var (dpi, dpiHeight) = CalculateDpiForImageSize(pdf, wantedWidth);
+            var adjustedHeight = GetAdjustedHeight(pdf, sortedImageSizes, dpiHeight);
 
             var pageRanges = CreatePageLists(pdf);
-            var fileCount = ConvertPages(pdf, pageRanges, dpi, wantedHeight);
+            var fileCount = ConvertPages(pdf, pageRanges, dpi, adjustedHeight);
 
             if (fileCount != pdf.PageCount)
             {
@@ -49,24 +50,55 @@ namespace PdfConverter
             return imageSizesMap;
         }
 
-        private int ParseImageSizes(List<(int width, int height, int count)> sortedImageSizes)
+        private int GetWantedWidth(Pdf pdf, List<(int width, int height, int count)> sortedImageSizes)
         {
             var mostOfThisSize = sortedImageSizes.First();
 
-            var largestSizes = sortedImageSizes.Where(x => x.width >= mostOfThisSize.width && x.width - mostOfThisSize.width <= 50).OrderByDescending(x => x.width);
-            var largestSize = largestSizes.First();
-
-            var largestSizesByCount = largestSizes.OrderByDescending(x => x.count);
-            var largestSizeWithLargestCount = largestSizesByCount.First(x => x.width == largestSize.width);
-
             var padLen = mostOfThisSize.count.ToString().Length;
+            var cutOff = pdf.PageCount / 20;
 
-            foreach (var (width, height, count) in largestSizesByCount.TakeWhile(x => x.count >= largestSizeWithLargestCount.count))
+            foreach (var (width, height, count) in sortedImageSizes.TakeWhile(x => x.width > 0 && x.count > cutOff))
             {
-                Console.WriteLine($" {count.ToString().PadLeft(padLen, ' ')} in {width} x {height}");
+                Console.WriteLine($"  {count.ToString().PadLeft(padLen, ' ')}: {width} x {height}");
             }
 
-            return largestSize.width;
+            return mostOfThisSize.width;
+        }
+
+        private int? GetAdjustedHeight(Pdf pdf,
+            List<(int width, int height, int count)> sortedImageSizes, int dpiHeight)
+        {
+            // The height if the image with the largest (page) count
+            var realHeight = sortedImageSizes.First().height;
+
+            // Check if the calculated wanted height is (much) larger than the real height
+            var factor = 1.25;
+            var checkHeight = realHeight * factor;
+
+            if (dpiHeight > checkHeight)
+            {
+                // Get images sorted by height but only if their count is above the cutoff
+                var cutOff = pdf.PageCount / 20;
+                var sortedByHeight = sortedImageSizes.Where(x => x.count > cutOff).OrderByDescending(x => x.height);
+
+                // If there's not any images with a count above the cutoff calculate the
+                // average height and use that instead.
+                var firstSortedHeight = sortedByHeight.FirstOrDefault();
+                var largestRealHeight = firstSortedHeight != default
+                    ? firstSortedHeight.height
+                    : (int)sortedImageSizes.Average(x => x.height);
+
+                // Don't set the new height too low.
+                var newWantedHeight = Math.Max(largestRealHeight, Settings.MinimumHeight);
+                // And only use it if it's sufficiently different than the wanted height
+                if (newWantedHeight < (dpiHeight * 0.75))
+                {
+                    Console.WriteLine($"Adjusting wanted height {dpiHeight} -> {newWantedHeight}");
+                    return newWantedHeight;
+                }
+            }
+
+            return null;
         }
 
         private (int dpi, int wantedHeight) CalculateDpiForImageSize(Pdf pdf, int wantedImageWidth)
@@ -75,13 +107,13 @@ namespace PdfConverter
 
             var pageMachine = _pageMachineManager.StartMachine();
 
-            int wantedHeight = 0;
+            int dpiHeight = 0;
 
             var dpiCalculator = new DpiCalculator(pageMachine, pdf, wantedImageWidth);
             dpiCalculator.DpiCalculated += (s, e) =>
             {
-                wantedHeight = e.Height;
-                Console.WriteLine($" {e.Dpi} ({e.MinimumDpi}) -> {e.Width} x {wantedHeight}");
+                dpiHeight = e.Height;
+                Console.WriteLine($"  {e.Dpi} -> {e.Width} x {dpiHeight}");
             };
 
             var dpi = dpiCalculator.CalculateDpi();
@@ -89,7 +121,7 @@ namespace PdfConverter
             _pageMachineManager.StopMachine(pageMachine);
 
             Console.WriteLine($"Selected dpi: {dpi}");
-            return (dpi, wantedHeight);
+            return (dpi, dpiHeight);
         }
 
         private List<int>[] CreatePageLists(Pdf pdf)
@@ -99,12 +131,12 @@ namespace PdfConverter
             var pageChunker = new PageChunker();
             var pageLists = pageChunker.CreatePageLists(pdf.PageCount, parallelThreads);
 
-            Array.ForEach(pageLists, p => Console.WriteLine($" Reader{p.First()}: {p.Count} pages"));
+            Array.ForEach(pageLists, p => Console.WriteLine($"  Reader{p.First()}: {p.Count} pages"));
 
             return pageLists;
         }
 
-        private int ConvertPages(Pdf pdf, List<int>[] pageLists, int dpi, int wantedHeight)
+        private int ConvertPages(Pdf pdf, List<int>[] pageLists, int dpi, int? adjustedHeight)
         {
             var pagesCompressed = 0;
 
@@ -128,7 +160,7 @@ namespace PdfConverter
             Parallel.ForEach(pageLists, (pageList) =>
             {
                 var pageQueue = new Queue<int>(pageList);
-                var pageConverter = new PageConverter(pdf, pageQueue, convertedPages, wantedHeight);
+                var pageConverter = new PageConverter(pdf, pageQueue, convertedPages, adjustedHeight);
 
                 pageConverter.PageConverted += (s, e) => pageCompressor.OnPageConverted(e);
 
@@ -148,11 +180,7 @@ namespace PdfConverter
 
             void OnPagesCompressed(PagesCompressedEventArgs e)
             {
-                foreach (var page in e.Pages)
-                {
-                    pagesCompressed++;
-                    progressReporter.ShowProgress($"Compressed {page}");
-                }
+                pagesCompressed += e.Pages.Count();
             }
         }
     }

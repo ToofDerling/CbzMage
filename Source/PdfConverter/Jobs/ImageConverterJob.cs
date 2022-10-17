@@ -16,9 +16,10 @@ namespace PdfConverter.Jobs
 
         private readonly string _page;
 
-        private readonly int _wantedHeight;
+        private readonly int? _adjustedHeight;
 
-        public ImageConverterJob(ManagedBuffer buffer, ConcurrentDictionary<string, MagickImage> convertedImages, string page, int wantedHeight)
+        public ImageConverterJob(ManagedBuffer buffer, ConcurrentDictionary<string, MagickImage> convertedImages, 
+            string page, int? adjustedHeight)
         {
             _buffer = buffer;
 
@@ -26,7 +27,7 @@ namespace PdfConverter.Jobs
 
             _page = page;
 
-            _wantedHeight = wantedHeight;   
+            _adjustedHeight = adjustedHeight;   
         }
 
         public string Execute()
@@ -42,7 +43,7 @@ namespace PdfConverter.Jobs
             };
 
             var resize = false;
-            if (image.Height > _wantedHeight + Settings.ResizeSlack)
+            if (_adjustedHeight.HasValue && image.Height > _adjustedHeight.Value)
             {
                 resize = true;
 
@@ -50,7 +51,7 @@ namespace PdfConverter.Jobs
                 {
                     Greater = true,
                     Less = false,
-                    Height = _wantedHeight
+                    Height = _adjustedHeight.Value
                 });
             }
 
