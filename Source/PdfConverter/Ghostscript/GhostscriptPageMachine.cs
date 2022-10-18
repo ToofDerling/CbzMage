@@ -14,20 +14,18 @@ namespace PdfConverter.Ghostscript
 
         private string[] GetSwitches(string pdfFile, string pageList, int dpi, string outputPipeHandle)
         {
-/*
-   -->             "-dTextAlphaBits=4",
-   -->             "-dGraphicsAlphaBits=4",
-   -->             "-dUseCropBox",
-*/
             var switches = new[]
             {
                 "-empty",
                 "-dQUIET",
-                "-dNOSAFER", // Required for gs 9.50
+               // "-dNOSAFER", Not needed for gs 10.0
+                "-dTextAlphaBits=4",
+                "-dGraphicsAlphaBits=4",
+                "-dUseCropBox",
                 "-dBATCH",
                 "-dNOPAUSE",
                 "-dNOPROMPT",
-                "-sDEVICE=png16m",
+                "-sDEVICE=png16malpha",
                 //$"-dMaxBitmap={BufferSize}", This is for X only
                 //$"-dNumRenderingThreads={Environment.ProcessorCount}",
                 $"-sPageList={pageList}",
