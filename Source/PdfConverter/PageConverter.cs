@@ -16,9 +16,9 @@ namespace PdfConverter
         private readonly Queue<int> _pageQueue;
         private readonly ConcurrentDictionary<string, MagickImage> _convertedPages;
 
-        private readonly int? _adjustedHeight;
+        private readonly int? _resizeHeight;
 
-        public PageConverter(Pdf pdf, Queue<int> pageQueue, ConcurrentDictionary<string, MagickImage> convertedPages, int? adjustedHeight)
+        public PageConverter(Pdf pdf, Queue<int> pageQueue, ConcurrentDictionary<string, MagickImage> convertedPages, int? resizHeight)
         {
             _pdf = pdf;
             _pageQueue = pageQueue;
@@ -31,7 +31,7 @@ namespace PdfConverter
             
             _jobWaiter = _converterExecutor.Start(withWaiter: true);
 
-            _adjustedHeight = adjustedHeight;
+            _resizeHeight = resizHeight;
         }
 
         public void WaitForPagesConverted()
@@ -50,7 +50,7 @@ namespace PdfConverter
             var pageNumber = _pageQueue.Dequeue();
             var page = _pdf.GetPageString(pageNumber);
 
-            var job = new ImageConverterJob(buffer, _convertedPages, page, _adjustedHeight);
+            var job = new ImageConverterJob(buffer, _convertedPages, page, _resizeHeight);
             _converterExecutor.AddJob(job);
         }
 

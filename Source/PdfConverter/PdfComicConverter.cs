@@ -67,7 +67,7 @@ namespace PdfConverter
 
         private int? GetAdjustedHeight(Pdf pdf, List<(int width, int height, int count)> sortedImageSizes, int dpiHeight)
         {
-            // The height if the image with the largest (page) count
+            // The height of the image with the largest page count
             var realHeight = sortedImageSizes.First().height;
 
             // Check if the calculated wanted height is (much) larger than the real height
@@ -88,15 +88,15 @@ namespace PdfConverter
                     : (int)sortedImageSizes.Average(x => x.height);
 
                 // Don't set the new height too low.
-                var newWantedHeight = Math.Max(largestRealHeight, Settings.MinimumHeight);
+                var adjustedHeight = Math.Max(largestRealHeight, Settings.MinimumHeight);
                 // And only use it if it's sufficiently different than the wanted height
-                if (newWantedHeight < (dpiHeight * 0.75))
+                if (adjustedHeight < (dpiHeight * 0.75))
                 {
                     // Hard cap at the maximum height setting
-                    newWantedHeight = Math.Min(Settings.MaximumHeight, newWantedHeight);
+                    adjustedHeight = Math.Min(Settings.MaximumHeight, adjustedHeight);
 
-                    Console.WriteLine($"Adjusted height {dpiHeight} -> {newWantedHeight}");
-                    return newWantedHeight;
+                    Console.WriteLine($"Adjusted height {dpiHeight} -> {adjustedHeight}");
+                    return adjustedHeight;
                 }
             }
 
@@ -145,7 +145,7 @@ namespace PdfConverter
             return pageLists;
         }
 
-        private int ConvertPages(Pdf pdf, List<int>[] pageLists, int dpi, int? adjustedHeight)
+        private int ConvertPages(Pdf pdf, List<int>[] pageLists, int dpi, int? resizeHeight)
         {
             var pagesCompressed = 0;
 
@@ -169,7 +169,7 @@ namespace PdfConverter
             Parallel.ForEach(pageLists, (pageList) =>
             {
                 var pageQueue = new Queue<int>(pageList);
-                var pageConverter = new PageConverter(pdf, pageQueue, convertedPages, adjustedHeight);
+                var pageConverter = new PageConverter(pdf, pageQueue, convertedPages, resizeHeight);
 
                 pageConverter.PageConverted += (s, e) => pageCompressor.OnPageConverted(e);
 
