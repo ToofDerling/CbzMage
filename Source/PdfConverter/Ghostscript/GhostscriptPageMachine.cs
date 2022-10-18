@@ -14,8 +14,11 @@ namespace PdfConverter.Ghostscript
 
         private string[] GetSwitches(string pdfFile, string pageList, int dpi, string outputPipeHandle)
         {
-            //TODO: play with settings from https://stackoverflow.com/questions/4548919/any-tips-for-speeding-up-ghostscript
-
+/*
+   -->             "-dTextAlphaBits=4",
+   -->             "-dGraphicsAlphaBits=4",
+   -->             "-dUseCropBox",
+*/
             var switches = new[]
             {
                 "-empty",
