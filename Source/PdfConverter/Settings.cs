@@ -11,7 +11,5 @@
         public static int JpegQuality => 95;
 
         public static int ThreadCount => 4;
-
-        public static int ResizeSlack => 100;
     }
 }

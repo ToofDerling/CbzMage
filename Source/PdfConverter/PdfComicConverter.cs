@@ -21,7 +21,7 @@ namespace PdfConverter
             var sortedImageSizes = ParsePdfImages(pdf, pdfParser);
             var wantedWidth = GetWantedWidth(pdf, sortedImageSizes);
 
-            var (dpi, dpiHeight) = CalculateDpiForImageSize(pdf, wantedWidth);
+            var (dpi, dpiHeight) = CalculateDpiForWantedWidth(pdf, wantedWidth);
             var adjustedHeight = GetAdjustedHeight(pdf, sortedImageSizes, dpiHeight);
 
             var pageRanges = CreatePageLists(pdf);
@@ -65,8 +65,7 @@ namespace PdfConverter
             return mostOfThisSize.width;
         }
 
-        private int? GetAdjustedHeight(Pdf pdf,
-            List<(int width, int height, int count)> sortedImageSizes, int dpiHeight)
+        private int? GetAdjustedHeight(Pdf pdf, List<(int width, int height, int count)> sortedImageSizes, int dpiHeight)
         {
             // The height if the image with the largest (page) count
             var realHeight = sortedImageSizes.First().height;
@@ -111,7 +110,7 @@ namespace PdfConverter
             return null;
         }
 
-        private (int dpi, int wantedHeight) CalculateDpiForImageSize(Pdf pdf, int wantedImageWidth)
+        private (int dpi, int wantedHeight) CalculateDpiForWantedWidth(Pdf pdf, int wantedImageWidth)
         {
             Console.WriteLine($"Wanted width: {wantedImageWidth}");
 
@@ -178,7 +177,7 @@ namespace PdfConverter
                 pageMachine.ReadPageList(pdf, pageList, dpi, pageConverter);
 
                 _pageMachineManager.StopMachine(pageMachine);
-
+                
                 pageConverter.WaitForPagesConverted();
             });
 
