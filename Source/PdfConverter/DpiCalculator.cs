@@ -24,7 +24,7 @@ namespace PdfConverter
         {
             var dpi = Settings.MinimumDpi;
 
-            if (!TryGetImageSize(dpi, out var width))
+            if (!TryGetImageWidth(dpi, out var width))
             {
                 return dpi;
             }
@@ -49,7 +49,7 @@ namespace PdfConverter
                 {
                     dpi++;
                  
-                    if (!TryGetImageSize(dpi, out nextWidth))
+                    if (!TryGetImageWidth(dpi, out nextWidth))
                     {
                         return dpi;
                     }
@@ -60,7 +60,7 @@ namespace PdfConverter
                 var step = 5;
                 dpi += step;
 
-                if (!TryGetImageSize(dpi, out var nextWidth))
+                if (!TryGetImageWidth(dpi, out var nextWidth))
                 {
                     return dpi;
                 }
@@ -73,7 +73,7 @@ namespace PdfConverter
 
                     dpi = Settings.MinimumDpi + bigStep;
 
-                    if (!TryGetImageSize(dpi, out nextWidth))
+                    if (!TryGetImageWidth(dpi, out nextWidth))
                     {
                         return dpi;
                     }
@@ -92,7 +92,7 @@ namespace PdfConverter
             {
                 dpi--;
 
-                if (!TryGetImageSize(dpi, out nextWidth))
+                if (!TryGetImageWidth(dpi, out nextWidth))
                 {
                     return dpi;
                 }
@@ -102,7 +102,7 @@ namespace PdfConverter
             {
                 dpi++;
              
-                if (!TryGetImageSize(dpi, out nextWidth))
+                if (!TryGetImageWidth(dpi, out nextWidth))
                 {
                     return dpi;
                 }
@@ -120,7 +120,7 @@ namespace PdfConverter
             return Convert.ToInt32(bigStep);
         }
 
-        private bool TryGetImageSize(int dpi, out int width)
+        private bool TryGetImageWidth(int dpi, out int width)
         {
             var imageHandler = new GetSinglePipedImageDataHandler();
 
