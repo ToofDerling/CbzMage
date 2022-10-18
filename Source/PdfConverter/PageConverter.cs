@@ -25,9 +25,7 @@ namespace PdfConverter
 
             _convertedPages = convertedPages;
 
-            var threadCount = Math.Max(Settings.ThreadCount / 2, 1);
-
-            _converterExecutor = new JobExecutor<string>(numThreads: threadCount);
+            _converterExecutor = new JobExecutor<string>();
 
             _converterExecutor.JobExecuted += (s, e) => OnImageConverted(e);
             
