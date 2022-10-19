@@ -10,7 +10,7 @@ namespace PdfConverter.Jobs
 {
     public class ImageConverterJob : IJob<string>
     {
-        private readonly ConcurrentDictionary<string, MagickImage> _convertedImages;
+        private readonly ConcurrentDictionary<string, object> _convertedImages;
 
         private readonly ManagedBuffer _buffer;
 
@@ -18,7 +18,8 @@ namespace PdfConverter.Jobs
 
         private readonly int? _resizeHeight;
 
-        public ImageConverterJob(ManagedBuffer buffer, ConcurrentDictionary<string, MagickImage> convertedImages, 
+        public ImageConverterJob(ManagedBuffer buffer, 
+            ConcurrentDictionary<string, object> convertedImages, 
             string page, int? resizeHeight)
         {
             _buffer = buffer;
@@ -35,29 +36,12 @@ namespace PdfConverter.Jobs
             var stopwatch = new Stopwatch();
 
             stopwatch.Start();
-            var image = new MagickImage(_buffer.Buffer, 0, _buffer.Count)
-            {
-                Format = MagickFormat.Jpg,
-                Interlace = Interlace.Plane,
-                Quality = Settings.JpegQuality
-            };
+            var image = new MagickImage(_buffer.Buffer, 0, _buffer.Count);
 
-            var resize = false;
-            if (_resizeHeight.HasValue && image.Height > _resizeHeight.Value)
-            {
-                resize = true;
-
-                image.Resize(new MagickGeometry
-                {
-                    Greater = true,
-                    Less = false,
-                    Height = _resizeHeight.Value
-                });
-            }
-
+            var resized = ImageHelper.ConvertJpg(image, _resizeHeight);
             stopwatch.Stop();
 
-            StatsCount.AddMagickRead((int)stopwatch.ElapsedMilliseconds, resize, _buffer.Count);
+            StatsCount.AddMagickRead((int)stopwatch.ElapsedMilliseconds, resized, _buffer.Count);
 
             _buffer.Release();
 

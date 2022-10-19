@@ -66,8 +66,34 @@
             }
         }
 
+        private static volatile int magickRetryCount = 0;
+        private static volatile int magickTotalReadWriteTime = 0;
+        private static volatile int magickReadWriteCount = 0;
+
+        public static void AddMagickReadWrite(int ms, int retries, bool resize)
+        {
+            magickReadWriteCount++;
+            magickTotalReadWriteTime += ms;
+
+            magickRetryCount += retries;
+            if (resize)
+            {
+                magickResizeCount++;
+            }
+        }
+
         public static void ShowStats()
         {
+            if (Settings.Mode == Mode.Slower)
+            {
+                if (magickReadWriteCount > 0)
+                {
+                    Console.WriteLine($"Magick read/writes {magickReadWriteCount} (retries: {magickRetryCount} / resizes: {magickResizeCount}) Average ms {magickTotalReadWriteTime / magickReadWriteCount}");
+                }
+
+                return;
+            }
+
             if (pipeReadCount > 0)
             {
                 Console.WriteLine($"Pipe reads: {pipeReadCount} Largest read: {largestPipeRead}");
@@ -83,12 +109,12 @@
                 Console.WriteLine($"Magick writes: {magickWriteCount} Average ms: {magickTotalWriteTime / magickWriteCount}");
             }
 
-            if (magickReadCount > 0)
+            if (magickReadCount > 0 && largestPng > 0)
             {
                 Console.WriteLine($"Largest Png: {largestPng} Average: {totalPngSize / magickReadCount}");
             }
 
-            if (magickWriteCount > 0)
+            if (magickWriteCount > 0 && largestJpg > 0)
             {
                 Console.WriteLine($"Largest Jpg: {largestJpg} Average: {totalJpgSize / magickWriteCount}");
             }

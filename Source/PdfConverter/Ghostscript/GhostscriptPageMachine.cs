@@ -16,14 +16,14 @@ namespace PdfConverter.Ghostscript
         {
             var switches = new[]
             {
-               //"-empty", wut?
-               // "-dQUIET", handled by -q
-               // "-dNOSAFER", not needed for gs 10.0
+                //"-empty", wut?
+                // "-dQUIET", handled by -q
+                // "-dNOSAFER", not needed for gs 10.0
                 "-dTextAlphaBits=4",
                 "-dGraphicsAlphaBits=4",
                 "-dUseCropBox",
-                "-dBATCH",
-                "-dNOPAUSE",
+                //"-dBATCH", handled by -o
+                //"-dNOPAUSE", handled by -o
                 "-dNOPROMPT",
                 "-sDEVICE=png16malpha",
                 //$"-dMaxBitmap={BufferSize}", this is for X only
@@ -47,6 +47,15 @@ namespace PdfConverter.Ghostscript
             sb.Remove(sb.Length - 1, 1);
 
             return sb.ToString();
+        }
+
+        public void SavePageList(Pdf pdf, List<int> pageNumbers, int dpi, string outputId)
+        {
+            var pageList = CreatePageList(pageNumbers);
+
+            var switches = GetSwitches(pdf.Path, pageList, dpi, @$"{outputId}/%d.png");
+
+            _processor.StartProcessing(switches, null);
         }
 
         public void ReadPageList(Pdf pdf, List<int> pageNumbers, int dpi, IPipedImageDataHandler imageDataHandler)

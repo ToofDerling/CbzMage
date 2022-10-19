@@ -11,16 +11,16 @@ namespace PdfConverter.Jobs
     {
         private readonly ZipArchive _compressor;
 
-        private readonly IDictionary<string, MagickImage> _inputMap;
+        private readonly List<(string page, MagickImage image)> _imageList;
 
         private readonly ProgressReporter _progressReporter;
 
-        public ImageCompressorJob(ZipArchive compressor, IDictionary<string, MagickImage> inputMap,
+        public ImageCompressorJob(ZipArchive compressor, List<(string, MagickImage)> imageList,
             ProgressReporter progressReporter)
         {
             _compressor = compressor;
 
-            _inputMap = inputMap;
+            _imageList = imageList;
 
             _progressReporter = progressReporter;
         }
@@ -29,14 +29,12 @@ namespace PdfConverter.Jobs
         {
             var stopwatch = new Stopwatch();
 
-            foreach (var page in _inputMap)
+            foreach (var (page, image) in _imageList)
             {
-                var entry = _compressor.CreateEntry(page.Key, CompressionLevel.Fastest);
-                using var archiveStream = entry.Open();
-
-                var image = page.Value;
-                
                 stopwatch.Restart();
+
+                var entry = _compressor.CreateEntry(page, CompressionLevel.Fastest);
+                using var archiveStream = entry.Open();
 
                 image.Write(archiveStream);
                 image.Dispose();
@@ -44,10 +42,10 @@ namespace PdfConverter.Jobs
                 stopwatch.Stop();
                 StatsCount.AddMagickWrite((int)stopwatch.ElapsedMilliseconds, (int)archiveStream.Position);
 
-                _progressReporter.ShowProgress($"Converted {page.Key}");
+                _progressReporter.ShowProgress($"Converted {page}");
             }
 
-            return _inputMap.Keys;
+            return _imageList.Select(x => x.page);
         }
     }
 }

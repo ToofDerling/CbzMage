@@ -1,4 +1,5 @@
-﻿using CbzMage.Shared.Helpers;
+﻿using CbzMage.Shared.Extensions;
+using CbzMage.Shared.Helpers;
 using CbzMage.Shared.Jobs;
 using ImageMagick;
 using PdfConverter.Jobs;
@@ -13,7 +14,7 @@ namespace PdfConverter
 
         private readonly ConcurrentQueue<int> _pageNumbers;
 
-        private readonly ConcurrentDictionary<string, MagickImage> _convertedPages;
+        private readonly ConcurrentDictionary<string, object> _convertedPages;
 
         private readonly JobExecutor<IEnumerable<string>> _compressorExecutor;
 
@@ -27,7 +28,11 @@ namespace PdfConverter
 
         private readonly ProgressReporter _progressReporter;
 
-        public PageCompressor(Pdf pdf, ConcurrentDictionary<string, MagickImage> convertedPages)
+        private readonly int? _resizeHeight;
+
+        public PageCompressor(Pdf pdf,
+            ConcurrentDictionary<string, object> convertedPages,
+            int? resizeHeight)
         {
             _pdf = pdf;
             _convertedPages = convertedPages;
@@ -42,6 +47,8 @@ namespace PdfConverter
 
             _compressor = CreateCompressor();
             _progressReporter = new ProgressReporter(pdf.PageCount);
+
+            _resizeHeight = resizeHeight;
         }
 
         private ZipArchive CreateCompressor()
@@ -88,22 +95,36 @@ namespace PdfConverter
         {
             var key = _pdf.GetPageString(_nextPageNumber);
 
-            var inputMap = new SortedDictionary<string, MagickImage>();
+            var inputList = new List<(string page, object imageData)>();
 
-            while (_convertedPages.TryRemove(key, out var image))
+            while (_convertedPages.TryRemove(key, out var imageData))
             {
-                inputMap.Add(key, image);
-                
+                inputList.Add((key, imageData));
+
                 _pageNumbers.TryDequeue(out _nextPageNumber);
 
                 key = _pdf.GetPageString(_nextPageNumber);
             }
 
-            if (inputMap.Count > 0)
+            if (inputList.Count > 0)
             {
-                var job = new ImageCompressorJob(_compressor, inputMap, _progressReporter);
-                _compressorExecutor.AddJob(job);
+                IJob<IEnumerable<string>> job;
 
+                if (inputList.First().imageData is MagickImage)
+                {
+                    var imageList = inputList.Select(i => (i.page, i.imageData as MagickImage)).AsList();
+
+                    job = new ImageCompressorJob(_compressor, imageList, _progressReporter);
+                }
+                else
+                {
+                    var imagePathList = inputList.Select(i => (i.page, i.imageData.ToString())).AsList();
+
+                    job = new ImageConverterAndCompressorJob(imagePathList, _resizeHeight,
+                        _compressor, _progressReporter);
+                }
+
+                _compressorExecutor.AddJob(job);
                 return true;
             }
             return false;

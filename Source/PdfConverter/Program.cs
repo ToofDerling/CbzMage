@@ -26,6 +26,8 @@ namespace PdfConverter
 
             if (pdfList.Any())
             {
+                var sw = Stopwatch.StartNew();
+
                 var bin = Assembly.GetExecutingAssembly().Location;
                 var gsPath = Path.Combine(Path.GetDirectoryName(bin), "gsdll64.dll");
 
@@ -41,6 +43,13 @@ namespace PdfConverter
                 }
 
                 StatsCount.ShowStats();
+                sw.Stop();
+
+                if (pdfList.Count > 1)
+                {
+                    var passed = sw.Elapsed;
+                    Console.WriteLine($"Total: {passed.Minutes} min {passed.Seconds} sec");
+                }
             }
             else
             {

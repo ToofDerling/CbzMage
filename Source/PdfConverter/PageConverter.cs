@@ -1,5 +1,4 @@
 ﻿using CbzMage.Shared.Jobs;
-using ImageMagick;
 using PdfConverter.Ghostscript;
 using PdfConverter.Jobs;
 using PdfConverter.ManagedBuffers;
@@ -14,18 +13,19 @@ namespace PdfConverter
 
         private readonly Pdf _pdf;
         private readonly Queue<int> _pageQueue;
-        private readonly ConcurrentDictionary<string, MagickImage> _convertedPages;
+        private readonly ConcurrentDictionary<string, object> _convertedPages;
 
         private readonly int? _resizeHeight;
 
-        public PageConverter(Pdf pdf, Queue<int> pageQueue, ConcurrentDictionary<string, MagickImage> convertedPages, int? resizHeight)
+        public PageConverter(Pdf pdf, Queue<int> pageQueue, 
+            ConcurrentDictionary<string, object> convertedPages, int? resizHeight)
         {
             _pdf = pdf;
             _pageQueue = pageQueue;
 
             _convertedPages = convertedPages;
 
-            _converterExecutor = new JobExecutor<string>();
+            _converterExecutor = new JobExecutor<string>(ThreadPriority.AboveNormal);
 
             _converterExecutor.JobExecuted += (s, e) => OnImageConverted(e);
             

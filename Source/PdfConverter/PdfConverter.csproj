@@ -20,7 +20,9 @@
 
   <ItemGroup>
     <Compile Include="Jobs\ImageCompressorJob.cs" />
+    <Compile Include="Jobs\ImageConverterAndCompressorJob.cs" />
     <Compile Include="Jobs\ImageConverterJob.cs" />
+    <Compile Include="Jobs\ImageHelper.cs" />
   </ItemGroup>
 
   <ItemGroup>

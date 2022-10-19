@@ -10,6 +10,10 @@
 
         public static int JpegQuality => 95;
 
-        public static int ThreadCount => 4;
+        public static int ThreadCount => Math.Max(1, (Environment.ProcessorCount / 2) - 2);
+
+        public static int BufferSize => 20000000;
+
+        public static Mode Mode => Mode.Faster;
     }
 }
