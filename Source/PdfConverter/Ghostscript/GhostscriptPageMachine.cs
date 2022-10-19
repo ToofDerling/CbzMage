@@ -12,13 +12,13 @@ namespace PdfConverter.Ghostscript
             _processor = processor;
         }
 
-        private string[] GetSwitches(string pdfFile, string pageList, int dpi, string outputPipeHandle)
+        private string[] GetSwitches(string pdfFile, string pageList, int dpi, string output)
         {
             var switches = new[]
             {
-                "-empty",
-                "-dQUIET",
-               // "-dNOSAFER", Not needed for gs 10.0
+               //"-empty", wut?
+               // "-dQUIET", handled by -q
+               // "-dNOSAFER", not needed for gs 10.0
                 "-dTextAlphaBits=4",
                 "-dGraphicsAlphaBits=4",
                 "-dUseCropBox",
@@ -26,14 +26,14 @@ namespace PdfConverter.Ghostscript
                 "-dNOPAUSE",
                 "-dNOPROMPT",
                 "-sDEVICE=png16malpha",
-                //$"-dMaxBitmap={BufferSize}", This is for X only
+                //$"-dMaxBitmap={BufferSize}", this is for X only
                 //$"-dNumRenderingThreads={Environment.ProcessorCount}",
                 $"-sPageList={pageList}",
                 $"-r{dpi}",
-                "-o" + outputPipeHandle,
-                "-q",
-                "-f",
-                pdfFile
+                $"-o{output}",
+                "-q",   // Don't write to stdout (and set -dQUIET)
+                $"-f{pdfFile}",   // -f skips a few filename checks
+                //pdfFile
             };
 
             return switches;
