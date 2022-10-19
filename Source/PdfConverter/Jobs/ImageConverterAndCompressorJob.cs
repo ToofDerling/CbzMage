@@ -41,8 +41,8 @@ namespace PdfConverter.Jobs
                 var retries = 0;
                 for (; retries < 100; retries++)
                 {
-                    // Loading the first image can fail when Ghostscript is not finishing
-                    // saving it. There's nothing else to do than wait for it to finish.
+                    // Loading the first image can fail when Ghostscript is not finished
+                    // saving it. There's nothing to do but wait for it to finish.
                     try
                     {
                         image = new MagickImage(imagePath);

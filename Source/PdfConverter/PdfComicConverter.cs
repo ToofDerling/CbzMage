@@ -23,8 +23,8 @@ namespace PdfConverter
             var (dpi, dpiHeight) = CalculateDpiForWantedWidth(pdf, wantedWidth);
             var adjustedHeight = GetAdjustedHeight(pdf, sortedImageSizes, dpiHeight);
 
-            var pageRanges = CreatePageLists(pdf);
-            var fileCount = ConvertPages(pdf, pageRanges, dpi, adjustedHeight);
+            var pageLists = CreatePageLists(pdf);
+            var fileCount = ConvertPages(pdf, pageLists, dpi, adjustedHeight);
 
             if (fileCount != pdf.PageCount)
             {
@@ -159,8 +159,8 @@ namespace PdfConverter
             // and creates the cbz file.
 
             // Key is page name (page-001.jpg etc)
-            // If Mode is Faster the Value object is a MagickImage instance
-            // If Mode is Slower the Value object is a string with the imagepath
+            // If Mode is Faster Value is a MagickImage instance
+            // If Mode is Slower Value is a string with the imagepath
             var convertedPages = new ConcurrentDictionary<string, object>(pageLists.Length, pdf.PageCount);
 
             var progressReporter = new ProgressReporter(pdf.PageCount);
