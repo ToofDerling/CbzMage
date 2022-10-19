@@ -2,11 +2,9 @@
 {
     public class DpiCalculatedEventArgs : EventArgs
     {
-        public DpiCalculatedEventArgs(int dpi, int requiredDpi, int width, int height)
+        public DpiCalculatedEventArgs(int dpi, int width, int height)
         {
             Dpi = dpi;
-
-            MinimumDpi = requiredDpi;
 
             Width = width;
 
@@ -14,8 +12,6 @@
         }
 
         public int Dpi { get; private set; }
-
-        public int MinimumDpi { get; set; }
 
         public int Width { get; private set; }
     

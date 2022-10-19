@@ -1,7 +1,6 @@
 ﻿using CbzMage.Shared.Helpers;
 using CbzMage.Shared.Jobs;
 using ImageMagick;
-using Microsoft.VisualBasic;
 using PdfConverter.Helpers;
 using System.Diagnostics;
 using System.IO.Compression;

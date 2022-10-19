@@ -159,8 +159,8 @@ namespace PdfConverter
             // and creates the cbz file.
 
             // Key is page name (page-001.jpg etc)
-            // If the Mode is Faster the Value object is a MagickImage instance
-            // If the Mode is Slower the Value object is a string with the imagepath
+            // If Mode is Faster the Value object is a MagickImage instance
+            // If Mode is Slower the Value object is a string with the imagepath
             var convertedPages = new ConcurrentDictionary<string, object>(pageLists.Length, pdf.PageCount);
 
             var progressReporter = new ProgressReporter(pdf.PageCount);

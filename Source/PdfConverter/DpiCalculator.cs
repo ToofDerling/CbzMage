@@ -136,7 +136,7 @@ namespace PdfConverter
 
             buffer.Release();
 
-            DpiCalculated?.Invoke(this, new DpiCalculatedEventArgs(dpi, Settings.MinimumDpi, width, dpiHeight));
+            DpiCalculated?.Invoke(this, new DpiCalculatedEventArgs(dpi, width, dpiHeight));
      
             // Hard cap at the maximum height
             return dpiHeight <= Settings.MaximumHeight;

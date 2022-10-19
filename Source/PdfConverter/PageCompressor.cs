@@ -30,8 +30,7 @@ namespace PdfConverter
 
         private readonly int? _resizeHeight;
 
-        public PageCompressor(Pdf pdf,
-            ConcurrentDictionary<string, object> convertedPages,
+        public PageCompressor(Pdf pdf, ConcurrentDictionary<string, object> convertedPages,
             int? resizeHeight)
         {
             _pdf = pdf;

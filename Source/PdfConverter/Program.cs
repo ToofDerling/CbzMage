@@ -16,10 +16,6 @@ namespace PdfConverter
 #else
         private static readonly string _testPdf = null;
 #endif
-
-        // Holds png files read from pdf. Will be expanded if needed (largest png reported so far: 15 MB)
-        private const int BufferSize = 20000000;
-
         public static void Main(string[] args)
         {
             var pdfList = InitializePdfPath(args);
@@ -36,7 +32,7 @@ namespace PdfConverter
                 // Throws if wrong 32/64 version of Ghostscript installed
                 using (var pageMachineManager = new GhostscriptPageMachineManager(version))
                 {
-                    using var bufferCache = new BufferCache(BufferSize);
+                    using var bufferCache = new BufferCache(Settings.BufferSize);
 
                     var converter = new PdfComicConverter(pageMachineManager);
                     pdfList.ForEach(pdf => ConvertPdf(pdf, converter));

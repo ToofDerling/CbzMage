@@ -18,8 +18,7 @@ namespace PdfConverter.Jobs
 
         private readonly int? _resizeHeight;
 
-        public ImageConverterJob(ManagedBuffer buffer, 
-            ConcurrentDictionary<string, object> convertedImages, 
+        public ImageConverterJob(ManagedBuffer buffer, ConcurrentDictionary<string, object> convertedImages, 
             string page, int? resizeHeight)
         {
             _buffer = buffer;
