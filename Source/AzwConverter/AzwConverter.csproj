@@ -20,6 +20,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="AzwSettings.Development.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="AzwSettings.User.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

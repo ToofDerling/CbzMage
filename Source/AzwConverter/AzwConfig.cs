@@ -9,19 +9,17 @@ namespace AzwConverter
 
         public void CreateSettings()
         {
-            if (!File.Exists("AzwSettings.json") && File.Exists("appsettings.json"))
-            {
-                File.Move("appsettings.json", "AzwSettings.json");
-            }
-
             using IHost host = Host.CreateDefaultBuilder().ConfigureAppConfiguration((hostingContext, config) =>
             {
                 config.Sources.Clear();
 
-                config.AddJsonFile("AzwSettings.json", optional: false, reloadOnChange: false)
-                    .AddJsonFile($"AzwSettings.User.json", true, false);
+                var env = hostingContext.HostingEnvironment;
 
-                IConfigurationRoot configRoot = config.Build();
+                config.AddJsonFile("AzwSettings.json", optional: false, reloadOnChange: false)
+                    .AddJsonFile($"AzwSettings.User.json", true, false)
+                    .AddJsonFile($"AzwSettings.{env.EnvironmentName}.json", true, true);
+
+                var configRoot = config.Build();
                 configRoot.Bind(Settings);
             }).Build();
 
@@ -39,12 +37,12 @@ namespace AzwConverter
         private const string defaultNewTitleMarker = ".NEW";
         private const string defaultUpdateTitleMarker = ".UPDATED";
 
-        public void ConfigureSettings()
+        private void ConfigureSettings()
         {
             //AzwDir
             if (string.IsNullOrWhiteSpace(Settings.AzwDir) || !Directory.Exists(Settings.AzwDir))
             {
-                throw new Exception("Must configure AzwDir in appsettings.json");
+                throw new Exception("Must configure AzwDir in AzwSettings.json or AzwSettings.User.json");
             }
 
             //TitlesDir

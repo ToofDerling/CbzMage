@@ -1,4 +1,4 @@
+// Any setting configured here will overwrite the corresponding setting 
+// in the master configuration file (AzwSetting.json) 
 {
-  "AzwDir": "M:\\Data\\Kindle\\My Kindle Content",
-  "TitlesDir": "C:\\System\\Apps\\CbzMage\\Titles"
 }
