@@ -14,7 +14,7 @@ namespace PdfConverter
         private readonly Pdf _pdf;
 
         // Key is pagename, Value is imagepath
-        private readonly ConcurrentDictionary<string, object> _convertedFiles;
+        private readonly ConcurrentDictionary<string, object> _convertedPages;
 
         private readonly HashSet<string> _savedPages;
 
@@ -22,7 +22,7 @@ namespace PdfConverter
 
         private readonly string _oldCurrentDirectory;
 
-        public Pollux(Pdf pdf, List<int>[] pageLists, ConcurrentDictionary<string, object> convertedFiles)
+        public Pollux(Pdf pdf, List<int>[] pageLists, ConcurrentDictionary<string, object> convertedPages)
         {
             _pdf = pdf;
 
@@ -39,7 +39,7 @@ namespace PdfConverter
             _oldCurrentDirectory = Environment.CurrentDirectory;
             Environment.CurrentDirectory = _saveDir.FullName;
 
-            _convertedFiles = convertedFiles;
+            _convertedPages = convertedPages;
             _savedPages = new HashSet<string>(_pdf.PageCount);
 
             _pageLists = pageLists;
@@ -92,7 +92,7 @@ namespace PdfConverter
                     var pageNumber = list[pageIdx];
                     var page = _pdf.GetPageString(pageNumber);
 
-                    if (!_convertedFiles.TryAdd(page, file.FullName))
+                    if (!_convertedPages.TryAdd(page, file.FullName))
                     {
                         throw new SomethingWentWrongSorryException($"{file.FullName} already in _convertedFiles???");
                     }
