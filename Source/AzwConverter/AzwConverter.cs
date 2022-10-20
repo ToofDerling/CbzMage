@@ -108,11 +108,11 @@ namespace AzwConverter
 
                 if (Settings.SaveCoverOnly)
                 {
-                    Console.WriteLine($"{bookCount} covers saved in {elapsed.TotalSeconds:F3} seconds");
+                    Console.WriteLine($"{bookCount} covers saved in {elapsed.Minutes} min {elapsed.Seconds} sec");
                 }
                 else
                 {
-                    Console.WriteLine($"{pagesCount} pages converted in {elapsed.TotalSeconds:F3} seconds ({secsPerPage:F3} per page)");
+                    Console.WriteLine($"{pagesCount} pages converted in {elapsed.Minutes} min {elapsed.Seconds} sec ({secsPerPage:F2} sec/page)");
                 }
             }
             else

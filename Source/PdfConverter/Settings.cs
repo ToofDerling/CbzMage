@@ -15,5 +15,7 @@
         public static int BufferSize => 20000000;
 
         public static Mode Mode => Mode.Faster;
+
+        public static int GsMinVersion => 10;
     }
 }

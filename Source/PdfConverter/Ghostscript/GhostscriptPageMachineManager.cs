@@ -1,9 +1,8 @@
-﻿using Ghostscript.NET;
+﻿using CbzMage.Shared.Helpers;
+using Ghostscript.NET;
 using Ghostscript.NET.Processor;
-using Microsoft.Win32.SafeHandles;
 using PdfConverter.Helpers;
 using System.Collections.Concurrent;
-using System.IO.MemoryMappedFiles;
 
 namespace PdfConverter.Ghostscript
 {
@@ -13,36 +12,37 @@ namespace PdfConverter.Ghostscript
 
         private readonly ConcurrentDictionary<GhostscriptPageMachine, object> _runningMachines;
 
-        private unsafe readonly byte* _libraryPtr;
+        private readonly GhostscriptLibrary _library;
 
-        private readonly SafeMemoryMappedViewHandle _handle;
-
-        public GhostscriptPageMachineManager(GhostscriptVersionInfo version)
+        public static GhostscriptVersionInfo GetGhostscriptVersion()
         {
-            var dllFile = new FileInfo(version.DllPath);
-
-            using var mappedFile = MemoryMappedFile.CreateFromFile(dllFile.FullName, FileMode.Open);
-            var stream = mappedFile.CreateViewStream();
-
-            // The NativeLibrary calls below closes the stream so this needs to run first.
-            _handle = stream.SafeMemoryMappedViewHandle;
-            unsafe
+            if (Environment.OSVersion.Platform != PlatformID.Win32NT)
             {
-                _handle.AcquirePointer(ref _libraryPtr);
+                Console.WriteLine("Sorry, at the moment pdf to cbz conversion only works on Windows");
+
+                return null;
             }
 
-            // Do the bitness check here where we have the memory mapped file
-            // and fail fast. No need to check each time the library is loaded
-            if (Environment.Is64BitProcess != Is64BitLibrary())
-            {
-                throw new BadImageFormatException(version.DllPath);
-            }
+            var gsVersion = GhostscriptVersionInfo.GetInstalledVersions()
+                .OrderByDescending(gs => gs.Version)
+                .FirstOrDefault();
 
-            bool Is64BitLibrary()
+            if (gsVersion == null || gsVersion.Version.Major < Settings.GsMinVersion)
             {
-                var machine = NativeLibraryHelper.GetImageFileMachineType(stream);
-                return NativeLibraryHelper.Is64BitMachineValue(machine);
-            };
+                ProgressReporter.Error("CbzMage requires Ghostscript version 10+ is installed");
+                if (gsVersion != null)
+                {
+                    ProgressReporter.Info($"Found Ghostscript version {gsVersion.Version}");
+                }
+                return null;
+
+            }
+            return gsVersion;
+        }
+
+        public GhostscriptPageMachineManager(GhostscriptVersionInfo gsVersion)
+        {
+            _library = new GhostscriptLibrary(gsVersion);
 
             _stoppedMachines = new ConcurrentBag<GhostscriptPageMachine>();
             _runningMachines = new ConcurrentDictionary<GhostscriptPageMachine, object>();
@@ -50,25 +50,18 @@ namespace PdfConverter.Ghostscript
 
         public GhostscriptPageMachine StartMachine()
         {
-            if (!_stoppedMachines.TryTake(out var machine))
+            var isCached = _stoppedMachines.TryTake(out var machine);
+            
+            if (!isCached)
             {
-                GhostscriptLibrary library;
-                unsafe
-                {
-                    library = new GhostscriptLibrary(_libraryPtr);
-                }
-
-                //processorOwnsLibrary ensures that GhostscriptLibrary and in turn DynamicNativeLibrary are disposed
-                var processor = new GhostscriptProcessor(library, processorOwnsLibrary: true);
-
-                StatsCount.NewPageMachines++;
+                var processor = new GhostscriptProcessor(_library);
                 machine = new GhostscriptPageMachine(processor);
             }
-            else
-            {
-                StatsCount.CachedPageMachines++;
-            }
 
+#if DEBUG
+            StatsCount.AddPageMachine(isCached); 
+#endif
+            
             if (!_runningMachines.TryAdd(machine, null))
             {
                 throw new InvalidOperationException("machine alredy running");
@@ -101,15 +94,6 @@ namespace PdfConverter.Ghostscript
                     {
                         stopped.Dispose();
                     }
-
-                    unsafe
-                    {
-                        if (_libraryPtr != null)
-                        {
-                            _handle.ReleasePointer();
-                        }
-                    }
-                    _handle.Dispose();
 
                     //_runningMachines should be empty at this point
                     try

@@ -1,10 +1,8 @@
 using CbzMage.Shared.Extensions;
-using Ghostscript.NET;
 using PdfConverter.Ghostscript;
 using PdfConverter.Helpers;
 using PdfConverter.ManagedBuffers;
 using System.Diagnostics;
-using System.Reflection;
 
 namespace PdfConverter
 {
@@ -16,21 +14,24 @@ namespace PdfConverter
 #else
         private static readonly string _testPdf = null;
 #endif
+
+        private static int pagesCount = 0;
+
         public static void Main(string[] args)
         {
             var pdfList = InitializePdfPath(args);
 
             if (pdfList.Any())
             {
-                var sw = Stopwatch.StartNew();
+                var gsVersion = GhostscriptPageMachineManager.GetGhostscriptVersion();
+                if (gsVersion == null)
+                {
+                    return;
+                }
 
-                var bin = Assembly.GetExecutingAssembly().Location;
-                var gsPath = Path.Combine(Path.GetDirectoryName(bin), "gsdll64.dll");
+                var stopwatch = Stopwatch.StartNew();
 
-                var version = new GhostscriptVersionInfo(gsPath);
-
-                // Throws if wrong 32/64 version of Ghostscript installed
-                using (var pageMachineManager = new GhostscriptPageMachineManager(version))
+                using (var pageMachineManager = new GhostscriptPageMachineManager(gsVersion))
                 {
                     using var bufferCache = new BufferCache(Settings.BufferSize);
 
@@ -38,14 +39,17 @@ namespace PdfConverter
                     pdfList.ForEach(pdf => ConvertPdf(pdf, converter));
                 }
 
+#if DEBUG 
                 StatsCount.ShowStats();
-                sw.Stop();
+                Console.WriteLine();
+#endif
 
-                if (pdfList.Count > 1)
-                {
-                    var passed = sw.Elapsed;
-                    Console.WriteLine($"Total: {passed.Minutes} min {passed.Seconds} sec");
-                }
+                stopwatch.Stop();
+
+                var elapsed = stopwatch.Elapsed;
+                var secsPerPage = elapsed.TotalSeconds / pagesCount;
+
+                Console.WriteLine($"{pagesCount} pages converted in {elapsed.Minutes} min {elapsed.Seconds} sec ({secsPerPage:F2} sec/page)");
             }
             else
             {
@@ -57,19 +61,24 @@ namespace PdfConverter
 
         private static void ConvertPdf(Pdf pdf, PdfComicConverter converter)
         {
-            var stopWatch = Stopwatch.StartNew();
+            var stopwatch = Stopwatch.StartNew();
 
             using var pdfParser = new PdfImageParser(pdf);
 
             Console.WriteLine(pdf.Path);
             Console.WriteLine($"{pdf.PageCount} pages");
 
+            pagesCount += pdf.PageCount;
+
             converter.ConvertToCbz(pdf, pdfParser);
 
-            stopWatch.Stop();
-            var passed = stopWatch.Elapsed;
+            stopwatch.Stop();
+            var passed = stopwatch.Elapsed;
 
-            Console.WriteLine($"{passed.Minutes} min {passed.Seconds} sec");
+            var min = passed.Minutes > 0 ? $"{passed.Minutes} min ": string.Empty;
+            var sec = passed.Seconds > 0 ? $"{passed.Seconds} sec" : string.Empty;
+
+            Console.WriteLine($"{min}{sec}");
             Console.WriteLine();
         }
 

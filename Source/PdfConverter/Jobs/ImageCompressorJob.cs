@@ -27,20 +27,28 @@ namespace PdfConverter.Jobs
 
         public IEnumerable<string> Execute()
         {
+
+#if DEBUG
             var stopwatch = new Stopwatch();
+#endif
 
             foreach (var (page, image) in _imageList)
             {
-                stopwatch.Restart();
 
+#if DEBUG
+                stopwatch.Restart();
+#endif
+                
                 var entry = _compressor.CreateEntry(page, CompressionLevel.Fastest);
                 using var archiveStream = entry.Open();
 
                 image.Write(archiveStream);
                 image.Dispose();
 
+#if DEBUG 
                 stopwatch.Stop();
                 StatsCount.AddMagickWrite((int)stopwatch.ElapsedMilliseconds, (int)archiveStream.Position);
+#endif
 
                 _progressReporter.ShowProgress($"Converted {page}");
             }

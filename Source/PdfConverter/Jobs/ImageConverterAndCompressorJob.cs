@@ -31,11 +31,18 @@ namespace PdfConverter.Jobs
 
         public IEnumerable<string> Execute()
         {
+
+#if DEBUG
             var stopwatch = new Stopwatch();
+#endif
 
             foreach (var (page, imagePath) in _imageList)
             {
+
+#if DEBUG 
                 stopwatch.Restart();
+#endif
+
                 MagickImage image = null;
 
                 var retries = 0;
@@ -71,8 +78,10 @@ namespace PdfConverter.Jobs
                 image.Write(archiveStream);
                 image.Dispose();
 
+#if DEBUG 
                 stopwatch.Stop();
                 StatsCount.AddMagickReadWrite((int)stopwatch.ElapsedMilliseconds, retries, resized);
+#endif
 
                 _progressReporter.ShowProgress($"Converted {page}");
             }

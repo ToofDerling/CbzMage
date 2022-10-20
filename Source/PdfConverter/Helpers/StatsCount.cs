@@ -21,11 +21,35 @@
             }
         }
 
-        public static volatile int NewBuffers = 0;
-        public static volatile int CachedBuffers = 0;
+        private static volatile int newBuffers = 0;
+        private static volatile int cachedBuffers = 0;
 
-        public static volatile int NewPageMachines = 0;
-        public static volatile int CachedPageMachines = 0;
+        public static void AddBuffer(bool cached)
+        {
+            if (cached)
+            {
+                cachedBuffers++;
+            }
+            else
+            {
+                newBuffers++;
+            }
+        }
+
+        private static volatile int newPageMachines = 0;
+        private static volatile int cachedPageMachines = 0;
+
+        public static void AddPageMachine(bool cached)
+        {
+            if (cached)
+            {
+                cachedPageMachines++;
+            }
+            else
+            {
+                newPageMachines++;
+            }
+        }
 
         private static volatile int magickTotalReadTime = 0;
         private static volatile int magickReadCount = 0;
@@ -119,14 +143,14 @@
                 Console.WriteLine($"Largest Jpg: {largestJpg} Average: {totalJpgSize / magickWriteCount}");
             }
 
-            if (NewBuffers > 0)
+            if (newBuffers > 0)
             {
-                Console.WriteLine($"Cached/new buffers: {CachedBuffers}/{NewBuffers}");
+                Console.WriteLine($"Cached/new buffers: {cachedBuffers}/{newBuffers}");
             }
 
-            if (NewPageMachines > 0)
+            if (newPageMachines > 0)
             {
-                Console.WriteLine($"Cached/new pagemachines: {CachedPageMachines}/{NewPageMachines}");
+                Console.WriteLine($"Cached/new pagemachines: {cachedPageMachines}/{newPageMachines}");
             }
         }
     }

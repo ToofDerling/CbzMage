@@ -32,15 +32,20 @@ namespace PdfConverter.Jobs
 
         public string Execute()
         {
-            var stopwatch = new Stopwatch();
 
+#if DEBUG 
+            var stopwatch = new Stopwatch();
             stopwatch.Start();
+#endif
+
             var image = new MagickImage(_buffer.Buffer, 0, _buffer.Count);
 
             var resized = ImageHelper.ConvertJpg(image, _resizeHeight);
-            stopwatch.Stop();
 
+#if DEBUG 
+            stopwatch.Stop();
             StatsCount.AddMagickRead((int)stopwatch.ElapsedMilliseconds, resized, _buffer.Count);
+#endif
 
             _buffer.Release();
 

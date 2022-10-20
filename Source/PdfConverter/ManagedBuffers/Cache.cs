@@ -19,14 +19,18 @@ namespace PdfConverter.ManagedBuffers
 
         public T Get()
         {
-            if (_buffers.TryPop(out var buffer))
+            var isCached = _buffers.TryPop(out var buffer);
+
+            if (!isCached)
             {
-                StatsCount.CachedBuffers++;
-                return buffer;
+                buffer = CreateNew();
             }
 
-            StatsCount.NewBuffers++;
-            return CreateNew();
+#if DEBUG
+            StatsCount.AddBuffer(isCached);
+#endif
+
+            return buffer;
         }
 
         public void Release(T buffer)
