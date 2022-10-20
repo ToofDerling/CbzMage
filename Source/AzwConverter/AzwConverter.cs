@@ -2,9 +2,6 @@
 using System.Text;
 using System.Text.RegularExpressions;
 using CbzMage.Shared.Helpers;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 
 namespace AzwConverter
 {
@@ -27,10 +24,8 @@ namespace AzwConverter
 
         public AzwConverter(AzwAction action, string fileOrDirectory)
         {
-            using IHost host = Host.CreateDefaultBuilder().Build();
-            var config = host.Services.GetRequiredService<IConfiguration>();
-
-            Settings.ReadAppSettings(config);
+            var config = new AzwConfig();
+            config.CreateSettings();
 
             ProgressReporter.Info($"Azw files: {Settings.AzwDir}");
             ProgressReporter.Info($"Title files: {Settings.TitlesDir}");
@@ -185,7 +180,7 @@ namespace AzwConverter
 
             var converter = new ConverterEngine();
 
-            var state = coverFile != null && Settings.SaveCoverOnly 
+            var state = coverFile != null && Settings.SaveCoverOnly
                 ? converter.SaveCover(bookId, dataFiles, coverFile)
                 : converter.ConvertBook(bookId, dataFiles, cbzFile, coverFile);
 

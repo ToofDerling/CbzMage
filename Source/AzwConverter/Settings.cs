@@ -1,140 +1,56 @@
-﻿using Microsoft.Extensions.Configuration;
-using System.IO.Compression;
+﻿using System.IO.Compression;
 
 namespace AzwConverter
 {
     public class Settings
     {
-        // For testing. If >0 overrules the NumberOfThreads setting.
-        private const int maxThreads = 0;
+        // All properties with a public setter are read from AzwSettings.json
 
-        // Defaults
-        private const string defaultTitlesDir = "Titles";
-        private const string defaultCbzDir = "Cbz Backups";
-        
-        private const bool defaultSaveCover = false;
-        private const bool defaultSaveCoverOnly = false;
+        public static string[] TrimPublishers { get; set; }
 
-        private const string defaultConvertedTitlesDirName = "Converted Titles";
-        private const string defaultNewTitleMarker = ".NEW";
-        private const string defaultUpdateTitleMarker = ".UPDATED";
+        public static string AzwDir { get; set; }
 
-        private const int defaultNumberOfThreads = 3;
-        private const CompressionLevel defaultCompressionLevel = CompressionLevel.Fastest;
+        public static string TitlesDir { get; set; }
 
-        public static void ReadAppSettings(IConfiguration config)
-        {
-            //AzwDir
-            var azwDir = config.GetValue<string>("AzwDir");
-            if (string.IsNullOrWhiteSpace(azwDir) || !Directory.Exists(azwDir))
-            {
-                throw new Exception("Must configure AzwDir in appsettings.json");
-            }
-            AzwDir = azwDir;
+        public static string ConvertedTitlesDirName { get; set; }
 
-            //TitlesDir
-            var titlesDir = config.GetValue("TitlesDir", defaultTitlesDir);
-            if (string.IsNullOrWhiteSpace(titlesDir))
-            {
-                var dir = new DirectoryInfo(AzwDir).Parent;
-                titlesDir = Path.Combine(dir.FullName, defaultTitlesDir);
-            }
-            titlesDir.CreateDirIfNotExists();
-            TitlesDir = titlesDir;
-
-            //SaveCover
-            SaveCover = config.GetValue("SaveCover", defaultSaveCover);
-            SaveCoverOnly = SaveCover && config.GetValue("SaveCoverOnly", defaultSaveCoverOnly);
-
-            //SaveCoverDir
-            if (SaveCover)
-            {
-                var saveCoverDir = config.GetValue("SaveCoverDir", string.Empty);
-                if (!string.IsNullOrWhiteSpace(saveCoverDir))
-                {
-                    saveCoverDir.CreateDirIfNotExists();
-                    SaveCoverDir = saveCoverDir;
-                }
-                else 
-                {
-                    SaveCoverDir = null;
-                }
-            }
-
-            //ConvertedTitlesDirName
-            var convertedTitlesDirName = config.GetValue("ConvertedTitlesDirName", defaultConvertedTitlesDirName);
-            if (string.IsNullOrWhiteSpace(convertedTitlesDirName))
-            {
-                convertedTitlesDirName = defaultConvertedTitlesDirName;
-            }
-            ConvertedTitlesDir = Path.Combine(TitlesDir, convertedTitlesDirName);
-            ConvertedTitlesDir.CreateDirIfNotExists();
-
-            //CbzDir
-            var cbzDir = config.GetValue("CbzDir", defaultCbzDir);
-            if (string.IsNullOrWhiteSpace(cbzDir))
-            {
-                var dir = new DirectoryInfo(AzwDir).Parent;
-                cbzDir = Path.Combine(dir.FullName, defaultCbzDir);
-            }
-            cbzDir.CreateDirIfNotExists();
-            CbzDir = cbzDir;
-
-            //NewTitleMarker
-            var newTitleMarker = config.GetValue("NewTitleMarker", defaultNewTitleMarker);
-            NewTitleMarker = string.IsNullOrWhiteSpace(newTitleMarker) ? defaultNewTitleMarker : newTitleMarker; 
-
-            //UpdatedTitleMarker
-            var updatedTitleMarker = config.GetValue("UpdatedTitleMarker", defaultUpdateTitleMarker);
-            UpdatedTitleMarker = string.IsNullOrWhiteSpace(updatedTitleMarker) ? defaultUpdateTitleMarker : updatedTitleMarker;
-
-            //TrimPublishers
-            var trimPublishers = config.GetSection("TrimPublishers").Get<string[]>();
-            TrimPublishers = trimPublishers ?? Array.Empty<string>();
-
-            //NumberOfThreads
-            numberOfThreads = config.GetValue("NumberOfThreads", defaultNumberOfThreads);
-
-            //CompressionLevel
-            CompressionLevel = config.GetValue("CompressionLevel", defaultCompressionLevel);
-        }
-
-        public static string[] TrimPublishers { get; private set; }
-
-        public static string AzwDir { get; private set; }
-
-        private static readonly string[] azwExts = new[] { ".azw", ".mbpV2", ".azw.res" };
-        public static string AzwExt => azwExts[0];
-        public static string AzwResExt => azwExts[2];
-
-        public static string TitlesDir { get; private set; }
         public static string ConvertedTitlesDir { get; private set; }
 
-        public static string CbzDir { get; private set; }
-
-        public static bool SaveCover { get; private set; }
-        public static bool SaveCoverOnly { get; private set; }
-        public static string? SaveCoverDir { get; private set; }
-
-        private static int numberOfThreads;
-
-        public static ParallelOptions ParallelOptions => GetParallelOptions();
-
-        private static ParallelOptions GetParallelOptions()
+        public static void SetConvertedTitlesDir(string dir)
         {
-            var numThreads = Math.Min(numberOfThreads, Environment.ProcessorCount);
-            if (maxThreads > 0)
-            {
-                numThreads = maxThreads;
-            }
-            return new ParallelOptions { MaxDegreeOfParallelism = numThreads };
+            ConvertedTitlesDir = dir;
         }
 
-        public static CompressionLevel CompressionLevel { get; private set; }
+        public static string CbzDir { get; set; }
 
-        public static string NewTitleMarker { get; private set; }
-        public static string UpdatedTitleMarker { get; private set; }
+        public static bool SaveCover { get; set; }
+        public static bool SaveCoverOnly { get; set; }
+        public static string? SaveCoverDir { get; set; }
 
-        public static string[] AllMarkers => new string[] { NewTitleMarker, UpdatedTitleMarker };
+        public static int NumberOfThreads { get; set; }
+
+        public static ParallelOptions ParallelOptions { get; private set; }
+
+        public static void SetParallelOptions(ParallelOptions parallelOptions)
+        {
+            ParallelOptions = parallelOptions;
+        }
+
+        public static CompressionLevel CompressionLevel { get; set; }
+
+        public static string NewTitleMarker { get; set; }
+        public static string UpdatedTitleMarker { get; set; }
+
+        public static string[] AllMarkers { get; private set; }
+
+        public static void SetAllMarkers()
+        {
+            AllMarkers = new string[] { NewTitleMarker, UpdatedTitleMarker };
+        }
+
+        private static readonly string[] azwExts = new[] { ".azw", ".mbpV2", ".azw.res" };
+
+        public static string AzwExt => azwExts[0];
+        public static string AzwResExt => azwExts[2];
     }
 }
