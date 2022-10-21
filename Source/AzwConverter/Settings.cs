@@ -4,7 +4,7 @@ namespace AzwConverter
 {
     public class Settings
     {
-        // All properties with a public setter are read from AzwSettings.json
+        // All properties with a public setter are read from settings file
 
         public static string[] TrimPublishers { get; set; }
 

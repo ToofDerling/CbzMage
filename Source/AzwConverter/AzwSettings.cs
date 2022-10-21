@@ -1,27 +1,15 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
+﻿using CbzMage.Shared.Helpers;
 
 namespace AzwConverter
 {
-    public class AzwConfig
+    public class AzwSettings
     {
         public static Settings Settings => new();
 
         public void CreateSettings()
         {
-            using IHost host = Host.CreateDefaultBuilder().ConfigureAppConfiguration((hostingContext, config) =>
-            {
-                config.Sources.Clear();
-
-                var env = hostingContext.HostingEnvironment;
-
-                config.AddJsonFile("AzwSettings.json", optional: false, reloadOnChange: false)
-                    .AddJsonFile($"AzwSettings.User.json", true, false)
-                    .AddJsonFile($"AzwSettings.{env.EnvironmentName}.json", true, true);
-
-                var configRoot = config.Build();
-                configRoot.Bind(Settings);
-            }).Build();
+            var settingsHelper = new SettingsHelper();
+            settingsHelper.CreateSettings(nameof(AzwSettings), Settings);
 
             ConfigureSettings();
         }

@@ -24,7 +24,7 @@ namespace AzwConverter
 
         public AzwConverter(AzwAction action, string fileOrDirectory)
         {
-            var config = new AzwConfig();
+            var config = new AzwSettings();
             config.CreateSettings();
 
             ProgressReporter.Info($"Azw files: {Settings.AzwDir}");
