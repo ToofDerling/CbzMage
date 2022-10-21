@@ -3,7 +3,7 @@ CzbMage is a comic book converter. It aims to do exactly two things:
 1. **Convert azw files to nice cbz files**, ready to read in your favorite cbz reader. Azw files just like the ones found in Kdl for PC (or Mac). 
 Also, if CbzMage finds a matching azw.res file it will **merge in any HD images found for the highest possible quality**. 
 Comic title and publisher will be read from the azw file and running CbzMage in scan mode will allow you to edit the values before the conversion. 
-**All of this works fully in [CbzMage Version 0.10](https://github.com/ToofDerling/CbzMage/releases/tag/v0.10).**
+**All of this works fully in [CbzMage Version 0.11](https://github.com/ToofDerling/CbzMage/releases/tag/v0.11).**
 2. Convert pdf files to high quality cbz files. This does not work yet.
 
 CbzMage is a commandline tool written in c#. It requires no installation, very little configuration and no drm plugin/tool (the last part may change in the future). It does require that **[.NET 6](https://dotnet.microsoft.com/en-us/download)** is installed on your computer.
@@ -12,18 +12,18 @@ CbzMage is released for Windows and macOS (but support for the macOS version wil
 
 ## Azw conversion.
 
-Download CbzMage to your hard drive and unpack it anywhere. Open appsettings.json in a text editor and **configure AzwDir**. Please note the comment about moving the azw directory, **running CbzMage for the first time will require double the size of your azw directory.**
+Download CbzMage to your hard drive and unpack it anywhere. Open the settings file in a text editor and **configure AzwDir**. Please note the comment about moving the azw directory, **running CbzMage for the first time will require double the size of your azw directory.**
 
-You can have a look at the other configuration options in appsettings.json, they are all thoroughly documented there (I hope). Or you can open a command shell and run CbzMage right away: 
+You can have a look at the other options in the settings file, they are all thoroughly documented there (I hope). Or you can open a command shell and run CbzMage right away: 
 
 **Important:** Close Kdl before running CbzMage. Kdl locks some (all?) of the azw files when it's running, so there's a high chance that CbzMage will crash because it can't read a locked azw file.
 
 **Running CbzMage with the "AzwConvert" parameter:**
 
-* In the titles directory (TitlesDir in appsettings.json) you will find a small file with the title and publisher of each comic book currently in the azw directory.  
+* In the titles directory (TitlesDir in the settings file) you will find a small file with the title and publisher of each comic book currently in the azw directory.  
 * In a subdirectory of the titles directory you will find a similar file for each converted title. If you ever want **to reconvert a title simply delete the title file from the converted titles directory.**
-* In the cbz directory (CbzDir in appsettings.json) you will find the converted comic books sorted by publisher. 
-* If you set SaveCover to true in appsettings.json CbzMage will save a copy of the cover image together with the cbz file. If you specify SaveCoverDir the cover image will be saved there instead. There's even a SaveCoverOnly option if you just want the covers.
+* In the cbz directory (CbzDir in the settings file) you will find the converted comic books sorted by publisher. 
+* If you set SaveCover to true in the settings filen CbzMage will save a copy of the cover image together with the cbz file. If you specify SaveCoverDir the cover image will be saved there instead. There's even a SaveCoverOnly option if you just want the covers.
 
 **Running CbzMage with the "AzwScan" parameter:**
 
