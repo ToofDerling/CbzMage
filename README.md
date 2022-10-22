@@ -28,7 +28,7 @@ You can have a look at the other options in the settings file, they are all thor
 **Running CbzMage with the "AzwScan" parameter:**
 
 * Like the conversion, in the titles directory you will find a small file with the title and publisher of each comic book currently in the azw directory.  
-* Unlike the conversion, each new title will have a ".NEW" marker and each updated title will have an ".UPDATED" marker. 
+* Unlike the conversion, each new title will have a ".NEW" marker (and each updated title will have an ".UPDATED" marker). 
 * You can now edit the publishers and titles as you like and the values will be used when you run AzwConvert. You don't have to remove the markers, the conversion will handle it automatically.
 
 **Notes.**
