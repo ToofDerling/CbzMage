@@ -1,6 +1,6 @@
 # CbzMage.
 CzbMage is a comic book converter. It aims to do exactly two things:
-1. **Convert azw files to nice cbz files**, ready to read in your favorite cbz reader. Azw files just like the ones found in Kdl for PC (or Mac). 
+1. **Convert azw files to nice cbz files**, ready to read in your favorite cbz reader (Azw files just like the ones found in Kdl for PC or Mac). 
 Also, if CbzMage finds a matching azw.res file it will **merge in any HD images found for the highest possible quality**. 
 Comic title and publisher will be read from the azw file and running CbzMage in scan mode will allow you to edit the values before the conversion. 
 **All of this works fully in [CbzMage Version 0.11](https://github.com/ToofDerling/CbzMage/releases/tag/v0.11).**
