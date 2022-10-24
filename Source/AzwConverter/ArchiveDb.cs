@@ -64,7 +64,7 @@ namespace AzwConverter
         public void SetState(string bookId, CbzState state)
         {
             if (state.IsEmpty() && _db.TryGetValue(bookId, out var oldState))
-            { 
+            {
                 oldState.Name = state.Name;
                 state = oldState;
             }
@@ -73,6 +73,19 @@ namespace AzwConverter
 
             _db[bookId] = state;
             _isDirty = true;
+        }
+
+        public DateTime? GetCheckedDate(string bookId)
+        {
+            return _db.TryGetValue(bookId, out var state) ? state.Checked : null;
+        }
+
+        public void UpdateCheckedDate(string bookId)
+        {
+            if (_db.TryGetValue(bookId, out var state))
+            { 
+                state.Checked = DateTime.Now;
+            }
         }
 
         public void SaveDb()

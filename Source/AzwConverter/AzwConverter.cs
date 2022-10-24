@@ -74,7 +74,7 @@ namespace AzwConverter
 
             Console.WriteLine();
             // Display the scanning results
-            var updatedBooks = GetUpdatedBooks(books, convertedTitles);
+            var updatedBooks = GetUpdatedBooks(books, convertedTitles, archive);
             ProgressReporter.Info($"Found {updatedBooks.Count} updated book{updatedBooks.SIf1()}");
 
             var unconvertedBooks = GetUnconvertedBooks(books, convertedTitles);
@@ -278,7 +278,7 @@ namespace AzwConverter
         }
 
         private static List<KeyValuePair<string, FileInfo[]>> GetUpdatedBooks(Dictionary<string, FileInfo[]> books,
-            Dictionary<string, FileInfo> convertedTitles)
+            Dictionary<string, FileInfo> convertedTitles, ArchiveDb archive)
         {
             var updatedBooks = new List<KeyValuePair<string, FileInfo[]>>();
 
@@ -287,20 +287,27 @@ namespace AzwConverter
                 // If the title has been converted
                 if (convertedTitles.TryGetValue(book.Key, out var convertedTitle))
                 {
-                    var convertedDate = convertedTitle.LastWriteTime;
+                    var checkedDate = archive.GetCheckedDate(book.Key)
+                        ?? convertedTitle.LastWriteTime;
 
                     // Test if the two datafiles has been updated since the conversion
                     var azwFile = book.Value.First(file => file.IsAzwFile());
-                    if (azwFile.LastWriteTime > convertedDate)
+                    if (azwFile.LastWriteTime > checkedDate)
                     {
-                        updatedBooks.Add(book);
+                        AddUpdatedBook();
                         continue;
                     }
 
                     var azwResFile = book.Value.FirstOrDefault(file => file.IsAzwResFile());
-                    if (azwResFile != null && azwFile.LastWriteTime > convertedDate)
+                    if (azwResFile != null && azwFile.LastWriteTime > checkedDate)
+                    {
+                        AddUpdatedBook();
+                    }
+
+                    void AddUpdatedBook()
                     {
                         updatedBooks.Add(book);
+                        archive.UpdateCheckedDate(book.Key);
                     }
                 }
             }

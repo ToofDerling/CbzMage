@@ -12,6 +12,9 @@
 
         public int Pages { get; set; }
 
+        public DateTime? Checked { get; set; }
+
+
         public bool IsEmpty()
         {
             return HdImages == 0 && SdImages == 0;
