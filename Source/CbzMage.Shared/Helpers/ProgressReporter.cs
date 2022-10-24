@@ -86,7 +86,7 @@ namespace CbzMage.Shared.Helpers
 
         public static void Error(string message, Exception ex)
         {
-            var errorMessage = $"{message}: {ex.TypeAndMessage()}";
+            var errorMessage = $"{message} {ex.TypeAndMessage()}";
             Error(errorMessage);
         }
 

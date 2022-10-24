@@ -18,7 +18,7 @@ AzwScan [or Azw Scan]
 In both cases CbzMage will scan for updated books and create an .UPDATED title 
 file for each updated book. 
 
-Pdf <pdffile> or <directory with pdffiles>
+Pdf <pdf file> or <directory with pdf files>
     Converts one or more pdf comic books to cbz files (DOES NOT WORK YET).
 ";
         static void Main(string[] args)
@@ -50,7 +50,7 @@ Pdf <pdffile> or <directory with pdffiles>
                 }
                 catch (Exception ex)
                 { 
-                    ProgressReporter.Error("CbzMage error:", ex); 
+                    ProgressReporter.Error("CbzMage fatal error.", ex); 
                 }
             }
 

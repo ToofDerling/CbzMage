@@ -28,9 +28,13 @@ namespace AzwConverter
         private void ConfigureSettings()
         {
             //AzwDir
-            if (string.IsNullOrWhiteSpace(Settings.AzwDir) || !Directory.Exists(Settings.AzwDir))
+            if (string.IsNullOrWhiteSpace(Settings.AzwDir))
             {
                 throw new Exception("Must configure AzwDir in AzwSettings.json or AzwSettings.User.json");
+            }
+            if (!Directory.Exists(Settings.AzwDir))
+            {
+                throw new Exception($"{nameof(Settings.AzwDir)} [{Settings.AzwDir}] does not exist");
             }
 
             //TitlesDir

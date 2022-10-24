@@ -40,7 +40,7 @@ namespace AzwConverter
                         }
                         catch (Exception ex)
                         {
-                            ProgressReporter.Error($"Error reading {bookId}", ex);
+                            ProgressReporter.Error($"Error reading {bookId}.", ex);
 
                             booksWithErrors.Add(bookId);
                             continue;
