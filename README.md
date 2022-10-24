@@ -1,8 +1,8 @@
 # CbzMage.
 CzbMage is a comic book converter. It aims to do exactly two things:
-1. **Convert azw files to nice cbz files**, ready to read in your favorite cbz reader. Azw files just like the ones found in Kdl for PC (or Mac). 
+1. **Convert azw files to nice cbz files**, ready to read in your favorite cbz reader (Azw files entirely like the ones found in Kdl for PC or Mac). 
 Also, if CbzMage finds a matching azw.res file it will **merge in any HD images found for the highest possible quality**. 
-Comic title and publisher will be read from the azw file and running CbzMage in scan mode will allow you to edit the values before the conversion. 
+Comic title and publisher will be read from the azw file, and running CbzMage in scan mode will allow you to edit the values before the conversion. 
 **All of this works fully in [CbzMage Version 0.11](https://github.com/ToofDerling/CbzMage/releases/tag/v0.11).**
 2. Convert pdf files to high quality cbz files. This does not work yet.
 
@@ -12,7 +12,7 @@ CbzMage is released for Windows and macOS (but support for the macOS version wil
 
 ## Azw conversion.
 
-Download CbzMage to your hard drive and unpack it anywhere. Open the settings file in a text editor and **configure AzwDir**. Please note the comment about moving the azw directory, **running CbzMage for the first time will require double the size of your azw directory.**
+Download CbzMage to your hard drive and unpack it anywhere. Open the settings file in a text editor and **configure AzwDir**. Please note the comment about [moving the azw directory](https://github.com/ToofDerling/CbzMage/wiki/How-to-move-Kdl-content-folder.), **running CbzMage for the first time will require double the size of your azw directory.**
 
 You can have a look at the other options in the settings file, they are all thoroughly documented there (I hope). Or you can open a command shell and run CbzMage right away: 
 
@@ -28,12 +28,12 @@ You can have a look at the other options in the settings file, they are all thor
 **Running CbzMage with the "AzwScan" parameter:**
 
 * Like the conversion, in the titles directory you will find a small file with the title and publisher of each comic book currently in the azw directory.  
-* Unlike the conversion, each new title will have a ".NEW" marker and each updated title will have an ".UPDATED" marker. 
+* Unlike the conversion, each new title will have a ".NEW" marker (and each updated title will have an ".UPDATED" marker). 
 * You can now edit the publishers and titles as you like and the values will be used when you run AzwConvert. You don't have to remove the markers, the conversion will handle it automatically.
 
 **Notes.**
 
-* **Updated title.** This means a title that has been improved, ie it now has a HD cover or more HD images than before. CbzMage will scan the azw files and detect if any of them have been updated (and add the ".UPDATED" marker to any updated title). I don't know if an update can happen automatically. I *think* I saw it happen once, but it may only happen when you redownload a file to Kdl.
+* **Updated title.** This means a title that has been improved, ie it now has a HD cover or more HD images than before. CbzMage will scan the azw files and detect if any of them have been updated (and add the ".UPDATED" marker to any updated title). I don't know if an update can happen automatically. I *think* I saw it happen once, but it may only happen when you redownload a book to Kdl.
 * **The titles directory** will always reflect the comic books currently in Kdl and is updated each time you run CbzMage. If you edit publisher or name of a title the values will be used when the title is converted 
 * **The converted titles directory** contains every converted title ever. To reconvert a title you must delete the file in that directory. 
 * **The database.** In the titles directory there's a database file with the state of every title that has passed through CbzMage. It's used when checking if a title has been updated and to store the new name and publisher of the title if you edit these values.
