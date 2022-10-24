@@ -55,11 +55,11 @@ namespace AzwConverter
             }
 
             //ConvertedTitlesDirName
-            var convertedTitlesDirName = string.IsNullOrWhiteSpace(Settings.ConvertedTitlesDirName)
-                ? defaultConvertedTitlesDirName
-                : Settings.ConvertedTitlesDirName;
-
-            Settings.SetConvertedTitlesDir(Path.Combine(Settings.TitlesDir, convertedTitlesDirName));
+            if (string.IsNullOrWhiteSpace(Settings.ConvertedTitlesDirName))
+            {
+                Settings.ConvertedTitlesDirName = defaultConvertedTitlesDirName;
+            }
+            Settings.SetConvertedTitlesDir(Path.Combine(Settings.TitlesDir, Settings.ConvertedTitlesDirName));
             Settings.ConvertedTitlesDir.CreateDirIfNotExists();
 
             //CbzDir
@@ -85,11 +85,15 @@ namespace AzwConverter
             Settings.TrimPublishers ??= Array.Empty<string>();
 
             //NumberOfThreads
-            var numThreads = maxThreads > 0
-                ? maxThreads
-                : Math.Min(Settings.NumberOfThreads, Environment.ProcessorCount);
-
-            Settings.SetParallelOptions(new ParallelOptions { MaxDegreeOfParallelism = numThreads });
+            if (maxThreads > 0)
+            {
+                Settings.NumberOfThreads = maxThreads;
+            }
+            else if (Settings.NumberOfThreads <= 0)
+            {
+               Settings.NumberOfThreads = Math.Min(Environment.ProcessorCount, 3);
+            }
+            Settings.SetParallelOptions(new ParallelOptions { MaxDegreeOfParallelism = Settings.NumberOfThreads });
         }
     }
 }

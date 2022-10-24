@@ -108,7 +108,7 @@
 
         public static void ShowStats()
         {
-            if (Settings.Mode == Mode.Slower)
+            if (Settings.PdfConverterMode == PdfConverterMode.Slower)
             {
                 if (magickReadWriteCount > 0)
                 {

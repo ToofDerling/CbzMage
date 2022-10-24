@@ -1,6 +1,6 @@
 ﻿namespace PdfConverter
 {
-    public enum Mode
+    public enum PdfConverterMode
     {
         Faster, Slower
     }

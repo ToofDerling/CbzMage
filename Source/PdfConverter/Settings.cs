@@ -2,20 +2,22 @@
 {
     public class Settings
     {
-        public static int MinimumDpi => 300;
+        // All properties with a public setter are read from settings file
 
-        public static int MinimumHeight => 1920;
+        public static int MinimumDpi { get; set; }
 
-        public static int MaximumHeight => MinimumHeight * 2;
+        public static int MinimumHeight { get; set; }
 
-        public static int JpegQuality => 95;
+        public static int MaximumHeight { get; set; }
 
-        public static int ThreadCount => Math.Max(1, (Environment.ProcessorCount / 2) - 2);
+        public static int JpegQuality { get; set; }
 
-        public static int BufferSize => 20000000;
+        public static int NumberOfThreads { get; set; }
 
-        public static Mode Mode => Mode.Faster;
+        public static PdfConverterMode PdfConverterMode { get; set; }
 
-        public static int GsMinVersion => 10;
+        public static int BufferSize { get; set; }
+
+        public static int GhostscriptMinVersion { get; set; }
     }
 }

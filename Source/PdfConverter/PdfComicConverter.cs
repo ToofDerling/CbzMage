@@ -134,7 +134,7 @@ namespace PdfConverter
 
         private List<int>[] CreatePageLists(Pdf pdf)
         {
-            var parallelThreads = Settings.ThreadCount;
+            var parallelThreads = Settings.NumberOfThreads;
 
             var pageChunker = new PageChunker();
             var pageLists = pageChunker.CreatePageLists(pdf.PageCount, parallelThreads);
@@ -169,7 +169,7 @@ namespace PdfConverter
             pageCompressor.PagesCompressed += (s, e) => OnPagesCompressed(e);
 
             Pollux pollux = null;
-            if (Settings.Mode == Mode.Slower)
+            if (Settings.PdfConverterMode == PdfConverterMode.Slower)
             {
                 pollux = new Pollux(pdf, pageLists, convertedPages);
                 pollux.PageSaved += (s, e) => pageCompressor.OnPageConverted(e);
@@ -181,7 +181,7 @@ namespace PdfConverter
 
                 var pageMachine = _pageMachineManager.StartMachine();
 
-                if (Settings.Mode == Mode.Faster)
+                if (Settings.PdfConverterMode == PdfConverterMode.Faster)
                 {
                     var pageQueue = new Queue<int>(pageList);
                  
@@ -202,14 +202,14 @@ namespace PdfConverter
                 _pageMachineManager.StopMachine(pageMachine);
             });
 
-            if (Settings.Mode == Mode.Slower)
+            if (Settings.PdfConverterMode == PdfConverterMode.Slower)
             {
                 pollux.WaitForPagesSaved();
             }
             pageCompressor.SignalAllPagesConverted();
 
             pageCompressor.WaitForPagesCompressed();
-            if (Settings.Mode == Mode.Slower)
+            if (Settings.PdfConverterMode == PdfConverterMode.Slower)
             {
                 // Now we can safely remove the temp dir and reset current directory.
                 pollux.Cleanup();

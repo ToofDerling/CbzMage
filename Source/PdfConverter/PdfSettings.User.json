@@ -1,0 +1,4 @@
+// Any setting configured here will overwrite the corresponding setting 
+// in the master configuration file (PdfSettings.json) 
+{
+}

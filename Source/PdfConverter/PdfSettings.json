@@ -1,0 +1,47 @@
+// Punction is important! Don't remove quotes, colons, commas or curly braces 
+// (or otherwise change the structure).
+{
+  // AzwDir is the only required setting. It must point to where your Azw files 
+  // are stored - aka the Kdl data directory. If you have a large collection it's 
+  // recommended to move this directory to a hard disk with plenty of space. 
+  // This is done here: Kdl -> Tools -> Options -> Content -> Change Folder
+  "MinimumDpi": 300,
+
+  // AzwDir is the only required setting. It must point to where your Azw files 
+  // are stored - aka the Kdl data directory. If you have a large collection it's 
+  // recommended to move this directory to a hard disk with plenty of space. 
+  // This is done here: Kdl -> Tools -> Options -> Content -> Change Folder
+  "MinimumHeight": 1920,
+
+  // TitlesDir is where the CbzMage title files are stored. Titles currently
+  // in Kdl, titles converted to cbz, and the archive database all live here.
+  // This can be placed anywhere you want (and takes up very little space).
+  // If you specify nothing it will default to "Titles" in the parent directory 
+  // of AzwDir.
+  "MaximumHeight": 3840,
+
+  // CbzDir are where your cbz backups are created. This can be placed anywhere
+  // you want. If you specify nothing it will default to "Cbz Backups" in the 
+  // parent directory of AzwDir.
+  "JpegQuality": 95,
+
+  // Speed up scanning and converting by doing it in parallel. Testing has shown
+  // 3 is a good value when CbzDir is placed on a standard hard disk drive (HDD). 
+  // If the CbzDir is placed on a solid state drive (SSD) increasing this number 
+  // may increase the performance for larger collections.
+  "NumberOfThreads": 0,
+
+  // SaveCover true or false. Save a copy of the coverimage alongside the cbz file 
+  // when converting a title. The default value is false, don't save the cover.
+  "PdfConverterMode": "Faster",
+
+  // If you would like to save the coverimages in their own directory instead of
+  // alongside the cbz file you can specify the directory here.
+  "BufferSize": 20000000,
+
+  // SaveCoverOnly true or false. Use this if you just want to save coverimages, 
+  // no cbz files. To generate a cover gallery of all the books in Kdl simply delete
+  // all files in the Converted Titles directory (they will be regenerated).
+  // Note: SaveCover must also be true for SaveCoverOnly to work. 
+  "GhostscriptMinVersion": 10
+}

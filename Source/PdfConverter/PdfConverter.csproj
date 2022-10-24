@@ -7,24 +7,7 @@
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="Jobs\**" />
-    <EmbeddedResource Remove="Jobs\**" />
-    <None Remove="Jobs\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="Helpers\ProgressReporter.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="Jobs\ImageCompressorJob.cs" />
-    <Compile Include="Jobs\ImageConverterAndCompressorJob.cs" />
-    <Compile Include="Jobs\ImageConverterJob.cs" />
-    <Compile Include="Jobs\ImageHelper.cs" />
-  </ItemGroup>
-
+ 
   <ItemGroup>
     <PackageReference Include="itext7" Version="7.2.3" />
     <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="12.2.0" />
