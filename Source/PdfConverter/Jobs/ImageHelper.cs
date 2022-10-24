@@ -8,7 +8,7 @@ namespace PdfConverter.Jobs
         {
             image.Format = MagickFormat.Jpg;
             image.Interlace = Interlace.Plane;
-            image.Quality = Settings.JpegQuality;
+            image.Quality = Settings.JpgQuality;
 
             var resize = false;
             if (resizeHeight.HasValue && image.Height > resizeHeight.Value)

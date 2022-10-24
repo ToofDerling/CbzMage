@@ -1,9 +1,4 @@
 ﻿using CbzMage.Shared.Helpers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PdfConverter
 {
@@ -39,22 +34,29 @@ namespace PdfConverter
                 Settings.MinimumHeight = 1920;
             }
 
-            //JpegQuality
-            if (Settings.JpegQuality <= 0)
+            //JpgQuality
+            if (Settings.JpgQuality <= 0)
             {
-                Settings.JpegQuality = 95;
+                Settings.JpgQuality = 95;
             }
-
-            //PdfConverterMode
-
-
-
+            
             //NumberOfThreads
             if (Settings.NumberOfThreads <= 0)
             {
                 Settings.NumberOfThreads = Math.Max(1, (Environment.ProcessorCount / 2) - 2);
             }
-        }
+            
+            //BufferSize
+            if (Settings.BufferSize <= 0)
+            {
+                Settings.BufferSize = 20000000;
+            }
 
+            //GhostscriptMinVersion
+            if (Settings.GhostscriptMinVersion <= 0)
+            {
+                Settings.GhostscriptMinVersion = 10;
+            }
+        }
     }
 }

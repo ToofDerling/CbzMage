@@ -19,42 +19,46 @@ namespace PdfConverter
 
         public static void Main(string[] args)
         {
+            var config = new PdfSettings();
+            config.CreateSettings();
+
             var pdfList = InitializePdfPath(args);
-
-            if (pdfList.Any())
+            if (!pdfList.Any())
             {
-                var gsVersion = GhostscriptPageMachineManager.GetGhostscriptVersion();
-                if (gsVersion == null)
-                {
-                    return;
-                }
+                Console.WriteLine("No pdf files found, bye");
+            }
 
-                var stopwatch = Stopwatch.StartNew();
+            var gsVersion = GhostscriptPageMachineManager.GetGhostscriptVersion();
+            if (gsVersion == null)
+            {
+                return;
+            }
 
-                using (var pageMachineManager = new GhostscriptPageMachineManager(gsVersion))
-                {
-                    using var bufferCache = new BufferCache(Settings.BufferSize);
+            Console.WriteLine($"Using Ghostscript version: {gsVersion.Version}");
+            Console.WriteLine($"Conversion mode: {Settings.PdfConverterMode}");
+            Console.WriteLine($"Number of threads: {Settings.NumberOfThreads}");
 
-                    var converter = new PdfComicConverter(pageMachineManager);
-                    pdfList.ForEach(pdf => ConvertPdf(pdf, converter));
-                }
+            var stopwatch = Stopwatch.StartNew();
 
-#if DEBUG 
-                StatsCount.ShowStats();
-                Console.WriteLine();
+            using (var pageMachineManager = new GhostscriptPageMachineManager(gsVersion))
+            {
+                using var bufferCache = new BufferCache(Settings.BufferSize);
+
+                var converter = new PdfComicConverter(pageMachineManager);
+                pdfList.ForEach(pdf => ConvertPdf(pdf, converter));
+            }
+
+#if DEBUG
+            StatsCount.ShowStats();
+            Console.WriteLine();
 #endif
 
-                stopwatch.Stop();
+            stopwatch.Stop();
 
-                var elapsed = stopwatch.Elapsed;
-                var secsPerPage = elapsed.TotalSeconds / pagesCount;
+            var elapsed = stopwatch.Elapsed;
+            var secsPerPage = elapsed.TotalSeconds / pagesCount;
 
-                Console.WriteLine($"{pagesCount} pages converted in {elapsed.Minutes} min {elapsed.Seconds} sec ({secsPerPage:F2} sec/page)");
-            }
-            else
-            {
-                Console.WriteLine("PdfConverter <directory|pdf_file>");
-            }
+            Console.WriteLine($"{pagesCount} pages converted in {elapsed.Minutes} min {elapsed.Seconds} sec ({secsPerPage:F2} sec/page)");
 
             Console.ReadLine();
         }
@@ -75,7 +79,7 @@ namespace PdfConverter
             stopwatch.Stop();
             var passed = stopwatch.Elapsed;
 
-            var min = passed.Minutes > 0 ? $"{passed.Minutes} min ": string.Empty;
+            var min = passed.Minutes > 0 ? $"{passed.Minutes} min " : string.Empty;
             var sec = passed.Seconds > 0 ? $"{passed.Seconds} sec" : string.Empty;
 
             Console.WriteLine($"{min}{sec}");

@@ -23,7 +23,7 @@
   // CbzDir are where your cbz backups are created. This can be placed anywhere
   // you want. If you specify nothing it will default to "Cbz Backups" in the 
   // parent directory of AzwDir.
-  "JpegQuality": 95,
+  "JpgQuality": 95,
 
   // Speed up scanning and converting by doing it in parallel. Testing has shown
   // 3 is a good value when CbzDir is placed on a standard hard disk drive (HDD). 

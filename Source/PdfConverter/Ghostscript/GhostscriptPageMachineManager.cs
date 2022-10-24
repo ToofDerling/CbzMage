@@ -29,7 +29,7 @@ namespace PdfConverter.Ghostscript
 
             if (gsVersion == null || gsVersion.Version.Major < Settings.GhostscriptMinVersion)
             {
-                ProgressReporter.Error("CbzMage requires Ghostscript version 10+ is installed");
+                ProgressReporter.Error($"CbzMage requires Ghostscript version {Settings.GhostscriptMinVersion}+ is installed");
                 if (gsVersion != null)
                 {
                     ProgressReporter.Info($"Found Ghostscript version {gsVersion.Version}");

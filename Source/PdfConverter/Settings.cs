@@ -10,7 +10,7 @@
 
         public static int MaximumHeight { get; set; }
 
-        public static int JpegQuality { get; set; }
+        public static int JpgQuality { get; set; }
 
         public static int NumberOfThreads { get; set; }
 
