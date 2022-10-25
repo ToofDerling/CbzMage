@@ -29,9 +29,9 @@ namespace PdfConverter
             }
 
             //MaximumHeight
-            if (Settings.MinimumHeight <= 0)
+            if (Settings.MaximumHeight <= 0)
             {
-                Settings.MinimumHeight = 1920;
+                Settings.MaximumHeight = 3840;
             }
 
             //JpgQuality
