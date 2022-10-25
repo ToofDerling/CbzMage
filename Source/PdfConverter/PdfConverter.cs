@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace PdfConverter
 {
-    public class Program
+    public class PdfConverter
     {
 
 #if DEBUG
@@ -15,17 +15,17 @@ namespace PdfConverter
         private static readonly string _testPdf = null;
 #endif
 
-        private static int pagesCount = 0;
+        private int pagesCount = 0;
 
-        public static void Main(string[] args)
+        public void ConvertFileOrDirectory(string path)
         {
             var config = new PdfSettings();
             config.CreateSettings();
 
-            var pdfList = InitializePdfPath(args);
+            var pdfList = InitializePdfPath(path);
             if (!pdfList.Any())
             {
-                Console.WriteLine("No pdf files found, bye");
+                Console.WriteLine("No pdf files found");
             }
 
             var gsVersion = GhostscriptPageMachineManager.GetGhostscriptVersion();
@@ -44,7 +44,7 @@ namespace PdfConverter
             {
                 using var bufferCache = new BufferCache(Settings.BufferSize);
 
-                var converter = new PdfComicConverter(pageMachineManager);
+                var converter = new ConverterEngine(pageMachineManager);
                 pdfList.ForEach(pdf => ConvertPdf(pdf, converter));
             }
 
@@ -59,11 +59,9 @@ namespace PdfConverter
             var secsPerPage = elapsed.TotalSeconds / pagesCount;
 
             Console.WriteLine($"{pagesCount} pages converted in {elapsed.Minutes} min {elapsed.Seconds} sec ({secsPerPage:F2} sec/page)");
-
-            Console.ReadLine();
         }
 
-        private static void ConvertPdf(Pdf pdf, PdfComicConverter converter)
+        private void ConvertPdf(Pdf pdf, ConverterEngine converter)
         {
             var stopwatch = Stopwatch.StartNew();
 
@@ -86,33 +84,28 @@ namespace PdfConverter
             Console.WriteLine();
         }
 
-        private static List<Pdf> InitializePdfPath(string[] args)
+        private List<Pdf> InitializePdfPath(string path)
         {
-            var path = (string)null;
-
             if (!string.IsNullOrEmpty(_testPdf))
             {
                 path = _testPdf;
             }
-            else if (args.Length > 0)
+            else
             {
-                path = args[0];
+                path ??= Environment.CurrentDirectory;
             }
 
-            if (!string.IsNullOrEmpty(path))
+            if (Directory.Exists(path))
             {
-                if (Directory.Exists(path))
+                var files = Directory.GetFiles(path, "*.pdf");
+                if (files.Length > 0)
                 {
-                    var files = Directory.GetFiles(path, "*.pdf"); //Search pattern is case insensitive
-                    if (files.Length > 0)
-                    {
-                        return Pdf.List(files.ToArray());
-                    }
+                    return Pdf.List(files.ToArray());
                 }
-                else if (File.Exists(path) && path.EndsWithIgnoreCase(".pdf"))
-                {
-                    return Pdf.List(path);
-                }
+            }
+            else if (File.Exists(path) && path.EndsWithIgnoreCase(".pdf"))
+            {
+                return Pdf.List(path);
             }
 
             //Nothing to do

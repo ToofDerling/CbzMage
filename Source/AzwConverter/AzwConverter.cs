@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;
+using CbzMage.Shared;
 using CbzMage.Shared.Helpers;
 
 namespace AzwConverter
@@ -18,11 +19,11 @@ namespace AzwConverter
         // Try to be as lenient as possible (and Trim the results).
         private readonly Regex _publisherTitleRegex = new(@"(\[)(?<publisher>.*?)(\])(?<title>.*)");
 
-        private readonly AzwAction _action;
+        private readonly CbzMageAction _action;
 
-        private readonly string _fileOrDirectory;
+        //TODO private readonly string _fileOrDirectory;
 
-        public AzwConverter(AzwAction action, string fileOrDirectory)
+        public AzwConverter(CbzMageAction action/*, string fileOrDirectory*/)
         {
             var config = new AzwSettings();
             config.CreateSettings();
@@ -38,7 +39,7 @@ namespace AzwConverter
             Console.WriteLine();
 
             _action = action;
-            _fileOrDirectory = fileOrDirectory; //TODO
+            //TODO _fileOrDirectory = fileOrDirectory; 
         }
 
         public void ConvertOrScan()
@@ -96,7 +97,7 @@ namespace AzwConverter
             stopWatch.Stop();
             Console.WriteLine();
 
-            if (_action == AzwAction.AzwConvert && pagesCount > 0)
+            if (_action == CbzMageAction.AzwConvert && pagesCount > 0)
             {
                 var elapsed = stopWatch.Elapsed;
                 var secsPerPage = elapsed.TotalSeconds / pagesCount;
@@ -138,7 +139,7 @@ namespace AzwConverter
                 totalBooks = unconvertedBooks.Count;
                 bookCount = 0;
 
-                if (_action == AzwAction.AzwConvert)
+                if (_action == CbzMageAction.AzwConvert)
                 {
                     Console.WriteLine();
                     ProgressReporter.Info($"Converting {unconvertedBooks.Count} book{unconvertedBooks.SIf1()}:");
@@ -148,7 +149,7 @@ namespace AzwConverter
                         convertedTitles.ContainsKey(book.Key) ? convertedTitles[book.Key] : null,
                         syncer, archive));
                 }
-                else if (_action == AzwAction.AzwScan)
+                else if (_action == CbzMageAction.AzwScan)
                 {
                     Console.WriteLine();
                     ProgressReporter.Info($"Listing {unconvertedBooks.Count} unconverted book{unconvertedBooks.SIf1()}:");

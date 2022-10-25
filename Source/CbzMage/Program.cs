@@ -1,4 +1,4 @@
-﻿using AzwConverter;
+﻿using CbzMage.Shared;
 using CbzMage.Shared.Helpers;
 using System.Runtime.InteropServices;
 
@@ -18,39 +18,56 @@ AzwScan [or Azw Scan]
 In both cases CbzMage will scan for updated books and create an .UPDATED title 
 file for each updated book. 
 
-Pdf <pdf file> or <directory with pdf files>
+PdfConvert [or Pdf Convert] <pdf file> or <directory with pdf files>
     Converts one or more pdf comic books to cbz files (DOES NOT WORK YET).
 ";
         static void Main(string[] args)
         {
 #if DEBUG
-            args = new[] {AzwAction.AzwScan.ToString()};
+            args = new[] { CbzMageAction.PdfConvert.ToString() };
 #endif
             var validAction = false;
 
             string actionStr;
+            var next = 0;
 
-            if (args.Length > 0)
+            if (args.Length > next)
             {
-                actionStr = args[0];
-                if (args.Length > 1)
+                actionStr = args[next];
+                next++;
+
+                if (args.Length > next)
                 {
-                    actionStr += args[1];
+                    actionStr += args[next];
+                    next++;
                 }
 
                 try
                 {
-                    if (Enum.TryParse(typeof(AzwAction), actionStr, ignoreCase: true, out var action))
+                    if (Enum.TryParse(typeof(CbzMageAction), actionStr, ignoreCase: true, out var actionObj))
                     {
+                        var action = (CbzMageAction)actionObj;
                         validAction = true;
 
-                        var converter = new AzwConverter.AzwConverter((AzwAction)action, null);
-                        converter.ConvertOrScan();
+                        var path = args.Length > next ? args[next] : null;
+
+                        switch (action)
+                        {
+                            case CbzMageAction.AzwScan:
+                            case CbzMageAction.AzwConvert:
+                                var azwConverter = new AzwConverter.AzwConverter(action);
+                                azwConverter.ConvertOrScan();
+                                break;
+                            case CbzMageAction.PdfConvert:
+                                var pdfConverter = new PdfConverter.PdfConverter();
+                                pdfConverter.ConvertFileOrDirectory(path);
+                                break;
+                        }
                     }
                 }
                 catch (Exception ex)
-                { 
-                    ProgressReporter.Error("CbzMage fatal error.", ex); 
+                {
+                    ProgressReporter.Error("CbzMage fatal error.", ex);
                 }
             }
 

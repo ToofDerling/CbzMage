@@ -10,6 +10,7 @@
   <ItemGroup>
     <ProjectReference Include="..\AzwConverter\AzwConverter.csproj" />
     <ProjectReference Include="..\CbzMage.Shared\CbzMage.Shared.csproj" />
+    <ProjectReference Include="..\PdfConverter\PdfConverter.csproj" />
   </ItemGroup>
 
 </Project>

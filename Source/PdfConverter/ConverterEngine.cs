@@ -6,11 +6,11 @@ using System.Collections.Concurrent;
 
 namespace PdfConverter
 {
-    public class PdfComicConverter
+    public class ConverterEngine
     {
         private readonly GhostscriptPageMachineManager _pageMachineManager;
 
-        public PdfComicConverter(GhostscriptPageMachineManager pageMachineManager)
+        public ConverterEngine(GhostscriptPageMachineManager pageMachineManager)
         {
             _pageMachineManager = pageMachineManager;
         }
