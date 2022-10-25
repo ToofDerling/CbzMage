@@ -8,13 +8,6 @@ namespace PdfConverter
 {
     public class PdfConverter
     {
-
-#if DEBUG
-        private static readonly string _testPdf = @"M:\Data\Pdf\Test";
-#else
-        private static readonly string _testPdf = null;
-#endif
-
         private int pagesCount = 0;
 
         public void ConvertFileOrDirectory(string path)
@@ -86,14 +79,7 @@ namespace PdfConverter
 
         private List<Pdf> InitializePdfPath(string path)
         {
-            if (!string.IsNullOrEmpty(_testPdf))
-            {
-                path = _testPdf;
-            }
-            else
-            {
-                path ??= Environment.CurrentDirectory;
-            }
+            path ??= Environment.CurrentDirectory;
 
             if (Directory.Exists(path))
             {
