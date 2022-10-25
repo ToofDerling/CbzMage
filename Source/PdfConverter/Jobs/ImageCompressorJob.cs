@@ -39,15 +39,11 @@ namespace PdfConverter.Jobs
                 stopwatch.Restart();
 #endif
                 
-                var entry = _compressor.CreateEntry(page, CompressionLevel.Fastest);
-                using var archiveStream = entry.Open();
-
-                image.Write(archiveStream);
-                image.Dispose();
+                int written = ImageHelper.CompressAndCloseImage(image, _compressor, page);
 
 #if DEBUG 
                 stopwatch.Stop();
-                StatsCount.AddMagickWrite((int)stopwatch.ElapsedMilliseconds, (int)archiveStream.Position);
+                StatsCount.AddMagickWrite((int)stopwatch.ElapsedMilliseconds, written);
 #endif
 
                 _progressReporter.ShowProgress($"Converted {page}");

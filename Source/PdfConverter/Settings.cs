@@ -1,4 +1,6 @@
-﻿namespace PdfConverter
+﻿using System.IO.Compression;
+
+namespace PdfConverter
 {
     public class Settings
     {
@@ -17,6 +19,8 @@
         public static PdfConverterMode PdfConverterMode { get; set; }
 
         public static int BufferSize { get; set; }
+
+        public static CompressionLevel CompressionLevel { get; set; }
 
         public static int GhostscriptMinVersion { get; set; }
     }

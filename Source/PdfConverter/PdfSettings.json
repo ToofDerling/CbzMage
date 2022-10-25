@@ -1,6 +1,10 @@
 // Punction is important! Don't remove quotes, colons, commas or curly braces 
 // (or otherwise change the structure).
 {
+  // Pdf conversion can work in two modes: "Faster" and "Slower". FasterSaveCover true or false. Save a copy of the coverimage alongside the cbz file 
+  // when converting a title. The default value is false, don't save the cover.
+  "PdfConverterMode": "Faster",
+
   // AzwDir is the only required setting. It must point to where your Azw files 
   // are stored - aka the Kdl data directory. If you have a large collection it's 
   // recommended to move this directory to a hard disk with plenty of space. 
@@ -31,17 +35,17 @@
   // may increase the performance for larger collections.
   "NumberOfThreads": 0,
 
-  // SaveCover true or false. Save a copy of the coverimage alongside the cbz file 
-  // when converting a title. The default value is false, don't save the cover.
-  "PdfConverterMode": "Faster",
-
   // If you would like to save the coverimages in their own directory instead of
   // alongside the cbz file you can specify the directory here.
   "BufferSize": 20000000,
 
-  // SaveCoverOnly true or false. Use this if you just want to save coverimages, 
-  // no cbz files. To generate a cover gallery of all the books in Kdl simply delete
-  // all files in the Converted Titles directory (they will be regenerated).
-  // Note: SaveCover must also be true for SaveCoverOnly to work. 
-  "GhostscriptMinVersion": 10
+  // Set the required minimum Ghostscript version. It's really not recommended to 
+  // change this as some versions of Ghostscript below 10 didn't work properly when
+  // running them in parallel.
+  "GhostscriptMinVersion": 10,
+
+  // Compression level for the cbz file. Valid options are "Fastest", "Optimal" or
+  // "NoCompression". The default is "Fastest" because jpg files in the cbz file are 
+  // already compressed so "Optimal" gives very little difference in archive size.
+  "CompressionLevel": "Fastest"
 }
