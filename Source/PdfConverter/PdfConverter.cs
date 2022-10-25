@@ -37,6 +37,7 @@ namespace PdfConverter
             Console.WriteLine($"Using Ghostscript version: {gsVersion.Version}");
             Console.WriteLine($"Conversion mode: {Settings.PdfConverterMode}");
             Console.WriteLine($"Number of threads: {Settings.NumberOfThreads}");
+            Console.WriteLine();
 
             var stopwatch = Stopwatch.StartNew();
 
