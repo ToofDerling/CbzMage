@@ -291,21 +291,9 @@ namespace AzwConverter
                     var checkedDate = archive.GetCheckedDate(book.Key)
                         ?? convertedTitle.LastWriteTime;
 
-                    // Test if the two datafiles has been updated since the conversion
-                    var azwFile = book.Value.First(file => file.IsAzwFile());
-                    if (azwFile.LastWriteTime > checkedDate)
-                    {
-                        AddUpdatedBook();
-                        continue;
-                    }
-
-                    var azwResFile = book.Value.FirstOrDefault(file => file.IsAzwResFile());
-                    if (azwResFile != null && azwFile.LastWriteTime > checkedDate)
-                    {
-                        AddUpdatedBook();
-                    }
-
-                    void AddUpdatedBook()
+                    // Test if the two datafiles has been updated since last check
+                    if (book.Value.Any(file => (file.IsAzwFile() || file.IsAzwResFile())
+                        && file.LastWriteTime > checkedDate))
                     {
                         updatedBooks.Add(book);
                         archive.UpdateCheckedDate(book.Key);
