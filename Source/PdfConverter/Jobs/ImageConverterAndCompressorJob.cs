@@ -58,7 +58,7 @@ namespace PdfConverter.Jobs
                             break;
                         }
                     }
-                    catch (MagickCoderErrorException)
+                    catch
                     {
                         Thread.Sleep(100);
                     }

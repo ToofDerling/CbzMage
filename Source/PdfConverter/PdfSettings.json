@@ -1,8 +1,11 @@
 // Punction is important! Don't remove quotes, colons, commas or curly braces 
 // (or otherwise change the structure).
 {
-  // Pdf conversion can work in two modes: "Faster" and "Slower". FasterSaveCover true or false. Save a copy of the coverimage alongside the cbz file 
-  // when converting a title. The default value is false, don't save the cover.
+  // Pdf conversion can work in two modes: "Faster" and "Slower". There is no
+  // difference in quality between the two modes. Faster uses a lot of memory 
+  // as pdf pages are read to memory and directly into the cbzfile. Slower uses
+  // as little memory as possible as pages are saved to hard disk before adding 
+  //them to the cbzfile. 
   "PdfConverterMode": "Faster",
 
   // AzwDir is the only required setting. It must point to where your Azw files 

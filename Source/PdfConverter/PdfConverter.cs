@@ -19,6 +19,7 @@ namespace PdfConverter
             if (!pdfList.Any())
             {
                 Console.WriteLine("No pdf files found");
+                return;
             }
 
             var gsVersion = GhostscriptPageMachineManager.GetGhostscriptVersion();
