@@ -18,7 +18,7 @@ namespace PdfConverter.Jobs
 
         private readonly int? _resizeHeight;
 
-        public ImageConverterJob(ManagedBuffer buffer, ConcurrentDictionary<string, object> convertedImages, 
+        public ImageConverterJob(ManagedBuffer buffer, ConcurrentDictionary<string, object> convertedImages,
             string page, int? resizeHeight)
         {
             _buffer = buffer;
@@ -27,7 +27,7 @@ namespace PdfConverter.Jobs
 
             _page = page;
 
-            _resizeHeight = resizeHeight;   
+            _resizeHeight = resizeHeight;
         }
 
         public string Execute()
@@ -38,18 +38,19 @@ namespace PdfConverter.Jobs
             stopwatch.Start();
 #endif
 
-            var image = new MagickImage(_buffer.Buffer, 0, _buffer.Count);
-
+            using var image = new MagickImage(_buffer.Buffer, 0, _buffer.Count);
             var resized = ImageHelper.ConvertJpg(image, _resizeHeight);
+
+            // Reuse the png buffer for the jpg stream. 
+            var stream = new ManagedMemoryStream(_buffer.Buffer);
+            image.Write(stream);
 
 #if DEBUG 
             stopwatch.Stop();
             StatsCount.AddMagickRead((int)stopwatch.ElapsedMilliseconds, resized, _buffer.Count);
 #endif
 
-            _buffer.Release();
-
-            if (!_convertedImages.TryAdd(_page, image))
+            if (!_convertedImages.TryAdd(_page, stream))
             {
                 throw new SomethingWentWrongSorryException($"{_page} already converted?");
             }

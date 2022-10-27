@@ -17,6 +17,11 @@
             SetLength(0);
         }
 
+        public override byte[] GetBuffer()
+        {
+            return _buffer;
+        }
+
         public void Release()
         {
             Cache.Release(_buffer);

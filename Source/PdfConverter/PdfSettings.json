@@ -16,36 +16,29 @@
   // The default buffersize is 20000000 (20 MB) which holds all but the largest pdf
   // pages. You can set this lower if you like, the buffers will be expanded as 
   // needed. Note that this setting is mostly ignored when using "Slower" mode.
-  "BufferSize": 20000000,
+  "BufferSize": 4000000,
 
   // This determines the quality of jpg images in the cbzfile. You want this as high
   // as possible (90+). The default is 95 because a higher value causes CbzMage to 
   // create much larger cbzfiles.
   "JpgQuality": 95,
 
-
   // MinimumDpi determines the minimum quality of the pages Ghostscript reads from the 
   // pdf. It's not recommended to set this lower than 300, and setting it higher can
-  // cause the cbzfiles to grow very large. In other words, don't touch this.
+  // cause the cbzfiles to grow very large. In other words, you probably shouldn't 
+  // touch this. Note that CbzMage will calculate if it needs to read pages using a
+  // higher dpi value than MinimumDpi to get the best possible quality.
   "MinimumDpi": 300,
 
-  // Sometimes the MinimumDpi setting will create pages that are much larger then the
-  // source pdf. CbzMage will detect this and scale the images to prevent the cbzfile 
-  // AzwDir is the only required setting. It must point to where your Azw files 
-  // are stored - aka the Kdl data directory. If you have a large collection it's 
-  // recommended to move this directory to a hard disk with plenty of space. 
-  // This is done here: Kdl -> Tools -> Options -> Content -> Change Folder
+  // Sometimes reading pages using the MinimumDpi setting will create images that are 
+  // much larger then the source pdf. CbzMage will detect this and scale the images down
+  // to prevent the cbzfile from growing too large, but it will not create images 
+  // smaller than the MinimumHeight setting. The default is 1920 (HD).
   "MinimumHeight": 1920,
 
-  // TitlesDir is where the CbzMage title files are stored. Titles currently
-  // in Kdl, titles converted to cbz, and the archive database all live here.
-  // This can be placed anywhere you want (and takes up very little space).
-  // If you specify nothing it will default to "Titles" in the parent directory 
-  // of AzwDir.
+  // MaximumHeight is a hard cap at imagezize, again to prevent cbzfiles from growing
+  // impossibly large. The default is 3840 (Ultra HD).
   "MaximumHeight": 3840,
-
-
-
 
   // Set the required minimum Ghostscript version. It's really not recommended to 
   // change this as some versions of Ghostscript below 10 didn't work properly when

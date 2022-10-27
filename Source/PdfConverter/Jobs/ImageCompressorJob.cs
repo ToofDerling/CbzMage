@@ -1,7 +1,7 @@
 ﻿using CbzMage.Shared.Helpers;
 using CbzMage.Shared.Jobs;
-using ImageMagick;
 using PdfConverter.Helpers;
+using PdfConverter.ManagedBuffers;
 using System.Diagnostics;
 using System.IO.Compression;
 
@@ -11,11 +11,11 @@ namespace PdfConverter.Jobs
     {
         private readonly ZipArchive _compressor;
 
-        private readonly List<(string page, MagickImage image)> _imageList;
+        private readonly List<(string page, ManagedMemoryStream image)> _imageList;
 
         private readonly ProgressReporter _progressReporter;
 
-        public ImageCompressorJob(ZipArchive compressor, List<(string, MagickImage)> imageList,
+        public ImageCompressorJob(ZipArchive compressor, List<(string, ManagedMemoryStream)> imageList,
             ProgressReporter progressReporter)
         {
             _compressor = compressor;
@@ -32,14 +32,22 @@ namespace PdfConverter.Jobs
             var stopwatch = new Stopwatch();
 #endif
 
-            foreach (var (page, image) in _imageList)
+            foreach (var (page, jpgStream) in _imageList)
             {
 
 #if DEBUG
                 stopwatch.Restart();
 #endif
-                
-                int written = ImageHelper.CompressAndCloseImage(image, _compressor, page);
+
+                var entry = _compressor.CreateEntry(page);
+                using var cbzStream = entry.Open();
+
+                var buffer = jpgStream.GetBuffer();
+                int written = (int)jpgStream.Length;
+
+                cbzStream.Write(buffer, 0, written);
+
+                jpgStream.Release();
 
 #if DEBUG 
                 stopwatch.Stop();

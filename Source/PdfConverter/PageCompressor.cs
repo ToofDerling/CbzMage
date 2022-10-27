@@ -1,8 +1,8 @@
 ﻿using CbzMage.Shared.Extensions;
 using CbzMage.Shared.Helpers;
 using CbzMage.Shared.Jobs;
-using ImageMagick;
 using PdfConverter.Jobs;
+using PdfConverter.ManagedBuffers;
 using System.Collections.Concurrent;
 using System.IO.Compression;
 
@@ -109,9 +109,9 @@ namespace PdfConverter
             {
                 IJob<IEnumerable<string>> job;
 
-                if (inputList.First().imageData is MagickImage)
+                if (inputList.First().imageData is ManagedMemoryStream)
                 {
-                    var imageList = inputList.Select(i => (i.page, i.imageData as MagickImage)).AsList();
+                    var imageList = inputList.Select(i => (i.page, i.imageData as ManagedMemoryStream)).AsList();
 
                     job = new ImageCompressorJob(_compressor, imageList, _progressReporter);
                 }
