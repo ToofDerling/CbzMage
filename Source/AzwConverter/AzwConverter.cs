@@ -2,6 +2,7 @@
 using System.Text;
 using System.Text.RegularExpressions;
 using CbzMage.Shared;
+using CbzMage.Shared.Extensions;
 using CbzMage.Shared.Helpers;
 
 namespace AzwConverter
@@ -104,11 +105,11 @@ namespace AzwConverter
 
                 if (Settings.SaveCoverOnly)
                 {
-                    Console.WriteLine($"{bookCount} covers saved in {elapsed.Minutes} min {elapsed.Seconds} sec");
+                    Console.WriteLine($"{bookCount} covers saved in {elapsed.Hhmmss()}");
                 }
                 else
                 {
-                    Console.WriteLine($"{pagesCount} pages converted in {elapsed.Minutes} min {elapsed.Seconds} sec ({secsPerPage:F2} sec/page)");
+                    Console.WriteLine($"{pagesCount} pages converted in {elapsed.Hhmmss()} ({secsPerPage:F2} sec/page)");
                 }
             }
             else

@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-
-namespace CbzMage.Shared.Extensions
+﻿namespace CbzMage.Shared.Extensions
 {
     public static class EnumerableExtensions
     {

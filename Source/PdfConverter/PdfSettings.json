@@ -1,19 +1,36 @@
 // Punction is important! Don't remove quotes, colons, commas or curly braces 
 // (or otherwise change the structure).
 {
-  // Pdf conversion can work in two modes: "Faster" and "Slower". There is no
-  // difference in quality between the two modes. Faster uses a lot of memory 
-  // as pdf pages are read to memory and directly into the cbzfile. Slower uses
-  // as little memory as possible as pages are saved to hard disk before adding 
-  //them to the cbzfile. 
+  // Pdf conversion can work in two modes: "Faster" and "Slower" (there is no
+  // difference in quality between the two modes). Faster uses more memory 
+  // - sometimes a lot more - as pdf pages are read to memory and directly into 
+  // the cbzfile. Slower uses as little memory as possible as pages are saved to 
+  // hard disk before adding them to the cbzfile. 
   "PdfConverterMode": "Faster",
 
-  // AzwDir is the only required setting. It must point to where your Azw files 
-  // are stored - aka the Kdl data directory. If you have a large collection it's 
-  // recommended to move this directory to a hard disk with plenty of space. 
-  // This is done here: Kdl -> Tools -> Options -> Content -> Change Folder
+  // Number of Ghostscript reader threads. Set this to 0 to have CbazMage try to
+  // figure out a good value. If memory usage is too high you can either set this 
+  // to a lower value or try the "Slower" mode mentioned above.
+  "NumberOfThreads": 0,
+
+  // The default buffersize is 20000000 (20 MB) which holds all but the largest pdf
+  // pages. You can set this lower if you like, the buffers will be expanded as 
+  // needed. Note that this setting is mostly ignored when using "Slower" mode.
+  "BufferSize": 20000000,
+
+  // This determines the quality of jpg images in the cbzfile. You want this as high
+  // as possible (90+). The default is 95 because a higher value causes CbzMage to 
+  // create much larger cbzfiles.
+  "JpgQuality": 95,
+
+
+  // MinimumDpi determines the minimum quality of the pages Ghostscript reads from the 
+  // pdf. It's not recommended to set this lower than 300, and setting it higher can
+  // cause the cbzfiles to grow very large. In other words, don't touch this.
   "MinimumDpi": 300,
 
+  // Sometimes the MinimumDpi setting will create pages that are much larger then the
+  // source pdf. CbzMage will detect this and scale the images to prevent the cbzfile 
   // AzwDir is the only required setting. It must point to where your Azw files 
   // are stored - aka the Kdl data directory. If you have a large collection it's 
   // recommended to move this directory to a hard disk with plenty of space. 
@@ -27,20 +44,8 @@
   // of AzwDir.
   "MaximumHeight": 3840,
 
-  // CbzDir are where your cbz backups are created. This can be placed anywhere
-  // you want. If you specify nothing it will default to "Cbz Backups" in the 
-  // parent directory of AzwDir.
-  "JpgQuality": 95,
 
-  // Speed up scanning and converting by doing it in parallel. Testing has shown
-  // 3 is a good value when CbzDir is placed on a standard hard disk drive (HDD). 
-  // If the CbzDir is placed on a solid state drive (SSD) increasing this number 
-  // may increase the performance for larger collections.
-  "NumberOfThreads": 0,
 
-  // If you would like to save the coverimages in their own directory instead of
-  // alongside the cbz file you can specify the directory here.
-  "BufferSize": 20000000,
 
   // Set the required minimum Ghostscript version. It's really not recommended to 
   // change this as some versions of Ghostscript below 10 didn't work properly when

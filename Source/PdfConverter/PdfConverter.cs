@@ -53,7 +53,7 @@ namespace PdfConverter
             var elapsed = stopwatch.Elapsed;
             var secsPerPage = elapsed.TotalSeconds / pagesCount;
 
-            Console.WriteLine($"{pagesCount} pages converted in {elapsed.Minutes} min {elapsed.Seconds} sec ({secsPerPage:F2} sec/page)");
+            Console.WriteLine($"{pagesCount} pages converted in {elapsed.Hhmmss()} ({secsPerPage:F2} sec/page)");
         }
 
         private void ConvertPdf(Pdf pdf, ConverterEngine converter)
@@ -70,12 +70,8 @@ namespace PdfConverter
             converter.ConvertToCbz(pdf, pdfParser);
 
             stopwatch.Stop();
-            var passed = stopwatch.Elapsed;
 
-            var min = passed.Minutes > 0 ? $"{passed.Minutes} min " : string.Empty;
-            var sec = passed.Seconds > 0 ? $"{passed.Seconds} sec" : string.Empty;
-
-            Console.WriteLine($"{min}{sec}");
+            Console.WriteLine($"{stopwatch.Elapsed.Mmss()}");
             Console.WriteLine();
         }
 
