@@ -18,7 +18,7 @@ namespace PdfConverter
         private readonly int? _resizeHeight;
 
         public PageConverter(Pdf pdf, Queue<int> pageQueue, 
-            ConcurrentDictionary<string, object> convertedPages, int? resizHeight)
+            ConcurrentDictionary<string, object> convertedPages, int? resizeHeight)
         {
             _pdf = pdf;
             _pageQueue = pageQueue;
@@ -31,7 +31,7 @@ namespace PdfConverter
             
             _jobWaiter = _converterExecutor.Start(withWaiter: true);
 
-            _resizeHeight = resizHeight;
+            _resizeHeight = resizeHeight;
         }
 
         public void WaitForPagesConverted()

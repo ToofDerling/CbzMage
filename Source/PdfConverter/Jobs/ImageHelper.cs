@@ -1,5 +1,4 @@
 ﻿using ImageMagick;
-using System.IO.Compression;
 
 namespace PdfConverter.Jobs
 {
@@ -25,17 +24,6 @@ namespace PdfConverter.Jobs
             }
 
             return resize;
-        }
-
-        public static int CompressAndCloseImage(MagickImage image, ZipArchive compressor, string page)
-        {
-            var entry = compressor.CreateEntry(page, Settings.CompressionLevel);
-            using var archiveStream = entry.Open();
-
-            image.Write(archiveStream);
-            image.Dispose();
-
-            return (int)archiveStream.Position;
         }
     }
 }

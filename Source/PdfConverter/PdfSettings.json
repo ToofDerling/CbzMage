@@ -2,10 +2,10 @@
 // (or otherwise change the structure).
 {
   // Pdf conversion can work in two modes: "Faster" and "Slower" (there is no
-  // difference in quality between the two modes). Faster uses more memory 
-  // - sometimes a lot more - as pdf pages are read to memory and directly into 
-  // the cbzfile. Slower uses as little memory as possible as pages are saved to 
-  // hard disk before adding them to the cbzfile. 
+  // difference in quality between the two modes). Faster uses more memory as pdf 
+  // pages are read to memory and converted before adding them to the cbzfile. 
+  // Slower uses as little memory as possible as pages are saved to hard disk before 
+  // adding them to the cbzfile. 
   "PdfConverterMode": "Faster",
 
   // Number of Ghostscript reader threads. Set this to 0 to have CbazMage try to
@@ -13,9 +13,9 @@
   // to a lower value or try the "Slower" mode mentioned above.
   "NumberOfThreads": 0,
 
-  // The default buffersize is 20000000 (20 MB) which holds all but the largest pdf
-  // pages. You can set this lower if you like, the buffers will be expanded as 
-  // needed. Note that this setting is mostly ignored when using "Slower" mode.
+  // The default buffersize is 4000000 (4 MB) which is a little larger then the 
+  // average pagesize seen during testing (the buffers will be expanded as needed). 
+  // This setting is mostly ignored when using "Slower" mode.
   "BufferSize": 4000000,
 
   // This determines the quality of jpg images in the cbzfile. You want this as high
@@ -26,14 +26,14 @@
   // MinimumDpi determines the minimum quality of the pages Ghostscript reads from the 
   // pdf. It's not recommended to set this lower than 300, and setting it higher can
   // cause the cbzfiles to grow very large. In other words, you probably shouldn't 
-  // touch this. Note that CbzMage will calculate if it needs to read pages using a
-  // higher dpi value than MinimumDpi to get the best possible quality.
+  // touch this. Note that CbzMage will perform a dpi calculation to find out if it 
+  // needs to read pages using a higher dpi value to get the best possible quality.
   "MinimumDpi": 300,
 
   // Sometimes reading pages using the MinimumDpi setting will create images that are 
-  // much larger then the source pdf. CbzMage will detect this and scale the images down
-  // to prevent the cbzfile from growing too large, but it will not create images 
-  // smaller than the MinimumHeight setting. The default is 1920 (HD).
+  // much larger then the source pdf. CbzMage will detect this and scale the images 
+  // down to prevent the cbzfile from growing too large, but it will not create 
+  // images smaller than the MinimumHeight setting. The default is 1920 (HD).
   "MinimumHeight": 1920,
 
   // MaximumHeight is a hard cap at imagezize, again to prevent cbzfiles from growing
@@ -42,7 +42,7 @@
 
   // Set the required minimum Ghostscript version. It's really not recommended to 
   // change this as some versions of Ghostscript below 10 didn't work properly when
-  // running them in parallel.
+  // running in parallel.
   "GhostscriptMinVersion": 10,
 
   // Compression level for the cbz file. Valid options are "Fastest", "Optimal" or

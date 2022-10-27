@@ -1,6 +1,6 @@
 ﻿namespace PdfConverter.Helpers
 {
-    public class StatsCount
+    public sealed class StatsCount
     {
         private static volatile int largestPng = 0;
         private static long totalPngSize = 0;

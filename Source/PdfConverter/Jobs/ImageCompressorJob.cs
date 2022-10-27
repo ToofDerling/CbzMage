@@ -43,8 +43,8 @@ namespace PdfConverter.Jobs
                 using var cbzStream = entry.Open();
 
                 var buffer = jpgStream.GetBuffer();
-                int written = (int)jpgStream.Length;
 
+                int written = (int)jpgStream.Length;
                 cbzStream.Write(buffer, 0, written);
 
                 jpgStream.Release();

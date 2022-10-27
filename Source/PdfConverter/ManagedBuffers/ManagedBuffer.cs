@@ -1,6 +1,6 @@
 ﻿namespace PdfConverter.ManagedBuffers
 {
-    public class ManagedBuffer
+    public sealed class ManagedBuffer
     {
         internal static BufferCache Cache { get; set; }
 
@@ -19,7 +19,7 @@
 
         public ManagedBuffer(ManagedBuffer startWith, int offset, int length) : this()
         {
-            Array.Copy(startWith.Buffer, offset, Buffer, 0, length);
+            System.Buffer.BlockCopy(startWith.Buffer, offset, Buffer, 0, length);
 
             Count = length;
         }
@@ -37,13 +37,15 @@
                 {
                     var newBuffer = new byte[Buffer.Length + _originalLength];
 
-                    Array.Copy(Buffer, 0, newBuffer, 0, Count);
+                    System.Buffer.BlockCopy(Buffer, 0, newBuffer, 0, Count);
+
                     Buffer = newBuffer;
                 }
             }
 
             return readCount;
         }
+
         public void Release()
         {
             if (Cache != null)

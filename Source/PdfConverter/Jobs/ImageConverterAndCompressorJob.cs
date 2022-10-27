@@ -71,7 +71,12 @@ namespace PdfConverter.Jobs
                 }
 
                 var resized = ImageHelper.ConvertJpg(image, _resizeHeight);
-                ImageHelper.CompressAndCloseImage(image, _compressor, page);
+
+                var entry = _compressor.CreateEntry(page, Settings.CompressionLevel);
+                using var archiveStream = entry.Open();
+
+                image.Write(archiveStream);
+                image.Dispose();
 
 #if DEBUG 
                 stopwatch.Stop();
