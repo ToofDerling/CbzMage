@@ -6,8 +6,9 @@ namespace PdfConverter.Jobs
     {
         public static bool ConvertJpg(MagickImage image, int? resizeHeight)
         {
+            // Produce baseline jpgs with no subsampling.
+
             image.Format = MagickFormat.Jpg;
-            image.Interlace = Interlace.Plane;
             image.Quality = Settings.JpgQuality;
 
             var resize = false;

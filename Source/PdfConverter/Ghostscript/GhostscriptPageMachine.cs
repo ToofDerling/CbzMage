@@ -19,20 +19,21 @@ namespace PdfConverter.Ghostscript
                 //"-empty", wut?
                 // "-dQUIET", handled by -q
                 // "-dNOSAFER", not needed for gs 10.0
-                "-dTextAlphaBits=4",
-                "-dGraphicsAlphaBits=4",
+                "-dTextAlphaBits=1", // Turn off subsample antialiasing
+                "-dGraphicsAlphaBits=1", // Turn off subsample antialiasing
                 "-dUseCropBox",
                 //"-dBATCH", handled by -o
                 //"-dNOPAUSE", handled by -o
                 "-dNOPROMPT",
-                "-sDEVICE=png16malpha",
+                "-sDEVICE=png16m",
+                //"-sDEVICE=png16malpha", causes inverted colors on editorial pages in many books
                 //$"-dMaxBitmap={BufferSize}", this is for X only
                 //$"-dNumRenderingThreads={Environment.ProcessorCount}",
                 $"-sPageList={pageList}",
                 $"-r{dpi}",
                 $"-o{output}",
-                "-q",   // Don't write to stdout (and set -dQUIET)
-                $"-f{pdfFile}",   // -f skips a few filename checks
+                "-q", // Don't write to stdout (and set -dQUIET)
+                $"-f{pdfFile}", // -f skips a few filename checks
                 //pdfFile
             };
 
