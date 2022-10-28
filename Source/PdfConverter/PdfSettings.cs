@@ -39,17 +39,20 @@ namespace PdfConverter
             {
                 Settings.JpgQuality = 95;
             }
-            
+
             //NumberOfThreads
-            if (Settings.NumberOfThreads <= 0)
+            if (Settings.GhostscriptReaderThreads <= 0)
             {
-                Settings.NumberOfThreads = Math.Max(1, (Environment.ProcessorCount / 2) - 2);
+                var gsCores = (Environment.ProcessorCount / 2) * 0.7;
+
+                var readerThreads = Convert.ToInt32(gsCores);
+                Settings.GhostscriptReaderThreads = Math.Max(2, readerThreads);
             }
-            
+
             //BufferSize
             if (Settings.BufferSize <= 0)
             {
-                Settings.BufferSize = 20000000;
+                Settings.BufferSize = 4000000;
             }
 
             //GhostscriptMinVersion

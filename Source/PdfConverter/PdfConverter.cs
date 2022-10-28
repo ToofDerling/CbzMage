@@ -30,7 +30,11 @@ namespace PdfConverter
 
             Console.WriteLine($"Conversion mode: {Settings.PdfConverterMode}");
             Console.WriteLine($"Ghostscript version: {gsVersion.Version}");
-            Console.WriteLine($"Ghostscript reader threads: {Settings.NumberOfThreads}");
+            Console.WriteLine($"Ghostscript reader threads: {Settings.GhostscriptReaderThreads}");
+            Console.WriteLine($"Jpq quality: {Settings.JpgQuality}");
+#if DEBUG
+            Console.WriteLine($"Running in DEBUG mode");
+#endif
             Console.WriteLine();
 
             var stopwatch = Stopwatch.StartNew();

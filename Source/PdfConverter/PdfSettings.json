@@ -11,7 +11,7 @@
   // Number of Ghostscript reader threads. Set this to 0 to have CbazMage try to
   // figure out a good value. If memory usage is too high you can either set this 
   // to a lower value or try the "Slower" mode mentioned above.
-  "NumberOfThreads": 0,
+  "GhostscriptReaderThreads": 0,
 
   // The default buffersize is 4000000 (4 MB) which is a little larger then the 
   // average pagesize seen during testing (the buffers will be expanded as needed). 
