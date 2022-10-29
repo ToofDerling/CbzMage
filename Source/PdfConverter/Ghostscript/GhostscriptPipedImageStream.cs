@@ -8,8 +8,6 @@ namespace PdfConverter.Ghostscript
     {
         private static readonly byte[] pngHeader = new byte[] { 0x89, 0x50, 0x4e, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }; // PNG "\x89PNG\x0D\0xA\0x1A\0x0A"
 
-        private const int pipeBufferSize = 1000000;
-
         private readonly IPipedImageDataHandler _imageDatahandler;
 
         private AnonymousPipeServerStream _pipe;
@@ -18,7 +16,7 @@ namespace PdfConverter.Ghostscript
         {
             _imageDatahandler = imageDatahandler;
 
-            _pipe = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable, pipeBufferSize);
+            _pipe = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable, Settings.PipeBufferSize);
 
             var thread = new Thread(new ThreadStart(ReadGhostscriptPipedOutput));
             thread.Start();

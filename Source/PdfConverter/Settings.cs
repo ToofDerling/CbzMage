@@ -18,10 +18,14 @@ namespace PdfConverter
 
         public static PdfConverterMode PdfConverterMode { get; set; }
 
-        public static int BufferSize { get; set; }
-
         public static CompressionLevel CompressionLevel { get; set; }
 
-        public static int GhostscriptMinVersion { get; set; }
+        public static int BufferSize => 4194304;
+
+        public static int GhostscriptMinVersion => 10;
+
+        public static int BufferRemainingThreshold => 262144;
+
+        public static int PipeBufferSize => 262144;
     }
 }

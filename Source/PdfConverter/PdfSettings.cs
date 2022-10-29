@@ -48,18 +48,6 @@ namespace PdfConverter
                 var readerThreads = Convert.ToInt32(gsCores);
                 Settings.GhostscriptReaderThreads = Math.Max(2, readerThreads);
             }
-
-            //BufferSize
-            if (Settings.BufferSize <= 0)
-            {
-                Settings.BufferSize = 4000000;
-            }
-
-            //GhostscriptMinVersion
-            if (Settings.GhostscriptMinVersion <= 0)
-            {
-                Settings.GhostscriptMinVersion = 10;
-            }
         }
     }
 }

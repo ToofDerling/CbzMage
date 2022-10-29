@@ -1,4 +1,6 @@
-﻿namespace PdfConverter.ManagedBuffers
+﻿using PdfConverter.Helpers;
+
+namespace PdfConverter.ManagedBuffers
 {
     public sealed class ManagedBuffer
     {
@@ -33,11 +35,15 @@
             {
                 Count += readCount;
 
-                if (remaining < (Buffer.Length / 10))
+                if (remaining < Settings.BufferRemainingThreshold)
                 {
                     var newBuffer = new byte[Buffer.Length + _originalLength];
 
                     System.Buffer.BlockCopy(Buffer, 0, newBuffer, 0, Count);
+
+#if DEBUG
+                    StatsCount.ExpandedBuffers++;
+#endif
 
                     Buffer = newBuffer;
                 }

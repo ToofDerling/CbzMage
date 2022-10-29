@@ -13,11 +13,6 @@
   // to a lower value or try the "Slower" mode mentioned above.
   "GhostscriptReaderThreads": 0,
 
-  // The default buffersize is 4000000 (4 MB) which is a little larger then the 
-  // average pagesize seen during testing (the buffers will be expanded as needed). 
-  // This setting is mostly ignored when using "Slower" mode.
-  "BufferSize": 4000000,
-
   // This determines the quality of jpg images in the cbzfile. You want this as high
   // as possible (90+). The default is 95 because a higher value causes CbzMage to 
   // create much larger cbzfiles.
@@ -39,11 +34,6 @@
   // MaximumHeight is a hard cap at imagezize, again to prevent cbzfiles from growing
   // impossibly large. The default is 3840 (Ultra HD).
   "MaximumHeight": 3840,
-
-  // Set the required minimum Ghostscript version. It's really not recommended to 
-  // change this as some versions of Ghostscript below 10 didn't work properly when
-  // running in parallel.
-  "GhostscriptMinVersion": 10,
 
   // Compression level for the cbz file. Valid options are "Fastest", "Optimal" or
   // "NoCompression". The default is "Fastest" because jpg files in the cbz file are 
