@@ -37,17 +37,18 @@ namespace PdfConverter.Jobs
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 #endif
-
+            var pngSize = _buffer.Count;
             using var image = new MagickImage(_buffer.Buffer, 0, _buffer.Count);
             var resized = ImageHelper.ConvertJpg(image, _resizeHeight);
 
             // Reuse the png buffer for the jpg stream. 
             var stream = new ManagedMemoryStream(_buffer.Buffer);
             image.Write(stream);
+            var jpgSzie = (int)stream.Length;
 
 #if DEBUG 
             stopwatch.Stop();
-            StatsCount.AddMagickRead((int)stopwatch.ElapsedMilliseconds, resized, _buffer.Count);
+            StatsCount.AddImageConversion((int)stopwatch.ElapsedMilliseconds, resized, pngSize, jpgSzie);
 #endif
 
             if (!_convertedImages.TryAdd(_page, stream))

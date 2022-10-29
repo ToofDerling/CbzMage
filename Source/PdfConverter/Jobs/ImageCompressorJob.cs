@@ -1,8 +1,6 @@
 ﻿using CbzMage.Shared.Helpers;
 using CbzMage.Shared.Jobs;
-using PdfConverter.Helpers;
 using PdfConverter.ManagedBuffers;
-using System.Diagnostics;
 using System.IO.Compression;
 
 namespace PdfConverter.Jobs
@@ -27,18 +25,8 @@ namespace PdfConverter.Jobs
 
         public IEnumerable<string> Execute()
         {
-
-#if DEBUG
-            var stopwatch = new Stopwatch();
-#endif
-
             foreach (var (page, jpgStream) in _imageList)
             {
-
-#if DEBUG
-                stopwatch.Restart();
-#endif
-
                 var entry = _compressor.CreateEntry(page);
                 using var cbzStream = entry.Open();
 
@@ -48,11 +36,6 @@ namespace PdfConverter.Jobs
                 cbzStream.Write(buffer, 0, written);
 
                 jpgStream.Release();
-
-#if DEBUG 
-                stopwatch.Stop();
-                StatsCount.AddMagickWrite((int)stopwatch.ElapsedMilliseconds, written);
-#endif
 
                 _progressReporter.ShowProgress($"Converted {page}");
             }

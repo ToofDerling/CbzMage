@@ -23,6 +23,7 @@
 
         private static volatile int newBuffers = 0;
         private static volatile int cachedBuffers = 0;
+        public static volatile int ExpandedBuffers = 0;
 
         public static void AddBuffer(bool cached)
         {
@@ -51,20 +52,20 @@
             }
         }
 
-        private static volatile int magickTotalReadTime = 0;
-        private static volatile int magickReadCount = 0;
-        private static volatile int magickResizeCount = 0;
+        private static volatile int totalConversionTime = 0;
+        private static volatile int imageConversionCount = 0;
+        private static volatile int imageResizeCount = 0;
 
-        public static void AddMagickRead(int ms, bool resize, int png)
+        public static void AddImageConversion(int ms, bool resize, int png, int jpg)
         {
-            magickReadCount++;
+            imageConversionCount++;
 
             if (resize)
             {
-                magickResizeCount++;
+                imageResizeCount++;
             }
 
-            magickTotalReadTime += ms;
+            totalConversionTime += ms;
 
             totalPngSize += png;
 
@@ -72,20 +73,11 @@
             {
                 largestPng = png;
             }
-        }
-
-        private static volatile int magickTotalWriteTime = 0;
-        private static volatile int magickWriteCount = 0;
-
-        public static void AddMagickWrite(int ms, int jpg)
-        {
-            magickWriteCount++;
-            magickTotalWriteTime += ms;
 
             totalJpgSize += jpg;
 
             if (jpg > largestJpg)
-            {
+            { 
                 largestJpg = jpg;
             }
         }
@@ -102,7 +94,7 @@
             magickRetryCount += retries;
             if (resize)
             {
-                magickResizeCount++;
+                imageResizeCount++;
             }
         }
 
@@ -112,7 +104,7 @@
             {
                 if (magickReadWriteCount > 0)
                 {
-                    Console.WriteLine($"Magick read/writes {magickReadWriteCount} (retries: {magickRetryCount} / resizes: {magickResizeCount}) Average ms {magickTotalReadWriteTime / magickReadWriteCount}");
+                    Console.WriteLine($"Magick read/writes {magickReadWriteCount} (retries: {magickRetryCount} / resizes: {imageResizeCount}) Average ms {magickTotalReadWriteTime / magickReadWriteCount}");
                 }
 
                 return;
@@ -123,29 +115,16 @@
                 Console.WriteLine($"Pipe reads: {pipeReadCount} Largest read: {largestPipeRead}");
             }
 
-            if (magickReadCount > 0)
+            if (imageConversionCount > 0)
             {
-                Console.WriteLine($"Magick reads: {magickReadCount} (resizes: {magickResizeCount}) Average ms: {magickTotalReadTime / magickReadCount}");
-            }
-
-            if (magickWriteCount > 0)
-            {
-                Console.WriteLine($"Magick writes: {magickWriteCount} Average ms: {magickTotalWriteTime / magickWriteCount}");
-            }
-
-            if (magickReadCount > 0 && largestPng > 0)
-            {
-                Console.WriteLine($"Largest Png: {largestPng} Average: {totalPngSize / magickReadCount}");
-            }
-
-            if (magickWriteCount > 0 && largestJpg > 0)
-            {
-                Console.WriteLine($"Largest Jpg: {largestJpg} Average: {totalJpgSize / magickWriteCount}");
+                Console.WriteLine($"Image conversions: {imageConversionCount} (resizes: {imageResizeCount}) Average ms: {totalConversionTime / imageConversionCount}");
+                Console.WriteLine($"Largest Png: {largestPng} Average: {totalPngSize / imageConversionCount}");
+                Console.WriteLine($"Largest Jpg: {largestJpg} Average: {totalJpgSize / imageConversionCount}");
             }
 
             if (newBuffers > 0)
             {
-                Console.WriteLine($"Cached/new buffers: {cachedBuffers}/{newBuffers}");
+                Console.WriteLine($"Cached/new buffers: {cachedBuffers}/{newBuffers} (expansions: {ExpandedBuffers})");
             }
 
             if (newPageMachines > 0)
