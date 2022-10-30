@@ -39,14 +39,6 @@ namespace AzwConverter
 
         public static string SIf1<T>(this IEnumerable<T> enu) => enu.Count().SIf1();
 
-        public static void CreateDirIfNotExists(this string dir)
-        {
-            if (!Directory.Exists(dir))
-            {
-                Directory.CreateDirectory(dir);
-            }
-        }
-
         public static bool IsAzwFile(this FileInfo fileInfo) => fileInfo.FullName.EndsWith(Settings.AzwExt);
 
         public static bool IsAzwResFile(this FileInfo fileInfo) => fileInfo.FullName.EndsWith(Settings.AzwResExt);

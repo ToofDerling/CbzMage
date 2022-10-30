@@ -1,4 +1,5 @@
-﻿using CbzMage.Shared.Helpers;
+﻿using CbzMage.Shared.Extensions;
+using CbzMage.Shared.Helpers;
 
 namespace AzwConverter
 {
