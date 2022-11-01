@@ -21,7 +21,7 @@ namespace AzwMetadata
 
             if (IdentifierAsString != "EXTH")
             {
-                throw new IOException("Expected to find EXTH header identifier EXTH but got something else instead");
+                throw new IOException("Did not get expected EXTH identifier");
             }
 
             stream.Read(headerLength, 0, headerLength.Length);
