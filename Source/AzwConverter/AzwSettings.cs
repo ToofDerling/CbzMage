@@ -15,9 +15,6 @@ namespace AzwConverter
             ConfigureSettings();
         }
 
-        // For testing. If >0 overrules the NumberOfThreads setting.
-        private const int maxThreads = 0;
-
         // Defaults
         private const string defaultTitlesDir = "Titles";
         private const string defaultCbzDir = "Cbz Backups";
@@ -86,11 +83,7 @@ namespace AzwConverter
             Settings.TrimPublishers ??= Array.Empty<string>();
 
             //NumberOfThreads
-            if (maxThreads > 0)
-            {
-                Settings.NumberOfThreads = maxThreads;
-            }
-            else if (Settings.NumberOfThreads <= 0)
+            if (Settings.NumberOfThreads <= 0)
             {
                Settings.NumberOfThreads = Math.Min(Environment.ProcessorCount, 3);
             }
