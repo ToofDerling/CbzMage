@@ -202,7 +202,7 @@ namespace AzwConverter
             var engine = new AnalyzeEngine();
             var state = engine.AnalyzeBook(bookId, dataFiles, bookDir, out var analyzeMessage);
 
-            PrintCbzState(bookDir, state, analyzeMessage, showAllCovers: true);
+            PrintCbzState(bookDir, state, errorMsg: analyzeMessage, showAllCovers: true);
         }
 
         private void ConvertBook(string bookId, FileInfo[] dataFiles, FileInfo titleFile, FileInfo? convertedTitleFile,
