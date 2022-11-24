@@ -50,7 +50,7 @@ namespace AzwConverter.Engine
             // Then the first SD page
             else
             {
-                coverRecord = sdImageRecords.ContentRecords[9];
+                coverRecord = sdImageRecords.ContentRecords[0];
                 _coverString = "SD page 1";
             }
 
