@@ -18,10 +18,8 @@ namespace AzwConverter
                 // Book is not in current titles
                 if (!titles.ContainsKey(bookId))
                 {
-
                     // Try the archive
-                    var name = archive.GetName(bookId);
-                    if (name != null)
+                    if (archive.TryGetName(bookId, out var name))
                     {
                         Sync(name);
                     }
@@ -49,7 +47,7 @@ namespace AzwConverter
                         var title = Clean(metadata.MobiHeader.FullName);
                         var publisher = Clean(metadata.MobiHeader.EXTHHeader.Publisher);
 
-                        // Normalize publisher names
+                        // Normalize publisher name
                         foreach (var trimmedName in Settings.TrimPublishers)
                         {
                             if (publisher.StartsWith(trimmedName, StringComparison.OrdinalIgnoreCase))
@@ -98,8 +96,7 @@ namespace AzwConverter
                 var bookId = title.Key;
                 var titleFile = title.Value;
 
-                var emptyState = new CbzState { Name = titleFile.Name };
-                archive.SetState(bookId, emptyState);
+                archive.SetOrCreateName(bookId, titleFile.Name);
 
                 // Delete title if no longer in books.
                 if (!books.ContainsKey(bookId))

@@ -13,7 +13,7 @@
             stream.Read(recordLength, 0, recordLength.Length);
             if (RecordLength < 8)
             {
-                throw new IOException("Invalid EXTH record length");
+                throw new AzwMetadataException("Invalid EXTH record length");
             }
 
             recordData = new byte[RecordLength - 8];

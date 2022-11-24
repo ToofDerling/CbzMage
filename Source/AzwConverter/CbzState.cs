@@ -14,10 +14,7 @@
 
         public DateTime? Checked { get; set; }
 
-        public bool IsEmpty()
-        {
-            return HdImages == 0 && SdImages == 0;
-        }
+        public CbzState? Changed { get; set; }
 
         public string PageName()
         {

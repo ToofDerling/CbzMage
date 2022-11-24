@@ -26,7 +26,7 @@
 
             if (mobiHeader.EXTHHeader.IsEmpty)
             {
-                throw new Exception($"{mobiHeader.FullName}: No EXTHHeader");
+                throw new AzwMetadataException($"{mobiHeader.FullName}: No EXTHHeader");
             }
 
             var coverIndexOffset = mobiHeader.EXTHHeader.CoverOffset;
@@ -44,14 +44,14 @@
             var pdbHead = new PDBHead(hdContainerStream);
             if (!pdbHead.IsHDImageContainer)
             {
-                throw new InvalidOperationException("Not a HD image container");
+                throw new AzwMetadataException("Not a HD image container");
             }
 
             PageRecordsHD = new PageRecords(hdContainerStream, pdbHead.Records, ImageType.HD,
                 1, (ushort)(pdbHead.Records.Length - 1),
                 MobiHeader.EXTHHeader.CoverOffset, MobiHeader.EXTHHeader.ThumbOffset);
 
-            PageRecordsHD.AnalyzePageRecordsHD();
+            PageRecordsHD.AnalyzePageRecordsHD(PageRecords.ContentRecords.Count);
         }
     }
 }

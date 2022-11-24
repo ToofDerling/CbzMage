@@ -26,7 +26,7 @@ namespace AzwMetadata
 
             _stream.Position = _pos;
 
-            if (!IsRecordId("RESC", 4))
+            if (!IsRecordId("RESC"))
             {
                 return false;
             }
@@ -45,22 +45,42 @@ namespace AzwMetadata
         {
             _stream.Position = _pos;
 
-            return IsRecordId("DATP", 4);
+            return IsRecordId("DATP");
         }
 
-        public bool IsCresRecord()
+        public bool IsKindleEmbedRecord()
         {
             _stream.Position = _pos;
 
-            return IsRecordId("CRES", 4);
+            return IsRecordId("kindle:embed");
         }
 
-        protected bool IsRecordId(string id, int peekLen)
+        public bool IsCresRecord { get; protected set; }
+
+        public int Length => _len;
+
+#if !DEBUG
+        protected bool IsRecordId(string id)
         {
+            var bytes = _reader.ReadBytes(id.Length);
+            return Encoding.ASCII.GetString(bytes) == id;
+        }
+#else
+        protected bool IsRecordId(string id)
+        {
+            var peekLen = Math.Min(32, _len);
+
             var bytes = _reader.ReadBytes(peekLen);
 
-            return Encoding.ASCII.GetString(bytes).Contains(id);
+            var idx = Encoding.ASCII.GetString(bytes).IndexOf(id);
+            if (idx > 0)
+            {
+                throw new AzwMetadataException($"Got expected identifier {id} at unexpected postion {idx}");
+            }
+
+            return idx == 0;
         }
+#endif
 
         public virtual Span<byte> ReadData()
         {

@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\CbzMage.Shared\CbzMage.Shared.csproj" />
+  </ItemGroup>
+
 </Project>

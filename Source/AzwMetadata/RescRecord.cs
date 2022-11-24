@@ -17,12 +17,16 @@ namespace AzwMetadata
         {
             ConformanceLevel = ConformanceLevel.Fragment,
             Indent = true,
-            //NewLineOnAttributes = true,
         };
 
         public string RawXml { get; private set; }
 
         public int PageCount { get; private set; }
+
+        public void AdjustPageCountBy(int count)
+        {
+            PageCount += count;
+        }
 
         public RescRecord(Stream stream, long pos, uint len) : base(stream, pos, len)
         { }

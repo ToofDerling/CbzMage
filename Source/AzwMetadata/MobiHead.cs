@@ -62,7 +62,7 @@ namespace AzwMetadata
             stream.Read(identifier, 0, identifier.Length);
             if (IdentifierAsString != "MOBI")
             {
-                throw new IOException("Did not get expected MOBI identifier");
+                throw new AzwMetadataException("Did not get expected MOBI identifier");
             }
 
             stream.Read(headerLength, 0, headerLength.Length);

@@ -18,6 +18,8 @@
 
         public PageRecord? Len1992Record { get; set; }
 
+        public PageRecord? KindleEmbedRecord { get; set; }
+
         public RescRecord RescRecord { get; set; }
 
         public PageRecords(Stream stream, PDBRecordInfo[] pdbRecords, ImageType imageType,
@@ -85,20 +87,30 @@
             }
             if (RescRecord == null)
             {
-                throw new Exception($"Found no {nameof(RescRecord)}");
+                throw new AzwMetadataException($"Found no {nameof(RescRecord)}");
             }
             _allRecords.RemoveAt(rescIndex);
 
-            var pageCount = RescRecord.PageCount;
+            // Pagecount fixup for some manga books
+            if (_allRecords.Count == RescRecord.PageCount)
+            {
+                var lastRecord = _allRecords.Count - 1;
+                if (_allRecords[lastRecord].IsDatpRecord())
+                {
+                    _allRecords.RemoveAt(lastRecord);
+                    RescRecord.AdjustPageCountBy(-1);
+                }
+            }
 
             // If we have more records than pagecount filter out the known types
-            if (_allRecords.Count > pageCount)
+            if (_allRecords.Count > RescRecord.PageCount)
             {
-                var restOfRecords = _allRecords.Skip(pageCount).ToList();
+                var restOfRecords = _allRecords.Skip(RescRecord.PageCount).ToList();
 
                 for (int i = 0, sz = restOfRecords.Count; i < sz; i++)
                 {
                     var rec = restOfRecords[i];
+
                     // The DATP record
                     if (rec.IsDatpRecord())
                     {
@@ -115,22 +127,50 @@
 
                 // Set the "real" rest and the content records
                 RestOfRecords = restOfRecords.Where(rec => rec != null).ToList();
-                ContentRecords = _allRecords.Take(pageCount).ToList();
+                ContentRecords = _allRecords.Take(RescRecord.PageCount).ToList();
             }
             else
             {
                 ContentRecords = _allRecords;
             }
 
-            if (ContentRecords.Count < pageCount)
+            if (ContentRecords.Count < RescRecord.PageCount)
             {
-                throw new Exception($"{nameof(ContentRecords)} {ContentRecords.Count} < {nameof(pageCount)} {pageCount}");
+                throw new AzwMetadataException($"{nameof(ContentRecords)} {ContentRecords.Count} < {nameof(RescRecord.PageCount)} {RescRecord.PageCount}");
             }
         }
 
-        public void AnalyzePageRecordsHD()
+        public void AnalyzePageRecordsHD(int pageCount)
         {
-            ContentRecords = _allRecords;
+            if (_allRecords.Count > pageCount)
+            {
+                var restOfRecords = _allRecords.Skip(pageCount).ToList();
+
+                for (int i = 0, sz = restOfRecords.Count; i < sz; i++)
+                {
+                    var rec = restOfRecords[i];
+
+                    // The kindle:embed record
+                    if (rec.IsKindleEmbedRecord())
+                    {
+                        KindleEmbedRecord = rec;
+                        restOfRecords[i] = null;
+                    }
+
+                    // Set the "real" rest and the content records
+                    RestOfRecords = restOfRecords.Where(rec => rec != null).ToList();
+                    ContentRecords = _allRecords.Take(pageCount).ToList();
+                }
+            }
+            else
+            {
+                ContentRecords = _allRecords;
+            }
+
+            if (ContentRecords.Count != pageCount)
+            {
+                throw new AzwMetadataException($"HD container pageCount {ContentRecords.Count} vs SD pageCount {pageCount} mismatch?");
+            }
         }
     }
 }

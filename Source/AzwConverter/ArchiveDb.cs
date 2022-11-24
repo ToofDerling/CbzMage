@@ -37,55 +37,60 @@ namespace AzwConverter
             }
         }
 
-        public bool IsStateUpdated(string bookId, CbzState state)
-        {
-            var isInDb = _db.TryGetValue(bookId, out var oldState);
-            isInDb = isInDb && !oldState.IsEmpty();
-
-            var updated = isInDb
-                && ((state.HdCover && !oldState.HdCover) || (state.HdImages > oldState.HdImages));
-
-            var nameChanged = state.Name != oldState.Name;
-
-            if (!isInDb || updated || nameChanged)
-            {
-                SetState(bookId, state);
-            }
-            return updated;
-        }
-
         public int Count => _db.Count;
 
-        public string GetName(string bookId)
+        public bool TryGetName(string bookId, out string name)
         {
-            return _db.TryGetValue(bookId, out var state) ? state.Name : null;
+            name = null;
+
+            if (_db.TryGetValue(bookId, out var state))
+            {
+                name = state.Name;
+            }
+
+            return name != null;
+        }
+
+        public void SetOrCreateName(string bookId, string name)
+        {
+            if (!_db.ContainsKey(bookId))
+            {
+                _db[bookId] = new CbzState { Name = name };
+            }
+            else
+            {
+                _db[bookId].Name = name;
+            }
+
+            _isDirty = true;
+        }
+
+        public CbzState GetState(string bookId)
+        {
+            return _db[bookId];
         }
 
         public void SetState(string bookId, CbzState state)
         {
-            if (state.IsEmpty() && _db.TryGetValue(bookId, out var oldState))
-            {
-                oldState.Name = state.Name;
-                state = oldState;
-            }
-
-            state.Name = state.Name.RemoveAnyMarker();
-
             _db[bookId] = state;
             _isDirty = true;
         }
 
         public DateTime? GetCheckedDate(string bookId)
         {
-            return _db.TryGetValue(bookId, out var state) ? state.Checked : null;
+            return _db[bookId].Checked;
         }
 
         public void UpdateCheckedDate(string bookId)
         {
-            if (_db.TryGetValue(bookId, out var state))
-            { 
-                state.Checked = DateTime.Now;
-            }
+            _db[bookId].Checked = DateTime.Now;
+            _isDirty = true;
+        }
+
+        public void RemoveChangedState(string bookId)
+        {
+            _db[bookId].Changed = null;
+            _isDirty = true;
         }
 
         public void SaveDb()

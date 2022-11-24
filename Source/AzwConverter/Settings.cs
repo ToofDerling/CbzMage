@@ -12,6 +12,8 @@ namespace AzwConverter
 
         public static string TitlesDir { get; set; }
 
+        public static string AnalysisDir { get; set; }
+
         public static string ConvertedTitlesDirName { get; set; }
 
         public static string ConvertedTitlesDir { get; private set; }

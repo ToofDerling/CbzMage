@@ -51,6 +51,10 @@ namespace AzwConverter
             {
                 Settings.SaveCoverDir.CreateDirIfNotExists();
             }
+            else
+            { 
+                Settings.SaveCoverDir = null;
+            }
 
             //ConvertedTitlesDirName
             if (string.IsNullOrWhiteSpace(Settings.ConvertedTitlesDirName))
@@ -66,6 +70,12 @@ namespace AzwConverter
                 var dir = new DirectoryInfo(Settings.AzwDir).Parent;
                 Settings.CbzDir = Path.Combine(dir.FullName, defaultCbzDir);
                 Settings.CbzDir.CreateDirIfNotExists();
+            }
+
+            //AnalysisDir
+            if (!string.IsNullOrWhiteSpace(Settings.AnalysisDir))
+            {
+                Settings.AnalysisDir.CreateDirIfNotExists();
             }
 
             //NewTitleMarker/UpdatedTitleMarker
