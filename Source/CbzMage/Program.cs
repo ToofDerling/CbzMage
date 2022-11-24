@@ -25,7 +25,7 @@ PdfConvert [or Pdf Convert] <pdf file> or <directory with pdf files>
         {
 
 #if DEBUG
-            args = new[] { "Pdf", "Convert", @"M:\Data\Pdf\Test" };
+            args = new[] { "Azw", "Convert", @"M:\Data\Pdf\Test" };
 #endif
 
             var validAction = false;
@@ -57,6 +57,7 @@ PdfConvert [or Pdf Convert] <pdf file> or <directory with pdf files>
                         {
                             case CbzMageAction.AzwScan:
                             case CbzMageAction.AzwConvert:
+                            case CbzMageAction.AzwAnalyze:
                                 var azwConverter = new AzwConverter.AzwConverter(action);
                                 azwConverter.ConvertOrScan();
                                 break;

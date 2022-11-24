@@ -2,6 +2,6 @@
 {
     public enum CbzMageAction
     {
-        AzwScan, AzwConvert, PdfConvert
+        AzwScan, AzwConvert, AzwAnalyze, PdfConvert
     }
 }
