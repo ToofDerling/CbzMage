@@ -45,4 +45,4 @@ The azw parser is mostly copied from the [Mobi Metadata Reader](https://www.mobi
 
 **That's it.** 
 
-If you have any questions or want to request a feature use [Discussions]([Discussions](https://github.com/ToofDerling/CbzMage/discussions)). If you want to report a bug use [Issues](https://github.com/ToofDerling/CbzMage/issues). Happy converting.
+If you have any questions or want to request a feature use [Discussions](https://github.com/ToofDerling/CbzMage/discussions). If you want to report a bug use [Issues](https://github.com/ToofDerling/CbzMage/issues). Happy converting.
