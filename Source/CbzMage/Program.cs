@@ -23,11 +23,6 @@ PdfConvert [or Pdf Convert] <pdf file> or <directory with pdf files>
 ";
         static void Main(string[] args)
         {
-
-#if DEBUG
-            args = new[] { "Azw", "Convert", @"M:\Data\Pdf\Test" };
-#endif
-
             var validAction = false;
 
             string actionStr;
