@@ -15,7 +15,7 @@ namespace CbzMage.Shared.Helpers
 
                 config.AddJsonFile($"{baseName}.json", optional: false, reloadOnChange: false)
                     .AddJsonFile($"{baseName}.User.json", true, false)
-                    .AddJsonFile($"{baseName}.{env.EnvironmentName}.json", true, true);
+                    .AddJsonFile($"{baseName}.{env.EnvironmentName}.json", true, false);
 
                 var configRoot = config.Build();
                 configRoot.Bind(settingsClass);

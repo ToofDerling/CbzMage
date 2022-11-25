@@ -10,6 +10,7 @@ namespace PdfConverter
         private const int _interval = 1000;
 
         private readonly DirectoryInfo _saveDir;
+        private readonly string _jpgDir;
 
         private readonly Pdf _pdf;
 
@@ -34,6 +35,9 @@ namespace PdfConverter
                 _saveDir.Delete(true);
             }
             _saveDir.Create();
+
+            _jpgDir = Path.Combine(dir, "jpg");
+            Directory.CreateDirectory(_jpgDir); 
 
             // This is needed because Ghostscript has no notion of outputdirectory
             _oldCurrentDirectory = Environment.CurrentDirectory;
@@ -73,7 +77,7 @@ namespace PdfConverter
             {
                 Thread.Sleep(_interval);
 
-                var files = _saveDir.EnumerateFiles("*.png", SearchOption.AllDirectories)
+                var files = _saveDir.EnumerateFiles("*.jpg", SearchOption.AllDirectories)
                     .Where(file => !_savedPages.Contains(file.FullName)).AsList();
 
                 var invoke = false;

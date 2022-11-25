@@ -14,7 +14,6 @@ namespace AzwConverter.Engine
             _coverFile = coverFile;
 
             return ReadMetaData(bookId, dataFiles);
-
         }
 
         protected override CbzState ProcessImages(PageRecords? pageRecordsHd, PageRecords pageRecords)

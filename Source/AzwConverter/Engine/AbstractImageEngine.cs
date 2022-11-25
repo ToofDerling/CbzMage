@@ -44,8 +44,8 @@ namespace AzwConverter.Engine
 
         protected void SaveFile(Span<byte> data, string file)
         {
-            using var coverStream = File.Open(file, FileMode.Create, FileAccess.Write);
-            coverStream.Write(data);
+            using var fileStream = File.Open(file, FileMode.Create, FileAccess.Write);
+            fileStream.Write(data);
         }
     }
 }

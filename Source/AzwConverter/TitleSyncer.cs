@@ -125,7 +125,7 @@ namespace AzwConverter
             }
 
             var name = Path.GetFileName(titleFile);
-            name = name.RemoveAnyMarker().Trim();
+            name = name.RemoveAnyMarker();
 
             var dest = Path.Combine(Settings.ConvertedTitlesDir, name);
             
