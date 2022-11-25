@@ -117,7 +117,7 @@ namespace AzwConverter
             return archivedTitleCount;
         }
 
-        public string SyncConvertedTitle(string bookId, string titleFile, FileInfo? convertedTitleFile)
+        public string SyncConvertedTitle(string titleFile, FileInfo? convertedTitleFile)
         {
             if (convertedTitleFile != null)
             {

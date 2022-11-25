@@ -232,7 +232,7 @@ namespace AzwConverter
             }
 
             var newTitleFile = AddMarkerOrRemoveAnyMarker(titleFile);
-            syncer.SyncConvertedTitle(bookId, newTitleFile, convertedTitleFile);
+            syncer.SyncConvertedTitle(newTitleFile, convertedTitleFile);
 
             if (state != null)
             {
