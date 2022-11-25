@@ -231,7 +231,7 @@ namespace AzwConverter
                 state = engine.ConvertBook(bookId, dataFiles, cbzFile, coverFile);
             }
 
-            var newTitleFile = RemoveMarkerFromFile(titleFile);
+            var newTitleFile = AddMarkerOrRemoveAnyMarker(titleFile);
             syncer.SyncConvertedTitle(bookId, newTitleFile, convertedTitleFile);
 
             if (state != null)
@@ -351,8 +351,8 @@ namespace AzwConverter
             {
                 state.Changed = oldState;
                 archive.SetState(bookId, state);
-                
-                var newTitleFile = AddMarkerToFile(titleFile, Settings.UpdatedTitleMarker);
+
+                var newTitleFile = AddMarkerOrRemoveAnyMarker(titleFile, Settings.UpdatedTitleMarker);
                 PrintCbzState(newTitleFile, state, doneMsg: upgradedMessage, errorMsg: downgradedMessage);
                 return;
             }
@@ -391,29 +391,22 @@ namespace AzwConverter
             // Sync title before the .NEW marker is added.
             archive.SetOrCreateName(bookId, titleFile.Name);
 
-            var newTitleFile = AddMarkerToFile(titleFile, Settings.NewTitleMarker);
+            var newTitleFile = AddMarkerOrRemoveAnyMarker(titleFile, Settings.NewTitleMarker);
             BookCountOutputHelper(newTitleFile, out var sb);
 
             ProgressReporter.Done(sb.ToString());
         }
 
-        private static string AddMarkerToFile(FileInfo titleFile, string marker)
+        private static string AddMarkerOrRemoveAnyMarker(FileInfo titleFile, string addMarker = null)
         {
-            var name = titleFile.Name.AddMarker(marker);
+            var name = addMarker != null
+                ? titleFile.Name.AddMarker(addMarker)
+                : titleFile.Name.RemoveAnyMarker();
+
             if (name == titleFile.Name)
             {
                 return titleFile.FullName;
             }
-
-            var newTitleFile = Path.Combine(Settings.TitlesDir, name);
-            titleFile.MoveTo(newTitleFile);
-
-            return newTitleFile;
-        }
-
-        private static string RemoveMarkerFromFile(FileInfo titleFile)
-        {
-            var name = titleFile.Name.RemoveAnyMarker();
 
             var newTitleFile = Path.Combine(Settings.TitlesDir, name);
             titleFile.MoveTo(newTitleFile);
