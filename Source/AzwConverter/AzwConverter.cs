@@ -40,12 +40,7 @@ namespace AzwConverter
             {
                 ProgressReporter.Info($"Cover gallery: {Settings.SaveCoverDir}");
             }
-
-#if DEBUG
-            Console.WriteLine($"{nameof(CbzMageAction)}={action}");
-            Console.WriteLine($"{nameof(Settings.NumberOfThreads)}={Settings.NumberOfThreads}");
-            Console.WriteLine($"{nameof(Settings.CompressionLevel)}={Settings.CompressionLevel}");
-#endif
+            Console.WriteLine($"Conversion threads: {Settings.NumberOfThreads}");
 
             Console.WriteLine();
 
