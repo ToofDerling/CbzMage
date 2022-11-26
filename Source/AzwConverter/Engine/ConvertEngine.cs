@@ -18,19 +18,12 @@ namespace AzwConverter.Engine
             _coverFile = coverFile;
 
             var azwFile = dataFiles.First(file => file.IsAzwFile());
-            var azwLen = azwFile.Length;
+            _archiveLen = azwFile.Length;
 
             var hdContainer = dataFiles.FirstOrDefault(file => file.IsAzwResFile());
             if (hdContainer != null)
             {
-                var hdContainerLen = hdContainer.Length;
-                var len = (azwLen / 100) * 150;
-
-                _archiveLen = Math.Min(azwLen + hdContainerLen, len);
-            }
-            else
-            {
-                _archiveLen = azwLen;
+                _archiveLen += hdContainer.Length;
             }
 
             return ReadMetaData(bookId, dataFiles);
