@@ -10,7 +10,7 @@ namespace AzwConverter.Engine
         private string _cbzFile;
         private string? _coverFile;
 
-        private long _archiveLen;
+        private long _mappedArchiveLen;
 
         public CbzState ConvertBook(string bookId, FileInfo[] dataFiles, string cbzFile, string? coverFile)
         {
@@ -18,12 +18,12 @@ namespace AzwConverter.Engine
             _coverFile = coverFile;
 
             var azwFile = dataFiles.First(file => file.IsAzwFile());
-            _archiveLen = azwFile.Length;
+            _mappedArchiveLen = azwFile.Length;
 
             var hdContainer = dataFiles.FirstOrDefault(file => file.IsAzwResFile());
             if (hdContainer != null)
             {
-                _archiveLen += hdContainer.Length;
+                _mappedArchiveLen += hdContainer.Length;
             }
 
             return ReadMetaData(bookId, dataFiles);
@@ -52,10 +52,10 @@ namespace AzwConverter.Engine
             CbzState state;
             long realArchiveLen;
 
-            using var fileStream = new FileStream(tempFile, FileMode.CreateNew);
+            using var mappedFileStream = new FileStream(tempFile, FileMode.CreateNew);
 
-            using (var mappedArchive = MemoryMappedFile.CreateFromFile(fileStream, null,
-                _archiveLen, MemoryMappedFileAccess.ReadWrite, HandleInheritability.None, true))
+            using (var mappedArchive = MemoryMappedFile.CreateFromFile(mappedFileStream, null,
+                _mappedArchiveLen, MemoryMappedFileAccess.ReadWrite, HandleInheritability.None, true))
             {
                 using var archiveStream = mappedArchive.CreateViewStream();
                 
@@ -67,13 +67,13 @@ namespace AzwConverter.Engine
                 realArchiveLen = archiveStream.Position;
             }
 
-            if (realArchiveLen > _archiveLen)
+            if (realArchiveLen > _mappedArchiveLen)
             {
-                ProgressReporter.Error($"realArchiveLen: {realArchiveLen} > _archiveLen: {_archiveLen}");
+                ProgressReporter.Error($"realArchiveLen: {realArchiveLen} > _archiveLen: {_mappedArchiveLen}");
             }
-            if (fileStream.Length != realArchiveLen)
+            if (mappedFileStream.Length != realArchiveLen)
             {
-                fileStream.SetLength(realArchiveLen);
+                mappedFileStream.SetLength(realArchiveLen);
             }
 
             return state;
