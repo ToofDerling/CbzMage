@@ -1,4 +1,5 @@
 ﻿using CbzMage.Shared.Extensions;
+using CbzMage.Shared.Helpers;
 using CbzMage.Shared.Jobs;
 using PdfConverter.Exceptions;
 using System.Collections.Concurrent;
@@ -10,7 +11,7 @@ namespace PdfConverter
         private const int _interval = 1000;
 
         private readonly DirectoryInfo _saveDir;
-        private readonly string _jpgDir;
+        //private readonly string _jpgDir;
 
         private readonly Pdf _pdf;
 
@@ -36,8 +37,8 @@ namespace PdfConverter
             }
             _saveDir.Create();
 
-            _jpgDir = Path.Combine(dir, "jpg");
-            Directory.CreateDirectory(_jpgDir); 
+            //_jpgDir = Path.Combine(dir, "jpg");
+            //Directory.CreateDirectory(_jpgDir); 
 
             // This is needed because Ghostscript has no notion of outputdirectory
             _oldCurrentDirectory = Environment.CurrentDirectory;
@@ -48,7 +49,7 @@ namespace PdfConverter
 
             _pageLists = pageLists;
 
-            var pollThread = new Thread(PollLoop)
+            var pollThread = new Thread(Polloop)
             {
                 Priority = ThreadPriority.AboveNormal
             };
@@ -71,13 +72,13 @@ namespace PdfConverter
             WaitForJobsToFinish();
         }
 
-        private void PollLoop()
+        private void Polloop()
         {
             while (_savedPages.Count < _pdf.PageCount)
             {
                 Thread.Sleep(_interval);
 
-                var files = _saveDir.EnumerateFiles("*.jpg", SearchOption.AllDirectories)
+                var files = _saveDir.EnumerateFiles("*", SearchOption.AllDirectories)
                     .Where(file => !_savedPages.Contains(file.FullName)).AsList();
 
                 var invoke = false;
