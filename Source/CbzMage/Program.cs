@@ -24,28 +24,24 @@ PdfConvert [or Pdf Convert] <pdf file> or <directory with pdf files>
         static void Main(string[] args)
         {
             var validAction = false;
+            CbzMageAction action = default;
 
-            string actionStr;
+            var actionStr = string.Empty;
             var next = 0;
 
             if (args.Length > next)
             {
-                actionStr = args[next];
-                next++;
+                ParseActionString();
 
-                if (args.Length > next)
+                if (args.Length > next && !validAction)
                 {
-                    actionStr += args[next];
-                    next++;
+                    ParseActionString();
                 }
 
                 try
                 {
-                    if (Enum.TryParse(typeof(CbzMageAction), actionStr, ignoreCase: true, out var actionObj))
+                    if (validAction)
                     {
-                        var action = (CbzMageAction)actionObj;
-                        validAction = true;
-
                         var path = args.Length > next ? args[next] : null;
 
                         switch (action)
@@ -81,6 +77,19 @@ PdfConvert [or Pdf Convert] <pdf file> or <directory with pdf files>
                 {
                     Console.ReadLine();
                 }
+            }
+
+            void ParseActionString()
+            {
+                actionStr += args[next];
+
+                if (Enum.TryParse(typeof(CbzMageAction), actionStr, ignoreCase: true, out var actionObj))
+                {
+                    action = (CbzMageAction)actionObj;
+                    validAction = true;
+                }
+
+                next++;
             }
         }
 
