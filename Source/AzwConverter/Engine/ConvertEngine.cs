@@ -1,5 +1,4 @@
 ﻿using AzwMetadata;
-using CbzMage.Shared.Helpers;
 using System.IO.Compression;
 using System.IO.MemoryMappedFiles;
 
