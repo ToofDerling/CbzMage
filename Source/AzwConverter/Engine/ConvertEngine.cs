@@ -67,10 +67,6 @@ namespace AzwConverter.Engine
                 realArchiveLen = archiveStream.Position;
             }
 
-            if (realArchiveLen > _mappedArchiveLen)
-            {
-                ProgressReporter.Error($"realArchiveLen: {realArchiveLen} > _archiveLen: {_mappedArchiveLen}");
-            }
             if (mappedFileStream.Length != realArchiveLen)
             {
                 mappedFileStream.SetLength(realArchiveLen);
