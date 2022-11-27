@@ -265,3 +265,4 @@ __pycache__/
 /Source/PdfConverter/Properties/PublishProfiles
 /Source/AzwConverter/AzwSettings.Development.json
 /Source/CbzMage/Properties/launchSettings.json
+/Source/PdfConverter/PdfSettings.Development.json
