@@ -3,7 +3,7 @@
 {
   // Number of Ghostscript reader threads. Set this to 0 to have CbazMage try to
   // figure out a good value. If memory usage is too high try setting this to a 
-  // lower value.
+  // lower value than the calculated.
   "GhostscriptReaderThreads": 0,
 
   // This determines the quality of jpg images in the cbzfile. You want this as high

@@ -37,6 +37,7 @@ namespace PdfConverter.Jobs
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 #endif
+            
             var pngSize = _buffer.Count;
             using var image = new MagickImage(_buffer.Buffer, 0, _buffer.Count);
 
@@ -60,6 +61,7 @@ namespace PdfConverter.Jobs
             // Reuse the png buffer for the jpg stream. 
             var stream = new ManagedMemoryStream(_buffer.Buffer);
             image.Write(stream);
+
             var jpgSize = (int)stream.Length;
 
 #if DEBUG 

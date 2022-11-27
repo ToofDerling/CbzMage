@@ -50,15 +50,6 @@ namespace PdfConverter.Ghostscript
             return sb.ToString();
         }
 
-        public void SavePageList(Pdf pdf, List<int> pageNumbers, int dpi, string outputId)
-        {
-            var pageList = CreatePageList(pageNumbers);
-
-            var switches = GetSwitches(pdf.Path, pageList, dpi, @$"{outputId}/%d.png");
-
-            _processor.StartProcessing(switches, null);
-        }
-
         public void ReadPageList(Pdf pdf, List<int> pageNumbers, int dpi, IPipedImageDataHandler imageDataHandler)
         {
             var gsPipedOutput = new GhostscriptPipedImageStream(imageDataHandler);
