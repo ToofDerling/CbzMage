@@ -2,6 +2,7 @@
 using CbzMage.Shared.Helpers;
 using PdfConverter.Exceptions;
 using PdfConverter.Ghostscript;
+using PdfConverter.ManagedBuffers;
 using System.Collections.Concurrent;
 
 namespace PdfConverter
@@ -143,7 +144,7 @@ namespace PdfConverter
 
             return pageLists;
         }
-           
+
         private int ConvertPages(Pdf pdf, List<int>[] pageLists, int dpi, int? resizeHeight)
         {
             var pagesCompressed = 0;
@@ -159,62 +160,32 @@ namespace PdfConverter
             // and creates the cbz file.
 
             // Key is page name (page-001.jpg etc)
-            // If Mode is Faster Value is a ManagedMemoryStream instance
-            // If Mode is Slower Value is a string with the imagepath
-            var convertedPages = new ConcurrentDictionary<string, object>(pageLists.Length, pdf.PageCount);
+            var convertedPages = new ConcurrentDictionary<string, ManagedMemoryStream>(pageLists.Length, pdf.PageCount);
 
             var progressReporter = new ProgressReporter(pdf.PageCount);
 
-            var pageCompressor = new PageCompressor(pdf, convertedPages, resizeHeight);
+            var pageCompressor = new PageCompressor(pdf, convertedPages);
             pageCompressor.PagesCompressed += (s, e) => OnPagesCompressed(e);
-
-            Pollux pollux = null;
-            if (Settings.PdfConverterMode == PdfConverterMode.Slower)
-            {
-                pollux = new Pollux(pdf, pageLists, convertedPages);
-                pollux.PageSaved += (s, e) => pageCompressor.OnPageConverted(e);
-            }
 
             Parallel.For(0, pageLists.Length, (id) =>
             {
                 var pageList = pageLists[id];
+                var pageQueue = new Queue<int>(pageList);
+
+                var pageConverter = new PageConverter(pdf, pageQueue, convertedPages, resizeHeight);
+                pageConverter.PageConverted += (s, e) => pageCompressor.OnPageConverted(e);
 
                 var pageMachine = _pageMachineManager.StartMachine();
+                pageMachine.ReadPageList(pdf, pageList, dpi, pageConverter);
 
-                if (Settings.PdfConverterMode == PdfConverterMode.Faster)
-                {
-                    var pageQueue = new Queue<int>(pageList);
-                 
-                    var pageConverter = new PageConverter(pdf, pageQueue, convertedPages, resizeHeight);
-                    pageConverter.PageConverted += (s, e) => pageCompressor.OnPageConverted(e);
-
-                    pageMachine.ReadPageList(pdf, pageList, dpi, pageConverter);
-                    
-                    pageConverter.WaitForPagesConverted();
-                }
-                else
-                {
-                    pollux.CreateOutputIdDir(id.ToString());
-
-                    pageMachine.SavePageList(pdf, pageList, dpi, id.ToString());
-                }
+                pageConverter.WaitForPagesConverted();
 
                 _pageMachineManager.StopMachine(pageMachine);
             });
 
-            if (Settings.PdfConverterMode == PdfConverterMode.Slower)
-            {
-                pollux.WaitForPagesSaved();
-            }
             pageCompressor.SignalAllPagesConverted();
-
             pageCompressor.WaitForPagesCompressed();
-            if (Settings.PdfConverterMode == PdfConverterMode.Slower)
-            {
-                // Now we can safely remove the temp dir and reset current directory.
-                pollux.Cleanup();
-            }
-            
+
             Console.WriteLine();
             return pagesCompressed;
 

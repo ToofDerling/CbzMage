@@ -13,12 +13,12 @@ namespace PdfConverter
 
         private readonly Pdf _pdf;
         private readonly Queue<int> _pageQueue;
-        private readonly ConcurrentDictionary<string, object> _convertedPages;
+        private readonly ConcurrentDictionary<string, ManagedMemoryStream> _convertedPages;
 
         private readonly int? _resizeHeight;
 
         public PageConverter(Pdf pdf, Queue<int> pageQueue, 
-            ConcurrentDictionary<string, object> convertedPages, int? resizeHeight)
+            ConcurrentDictionary<string, ManagedMemoryStream> convertedPages, int? resizeHeight)
         {
             _pdf = pdf;
             _pageQueue = pageQueue;
@@ -26,7 +26,6 @@ namespace PdfConverter
             _convertedPages = convertedPages;
 
             _converterExecutor = new JobExecutor<string>(ThreadPriority.AboveNormal);
-
             _converterExecutor.JobExecuted += (s, e) => OnImageConverted(e);
             
             _jobWaiter = _converterExecutor.Start(withWaiter: true);

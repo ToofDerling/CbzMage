@@ -28,7 +28,6 @@ namespace PdfConverter
                 return;
             }
 
-            Console.WriteLine($"Conversion mode: {Settings.PdfConverterMode}");
             Console.WriteLine($"Ghostscript version: {gsVersion.Version}");
             Console.WriteLine($"Ghostscript reader threads: {Settings.GhostscriptReaderThreads}");
             Console.WriteLine($"Jpq quality: {Settings.JpgQuality}");

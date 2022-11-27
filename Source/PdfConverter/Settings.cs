@@ -16,8 +16,6 @@ namespace PdfConverter
 
         public static int GhostscriptReaderThreads { get; set; }
 
-        public static PdfConverterMode PdfConverterMode { get; set; }
-
         public static CompressionLevel CompressionLevel { get; set; }
 
         public static int BufferSize => 4194304;

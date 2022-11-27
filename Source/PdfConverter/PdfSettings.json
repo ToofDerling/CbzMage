@@ -1,16 +1,9 @@
 // Punction is important! Don't remove quotes, colons, commas or curly braces 
 // (or otherwise change the structure).
 {
-  // Pdf conversion can work in two modes: "Faster" and "Slower" (there is no
-  // difference in quality between the two modes). Faster uses more memory as pdf 
-  // pages are read to memory and converted before adding them to the cbzfile. 
-  // Slower uses as little memory as possible as pages are saved to hard disk before 
-  // adding them to the cbzfile. 
-  "PdfConverterMode": "Faster",
-
   // Number of Ghostscript reader threads. Set this to 0 to have CbazMage try to
-  // figure out a good value. If memory usage is too high you can either set this 
-  // to a lower value or try the "Slower" mode mentioned above.
+  // figure out a good value. If memory usage is too high try setting this to a 
+  // lower value.
   "GhostscriptReaderThreads": 0,
 
   // This determines the quality of jpg images in the cbzfile. You want this as high

@@ -82,34 +82,8 @@
             }
         }
 
-        private static volatile int magickRetryCount = 0;
-        private static volatile int magickTotalReadWriteTime = 0;
-        private static volatile int magickReadWriteCount = 0;
-
-        public static void AddMagickReadWrite(int ms, int retries, bool resize)
-        {
-            magickReadWriteCount++;
-            magickTotalReadWriteTime += ms;
-
-            magickRetryCount += retries;
-            if (resize)
-            {
-                imageResizeCount++;
-            }
-        }
-
         public static void ShowStats()
         {
-            if (Settings.PdfConverterMode == PdfConverterMode.Slower)
-            {
-                if (magickReadWriteCount > 0)
-                {
-                    Console.WriteLine($"Magick read/writes {magickReadWriteCount} (retries: {magickRetryCount} / resizes: {imageResizeCount}) Average ms {magickTotalReadWriteTime / magickReadWriteCount}");
-                }
-
-                return;
-            }
-
             if (pipeReadCount > 0)
             {
                 Console.WriteLine($"Pipe reads: {pipeReadCount} Largest read: {largestPipeRead}");
