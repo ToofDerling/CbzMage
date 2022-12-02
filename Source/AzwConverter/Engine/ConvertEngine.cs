@@ -1,5 +1,6 @@
 ﻿using AzwMetadata;
 using System.IO.Compression;
+using System.IO.MemoryMappedFiles;
 
 namespace AzwConverter.Engine
 {
@@ -8,10 +9,21 @@ namespace AzwConverter.Engine
         private string _cbzFile;
         private string? _coverFile;
 
+        private long _mappedArchiveLen;
+
         public CbzState ConvertBook(string bookId, FileInfo[] dataFiles, string cbzFile, string? coverFile)
         {
             _cbzFile = cbzFile;
             _coverFile = coverFile;
+
+            var azwFile = dataFiles.First(file => file.IsAzwFile());
+            _mappedArchiveLen = azwFile.Length;
+
+            var hdContainer = dataFiles.FirstOrDefault(file => file.IsAzwResFile());
+            if (hdContainer != null)
+            {
+                _mappedArchiveLen += hdContainer.Length;
+            }
 
             return ReadMetaData(bookId, dataFiles);
         }
@@ -36,8 +48,30 @@ namespace AzwConverter.Engine
 
         private CbzState ReadAndCompress(string tempFile, PageRecords? hdImageRecords, PageRecords sdImageRecords)
         {
-            using var zipArchive = ZipFile.Open(tempFile, ZipArchiveMode.Create);
-            return ReadAndCompressPages(zipArchive, hdImageRecords, sdImageRecords);
+            CbzState state;
+            long realArchiveLen;
+
+            using var mappedFileStream = new FileStream(tempFile, FileMode.CreateNew);
+
+            using (var mappedArchive = MemoryMappedFile.CreateFromFile(mappedFileStream, null,
+                _mappedArchiveLen, MemoryMappedFileAccess.ReadWrite, HandleInheritability.None, true))
+            {
+                using var archiveStream = mappedArchive.CreateViewStream();
+                
+                using (var zipArchive = new ZipArchive(archiveStream, ZipArchiveMode.Create, true))
+                {
+                    state = ReadAndCompressPages(zipArchive, hdImageRecords, sdImageRecords);
+                }
+                
+                realArchiveLen = archiveStream.Position;
+            }
+
+            if (mappedFileStream.Length != realArchiveLen)
+            {
+                mappedFileStream.SetLength(realArchiveLen);
+            }
+
+            return state;
         }
 
         private CbzState ReadAndCompressPages(ZipArchive? zipArchive, PageRecords? hdImageRecords, PageRecords sdImageRecords)
@@ -101,7 +135,7 @@ namespace AzwConverter.Engine
                 using var stream = entry.Open();
 
                 var data = record.ReadData();
-                stream.Write(data);
+                stream.Write (data);
 
                 if (isCoverRecord && _coverFile != null)
                 {

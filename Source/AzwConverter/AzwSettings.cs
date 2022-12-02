@@ -7,10 +7,11 @@ namespace AzwConverter
     {
         public static Settings Settings => new();
 
+        private readonly SettingsHelper _settingsHelper = new();
+
         public void CreateSettings()
         {
-            var settingsHelper = new SettingsHelper();
-            settingsHelper.CreateSettings(nameof(AzwSettings), Settings);
+            _settingsHelper.CreateSettings(nameof(AzwSettings), Settings);
 
             ConfigureSettings();
         }
@@ -93,10 +94,7 @@ namespace AzwConverter
             Settings.TrimPublishers ??= Array.Empty<string>();
 
             //NumberOfThreads
-            if (Settings.NumberOfThreads <= 0)
-            {
-               Settings.NumberOfThreads = Math.Min(Environment.ProcessorCount, 3);
-            }
+            Settings.NumberOfThreads = _settingsHelper.GetThreadCount(Settings.NumberOfThreads);
             Settings.SetParallelOptions(new ParallelOptions { MaxDegreeOfParallelism = Settings.NumberOfThreads });
         }
     }

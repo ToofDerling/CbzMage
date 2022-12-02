@@ -40,12 +40,10 @@ namespace AzwConverter
             {
                 ProgressReporter.Info($"Cover gallery: {Settings.SaveCoverDir}");
             }
+            Console.WriteLine();
 
-#if DEBUG
-            Console.WriteLine($"{nameof(CbzMageAction)}={action}");
-            Console.WriteLine($"{nameof(Settings.NumberOfThreads)}={Settings.NumberOfThreads}");
-            Console.WriteLine($"{nameof(Settings.CompressionLevel)}={Settings.CompressionLevel}");
-#endif
+            Console.WriteLine($"Conversion threads: {Settings.NumberOfThreads}");
+            Console.WriteLine($"Cbz compression: {Settings.CompressionLevel}");
 
             Console.WriteLine();
 
@@ -244,8 +242,8 @@ namespace AzwConverter
             }
 
             // Title may have been renamed between scanning and converting, so update the archive.
-            state.Name = Path.GetFileName(newTitleFile).RemoveAnyMarker();
             // This also removes any Changed state. If the book is updated it will be scanned again.  
+            state.Name = Path.GetFileName(newTitleFile).RemoveAnyMarker();
             archive.SetState(bookId, state);
         }
 

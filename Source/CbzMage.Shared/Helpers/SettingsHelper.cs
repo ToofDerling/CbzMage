@@ -21,5 +21,18 @@ namespace CbzMage.Shared.Helpers
                 configRoot.Bind(settingsClass);
             }).Build();
         }
+
+        public int GetThreadCount(int settingsThreadCount)
+        {
+            if (settingsThreadCount <= 0)
+            {
+                var cores = (Environment.ProcessorCount / 2) * 0.7;
+
+                var threadCount = Convert.ToInt32(cores);
+                return Math.Max(2, threadCount);
+            }
+
+            return settingsThreadCount;
+        }
     }
 }
