@@ -6,10 +6,11 @@ namespace PdfConverter
     {
         public static Settings Settings => new();
 
+        private readonly SettingsHelper _settingsHelper = new();
+
         public void CreateSettings()
         {
-            var settingsHelper = new SettingsHelper();
-            settingsHelper.CreateSettings(nameof(PdfSettings), Settings);
+            _settingsHelper.CreateSettings(nameof(PdfSettings), Settings);
 
             ConfigureSettings();
         }
@@ -41,13 +42,8 @@ namespace PdfConverter
             }
 
             //NumberOfThreads
-            if (Settings.GhostscriptReaderThreads <= 0)
-            {
-                var gsCores = (Environment.ProcessorCount / 2) * 0.7;
-
-                var readerThreads = Convert.ToInt32(gsCores);
-                Settings.GhostscriptReaderThreads = Math.Max(2, readerThreads);
-            }
+            Settings.GhostscriptReaderThreads =
+                _settingsHelper.GetThreadCount(Settings.GhostscriptReaderThreads); 
         }
     }
 }
