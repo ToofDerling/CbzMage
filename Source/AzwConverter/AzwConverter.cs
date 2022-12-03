@@ -74,14 +74,13 @@ namespace AzwConverter
 
             var syncer = new TitleSyncer();
 
-            // Number of books are stable after title syncing.
+            // Number of books is stable after title syncing.
             var added = syncer.SyncBooksToTitles(books, titles, archive);
             Console.WriteLine($"Added {added} missing title{added.SIf1()}");
 
             var archived = syncer.SyncTitlesToArchive(titles, archive, books);
             Console.WriteLine($"Archived {archived} title{archived.SIf1()}");
 
-            // Display the scanning results
             Console.WriteLine();
 
             var updatedBooks = GetUpdatedBooks(books, convertedTitles, archive);
@@ -147,36 +146,37 @@ namespace AzwConverter
                     ScanUpdatedBook(book.Key, book.Value, titles[book.Key], archive));
             }
 
-            if (unconvertedBooks.Count > 0)
+            if (unconvertedBooks.Count == 0)
             {
-                totalBooks = unconvertedBooks.Count;
-                bookCount = 0;
+                return;
+            }
 
-                if (_action == CbzMageAction.AzwConvert)
-                {
-                    Console.WriteLine();
-                    ProgressReporter.Info($"Converting {unconvertedBooks.Count} book{unconvertedBooks.SIf1()}:");
+            totalBooks = unconvertedBooks.Count;
+            bookCount = 0;
 
-                    Parallel.ForEach(unconvertedBooks, Settings.ParallelOptions, book =>
-                        ConvertBook(book.Key, book.Value, titles[book.Key],
-                        convertedTitles.ContainsKey(book.Key) ? convertedTitles[book.Key] : null,
-                        syncer, archive));
-                }
-                else if (_action == CbzMageAction.AzwScan)
-                {
-                    Console.WriteLine();
-                    ProgressReporter.Info($"Listing {unconvertedBooks.Count} unconverted book{unconvertedBooks.SIf1()}:");
+            Console.WriteLine();
 
-                    Parallel.ForEach(unconvertedBooks, Settings.ParallelOptions, book =>
-                        SyncNewBook(book.Key, titles[book.Key], archive));
-                }
-                else if (_action == CbzMageAction.AzwAnalyze)
-                {
-                    Console.WriteLine();
-                    ProgressReporter.Info($"Analyzing {unconvertedBooks.Count} unconverted book{unconvertedBooks.SIf1()}:");
+            if (_action == CbzMageAction.AzwConvert)
+            {
+                ProgressReporter.Info($"Converting {unconvertedBooks.Count} book{unconvertedBooks.SIf1()}:");
 
-                    Parallel.ForEach(unconvertedBooks, Settings.ParallelOptions, book => AnalyzeBook(book.Key, book.Value, titles[book.Key]));
-                }
+                Parallel.ForEach(unconvertedBooks, Settings.ParallelOptions, book =>
+                    ConvertBook(book.Key, book.Value, titles[book.Key],
+                    convertedTitles.ContainsKey(book.Key) ? convertedTitles[book.Key] : null,
+                    syncer, archive));
+            }
+            else if (_action == CbzMageAction.AzwScan)
+            {
+                ProgressReporter.Info($"Listing {unconvertedBooks.Count} unconverted book{unconvertedBooks.SIf1()}:");
+
+                Parallel.ForEach(unconvertedBooks, Settings.ParallelOptions, book =>
+                    SyncNewBook(book.Key, titles[book.Key], archive));
+            }
+            else if (_action == CbzMageAction.AzwAnalyze)
+            {
+                ProgressReporter.Info($"Analyzing {unconvertedBooks.Count} unconverted book{unconvertedBooks.SIf1()}:");
+
+                Parallel.ForEach(unconvertedBooks, Settings.ParallelOptions, book => AnalyzeBook(book.Key, book.Value, titles[book.Key]));
             }
         }
 
