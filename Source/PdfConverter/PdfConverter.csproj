@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Ghostscript.Core\Ghostscript.NET\Ghostscript.Core.csproj" />
+    <ProjectReference Include="..\..\..\CbzMageExternal\Ghostscript.Core\Ghostscript.NET\Ghostscript.Core.csproj" />
     <ProjectReference Include="..\CbzMage.Shared\CbzMage.Shared.csproj" />
   </ItemGroup>
 
