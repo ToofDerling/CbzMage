@@ -6,7 +6,7 @@ Comic title and publisher will be read from the azw file, and running CbzMage in
 **All of this works fully in [CbzMage Version 0.14](https://github.com/ToofDerling/CbzMage/releases/tag/v0.14).**
 2. Convert pdf files to high quality cbz files. This does not work yet.
 
-CbzMage is a commandline tool written in c#. It requires no installation, very little configuration and no drm plugin/tool (the last part may change in the future). It does require that **[.NET 6 (or later)](https://dotnet.microsoft.com/en-us/download)** is installed on your computer.
+CbzMage is a commandline tool written in c#. It requires no installation, very little configuration and no drm plugin/tool (the last part may change in the future). It does require that **[.NET 6](https://dotnet.microsoft.com/en-us/download)** is installed on your computer.
 
 CbzMage is released for Windows and macOS (but support for the macOS version will be limited because I don't own a Mac). Since the Kdl app is PC or Mac only I don't think it makes much sense to do a release that targets Linux.
 
