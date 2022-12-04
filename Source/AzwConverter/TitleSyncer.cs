@@ -33,7 +33,7 @@ namespace AzwConverter
                         MobiMetadata.MobiMetadata metadata = null;
                         try
                         {
-                            metadata = new MobiMetadata.MobiMetadata(stream);
+                            metadata = new MobiMetadata.MobiMetadata(stream, throwIfNoExthHeader: true);
                         }
                         catch (Exception ex)
                         {
