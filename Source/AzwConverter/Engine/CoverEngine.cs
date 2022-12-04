@@ -1,4 +1,4 @@
-﻿using AzwMetadata;
+﻿using MobiMetadata;
 
 namespace AzwConverter.Engine
 {

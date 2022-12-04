@@ -1,4 +1,4 @@
-﻿using AzwMetadata;
+﻿using MobiMetadata;
 using System.IO.Compression;
 using System.IO.MemoryMappedFiles;
 

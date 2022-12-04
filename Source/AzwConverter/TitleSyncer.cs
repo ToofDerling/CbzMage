@@ -1,5 +1,4 @@
-﻿using AzwMetadata;
-using CbzMage.Shared.Helpers;
+﻿using CbzMage.Shared.Helpers;
 using System.Net;
 
 namespace AzwConverter
@@ -31,10 +30,10 @@ namespace AzwConverter
 
                         using var stream = azwFile.Open(FileMode.Open);
 
-                        MobiMetadata metadata = null;
+                        MobiMetadata.MobiMetadata metadata = null;
                         try
                         {
-                            metadata = new MobiMetadata(stream);
+                            metadata = new MobiMetadata.MobiMetadata(stream);
                         }
                         catch (Exception ex)
                         {

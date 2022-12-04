@@ -1,7 +1,7 @@
-﻿using AzwMetadata;
-using CbzMage.Shared.Extensions;
+﻿using CbzMage.Shared.Extensions;
 using CbzMage.Shared.Helpers;
 using ImageMagick;
+using MobiMetadata;
 
 namespace AzwConverter.Engine
 {

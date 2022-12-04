@@ -1,4 +1,4 @@
-﻿using AzwMetadata;
+﻿using MobiMetadata;
 using CbzMage.Shared.Helpers;
 using System.IO.MemoryMappedFiles;
 using System.Text;
@@ -15,7 +15,7 @@ namespace AzwConverter.Engine
             using var mappedFile = MemoryMappedFile.CreateFromFile(azwFile.FullName);
             using var stream = mappedFile.CreateViewStream();
 
-            var metadata = new MobiMetadata(stream);
+            var metadata = new MobiMetadata.MobiMetadata(stream);
 
             var hdContainer = dataFiles.FirstOrDefault(file => file.IsAzwResFile());
             if (hdContainer != null)
