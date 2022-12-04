@@ -6,26 +6,26 @@
   // lower value than the calculated.
   "GhostscriptReaderThreads": 0,
 
-  // This determines the quality of jpg images in the cbzfile. You want this as high
+  // This determines the quality of jpg images in the cbz file. You want this as high
   // as possible (90+). The default is 95 because a higher value causes CbzMage to 
   // create much larger cbzfiles.
   "JpgQuality": 95,
 
   // MinimumDpi determines the minimum quality of the pages Ghostscript reads from the 
   // pdf. It's not recommended to set this lower than 300, and setting it higher can
-  // cause the cbzfiles to grow very large. In other words, you probably shouldn't 
+  // cause the cbz files to grow very large. In other words, you probably shouldn't 
   // touch this. Note: to get the best possible result CbzMage will perform a dpi 
   // calculation to find out if it needs to read pages using a higher dpi value.
   "MinimumDpi": 300,
 
   // Sometimes reading pages using the MinimumDpi setting will create images that are 
   // much larger then the source pdf. CbzMage will detect this and scale the images 
-  // down to prevent the cbzfile from growing too large - but it will not create 
+  // down to prevent the cbz file from growing too large - but it will not create 
   // images smaller than the MinimumHeight setting. The default is 1920 (HD).
   "MinimumHeight": 1920,
 
-  // MaximumHeight is a hard cap at imagezize, again to prevent cbzfiles from growing
-  // impossibly large. The default is 3840 (Ultra HD).
+  // MaximumHeight is a hard cap at imagezize, again to prevent cbz files from 
+  // growing impossibly large. The default is 3840 (Ultra HD).
   "MaximumHeight": 3840,
 
   // Compression level for the cbz file. Valid options are "Fastest", "Optimal" or
