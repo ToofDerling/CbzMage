@@ -1,7 +1,7 @@
 // Punction is important! Don't remove quotes, colons, commas or curly braces 
 // (or otherwise change the structure).
 {
-  // Number of Ghostscript reader threads. Set this to 0 to have CbazMage try to
+  // Number of Ghostscript reader threads. Set this to 0 to have CbzMage try to
   // figure out a good value. If memory usage is too high try setting this to a 
   // lower value than the calculated.
   "GhostscriptReaderThreads": 0,
@@ -14,7 +14,7 @@
   // MinimumDpi determines the minimum quality of the pages Ghostscript reads from the 
   // pdf. It's not recommended to set this lower than 300, and setting it higher can
   // cause the cbzfiles to grow very large. In other words, you probably shouldn't 
-  // touch this. Note that to get the best possible result CbzMage will perform a dpi 
+  // touch this. Note: to get the best possible result CbzMage will perform a dpi 
   // calculation to find out if it needs to read pages using a higher dpi value.
   "MinimumDpi": 300,
 

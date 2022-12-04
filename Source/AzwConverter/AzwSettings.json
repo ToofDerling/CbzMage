@@ -45,11 +45,10 @@
   "NewTitleMarker": "",
   "UpdatedTitleMarker": "",
 
-  // Speed up scanning and converting by doing it in parallel. Testing has shown
-  // 3 is a good value when CbzDir is placed on a standard hard disk drive (HDD). 
-  // If the CbzDir is placed on a solid state drive (SSD) increasing this number 
-  // may increase the performance for larger collections.
-  "NumberOfThreads": 3,
+  // Speed up scanning and converting by doing it in parallel. Set this to 0 to have 
+  // CbzMage try to figure out a good value. If memory usage is too high try setting 
+  // this to a lower value than the calculated.
+  "NumberOfThreads": 0,
 
   // Compression level for the cbz file. Valid options are "Fastest", "Optimal" or
   // "NoCompression". The default is "Fastest" because jpg files in the cbz file are 
