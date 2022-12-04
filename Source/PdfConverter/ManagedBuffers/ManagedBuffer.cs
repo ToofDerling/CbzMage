@@ -37,7 +37,7 @@ namespace PdfConverter.ManagedBuffers
 
                 if (remaining < Settings.BufferRemainingThreshold)
                 {
-                    var newBuffer = new byte[Buffer.Length + _originalLength];
+                    var newBuffer = Cache.Get(Buffer.Length + _originalLength);
 
                     System.Buffer.BlockCopy(Buffer, 0, newBuffer, 0, Count);
 

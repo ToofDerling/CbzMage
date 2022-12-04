@@ -5,21 +5,18 @@ namespace PdfConverter.ManagedBuffers
 {
     public abstract class Cache<T> : IDisposable where T : class
     {
-        private readonly ConcurrentStack<T> _buffers;
+        private readonly ConcurrentStack<T> _cache;
 
-        protected readonly int _size;
-
-        public Cache(int size)
+        public Cache()
         {
-            _size = size;
-            _buffers = new ConcurrentStack<T>();
+            _cache = new ConcurrentStack<T>();
         }
 
         protected abstract T CreateNew();
 
-        public T Get()
+        public virtual T Get()
         {
-            var isCached = _buffers.TryPop(out var buffer);
+            var isCached = _cache.TryPop(out var buffer);
 
             if (!isCached)
             {
@@ -33,9 +30,9 @@ namespace PdfConverter.ManagedBuffers
             return buffer;
         }
 
-        public void Release(T buffer)
+        public virtual void Release(T buffer)
         {
-            _buffers.Push(buffer);
+            _cache.Push(buffer);
         }
 
         #region IDisposable Support
@@ -48,7 +45,7 @@ namespace PdfConverter.ManagedBuffers
                 if (disposing)
                 {
                     // TODO: dispose managed state (managed objects).
-                    var tempbuffers = _buffers.ToArray();
+                    var tempbuffers = _cache.ToArray();
 
                     for (int i = 0, sz = tempbuffers.Length; i < sz; i++)
                     {

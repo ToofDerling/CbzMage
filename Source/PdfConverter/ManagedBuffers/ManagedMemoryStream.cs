@@ -1,6 +1,6 @@
 ﻿namespace PdfConverter.ManagedBuffers
 {
-    public class ManagedMemoryStream : MemoryStream
+    public sealed class ManagedMemoryStream : MemoryStream
     {
         internal static BufferCache Cache { get; set; }
 

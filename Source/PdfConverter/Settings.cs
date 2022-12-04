@@ -2,7 +2,7 @@
 
 namespace PdfConverter
 {
-    public class Settings
+    public sealed class Settings
     {
         // All properties with a public setter are read from settings file
 

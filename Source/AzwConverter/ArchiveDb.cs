@@ -4,7 +4,7 @@ using System.Text.Json;
 
 namespace AzwConverter
 {
-    public class ArchiveDb
+    public sealed class ArchiveDb
     {
         public static string DbName => "archive.db";
 

@@ -1,6 +1,6 @@
 ﻿namespace AzwConverter
 {
-    public class CbzState
+    public sealed class CbzState
     {
         public string Name { get; set; }
 

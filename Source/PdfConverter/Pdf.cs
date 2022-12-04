@@ -1,6 +1,6 @@
 ﻿namespace PdfConverter
 {
-    public class Pdf
+    public sealed class Pdf
     {
         public Pdf(string path)
         {
