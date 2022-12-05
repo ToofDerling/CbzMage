@@ -15,23 +15,22 @@ namespace AzwConverter.Engine
             using var mappedFile = MemoryMappedFile.CreateFromFile(azwFile.FullName);
             using var stream = mappedFile.CreateViewStream();
 
-            var pdbHeader = new PDBHead();
-            var palmDocHeader = new PalmDOCHead();
-            var mobiHeader = new MobiHead();
-            var exthHeader = new EXTHHead();
+            // Want the record (image) data of course
+            var pdbHeader = MobiHeaderFactory.CreateReadAll<PDBHead>();
+            MobiHeaderFactory.ConfigureRead(pdbHeader, pdbHeader.NumRecordsAttr);
 
-            // Want the record data of course
-            pdbHeader.SetAttrsToRead(pdbHeader.NumRecordsAttr);
             // Nothing from this one
-            palmDocHeader.SetAttrsToRead(null);
-            
+            var palmDocHeader = MobiHeaderFactory.CreateReadNone<PalmDOCHead>();
+
             // Want the exth header, fullname (for the error message below),
             // index of record with first image, index of last content record 
-            mobiHeader.SetAttrsToRead(mobiHeader.ExthFlagsAttr, mobiHeader.FullNameOffsetAttr,
+            var mobiHeader = MobiHeaderFactory.CreateReadAll<MobiHead>();
+            MobiHeaderFactory.ConfigureRead(mobiHeader, mobiHeader.ExthFlagsAttr, mobiHeader.FullNameOffsetAttr,
                 mobiHeader.FirstImageIndexAttr, mobiHeader.LastContentRecordNumberAttr);
-            
+
             // Want the record index offsets for the cover and the thumbnail 
-            exthHeader.SetAttrsToRead(exthHeader.CoverOffsetAttr, exthHeader.ThumbOffsetAttr);
+            var exthHeader = MobiHeaderFactory.CreateReadAll<EXTHHead>();
+            MobiHeaderFactory.ConfigureRead(exthHeader, exthHeader.CoverOffsetAttr, exthHeader.ThumbOffsetAttr);
 
             var metadata = new MobiMetadata.MobiMetadata(stream, pdbHeader, palmDocHeader, mobiHeader, exthHeader, throwIfNoExthHeader: true);
 

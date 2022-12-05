@@ -69,19 +69,17 @@ namespace AzwConverter
         {
             try
             {
-                var pdbHeader = new PDBHead();
-                var palmDocHeader = new PalmDOCHead();
-                var mobiHeader = new MobiHead();
-                var exthHeader = new EXTHHead();
-
                 // Don't need anything from these two
-                pdbHeader.SetAttrsToRead(null);
-                palmDocHeader.SetAttrsToRead(null);
+                var pdbHeader = MobiHeaderFactory.CreateReadNone<PDBHead>();
+                var palmDocHeader = MobiHeaderFactory.CreateReadNone<PalmDOCHead>();
 
                 // Want the fullname and the exth header
-                mobiHeader.SetAttrsToRead(mobiHeader.FullNameOffsetAttr, mobiHeader.ExthFlagsAttr);
+                var mobiHeader = MobiHeaderFactory.CreateReadAll<MobiHead>();
+                MobiHeaderFactory.ConfigureRead(mobiHeader, mobiHeader.FullNameOffsetAttr, mobiHeader.ExthFlagsAttr);
+
                 // Want the publisher
-                exthHeader.SetAttrsToRead(exthHeader.PublisherAttr);
+                var exthHeader = MobiHeaderFactory.CreateReadAll<EXTHHead>();
+                MobiHeaderFactory.ConfigureRead(exthHeader, exthHeader.PublisherAttr);
 
                 return new MobiMetadata.MobiMetadata(stream, pdbHeader, palmDocHeader, mobiHeader, exthHeader, throwIfNoExthHeader: true);
             }
