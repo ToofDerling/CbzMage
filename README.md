@@ -12,7 +12,7 @@ CbzMage is released for Windows and macOS (but support for the macOS version wil
 
 ## Azw conversion.
 
-Download CbzMage to your hard drive and unpack it anywhere. Open the settings file in a text editor and **configure AzwDir**. Please note the comment about [moving the azw directory](https://github.com/ToofDerling/CbzMage/wiki/How-to-move-Kdl-content-folder.) as **running CbzMage for the first time will require double the size of your azw directory.**
+Download CbzMage to your hard drive and unpack it anywhere. Open the settings file in a text editor and **configure AzwDir**. Please note the comment about [moving the azw directory](https://github.com/ToofDerling/CbzMage/wiki/How-to-move-Kdl-content-folder.) as **running CbzMage for the first time may double the size of your azw directory.**
 
 You can have a look at the other options in the settings file, they are all thoroughly documented there (I hope). Or you can open a command shell and run CbzMage right away: 
 
