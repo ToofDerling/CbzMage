@@ -21,21 +21,8 @@
             }
         }
 
-        private static volatile int newBuffers = 0;
-        private static volatile int cachedBuffers = 0;
+        public static volatile int AllBuffers = 0;
         public static volatile int ExpandedBuffers = 0;
-
-        public static void AddBuffer(bool cached)
-        {
-            if (cached)
-            {
-                cachedBuffers++;
-            }
-            else
-            {
-                newBuffers++;
-            }
-        }
 
         private static volatile int newPageMachines = 0;
         private static volatile int cachedPageMachines = 0;
@@ -96,9 +83,9 @@
                 Console.WriteLine($"Largest Jpg: {largestJpg} Average: {totalJpgSize / imageConversionCount}");
             }
 
-            if (newBuffers > 0)
+            if (AllBuffers > 0)
             {
-                Console.WriteLine($"Cached/new buffers: {cachedBuffers}/{newBuffers} (expansions: {ExpandedBuffers})");
+                Console.WriteLine($"All buffers: {AllBuffers} (expansions: {ExpandedBuffers})");
             }
 
             if (newPageMachines > 0)

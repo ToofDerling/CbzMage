@@ -1,4 +1,5 @@
-﻿using System.Buffers;
+﻿using PdfConverter.Helpers;
+using System.Buffers;
 
 namespace PdfConverter.ManagedBuffers
 {
@@ -21,6 +22,11 @@ namespace PdfConverter.ManagedBuffers
 
         public byte[] Get(int size)
         {
+
+#if DEBUG
+            StatsCount.AllBuffers++;
+#endif
+
             return ArrayPool<byte>.Shared.Rent(size);
         }
 

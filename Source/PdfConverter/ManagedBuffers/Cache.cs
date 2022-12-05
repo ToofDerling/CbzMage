@@ -1,5 +1,4 @@
-﻿using PdfConverter.Helpers;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 
 namespace PdfConverter.ManagedBuffers
 {
@@ -16,23 +15,19 @@ namespace PdfConverter.ManagedBuffers
 
         public virtual T Get()
         {
-            var isCached = _cache.TryPop(out var buffer);
+            var isCached = _cache.TryPop(out var cacheObj);
 
             if (!isCached)
             {
-                buffer = CreateNew();
+                cacheObj = CreateNew();
             }
 
-#if DEBUG
-            StatsCount.AddBuffer(isCached);
-#endif
-
-            return buffer;
+            return cacheObj;
         }
 
-        public virtual void Release(T buffer)
+        public virtual void Release(T cacheObj)
         {
-            _cache.Push(buffer);
+            _cache.Push(cacheObj);
         }
 
         #region IDisposable Support
@@ -45,15 +40,15 @@ namespace PdfConverter.ManagedBuffers
                 if (disposing)
                 {
                     // TODO: dispose managed state (managed objects).
-                    var tempbuffers = _cache.ToArray();
+                    var tempObjects = _cache.ToArray();
 
-                    for (int i = 0, sz = tempbuffers.Length; i < sz; i++)
+                    for (int i = 0, sz = tempObjects.Length; i < sz; i++)
                     {
-                        if (tempbuffers[i] is IDisposable)
+                        if (tempObjects[i] is IDisposable)
                         {
-                            (tempbuffers[i] as IDisposable).Dispose();
+                            (tempObjects[i] as IDisposable).Dispose();
                         }
-                        tempbuffers[i] = null;
+                        tempObjects[i] = null;
                     }
                 }
 
