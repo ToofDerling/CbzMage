@@ -15,7 +15,17 @@ namespace AzwConverter.Engine
             using var mappedFile = MemoryMappedFile.CreateFromFile(azwFile.FullName);
             using var stream = mappedFile.CreateViewStream();
 
-            var metadata = new MobiMetadata.MobiMetadata(stream, throwIfNoExthHeader: true);
+            var pdbHeader = new PDBHead();
+            var palmDocHeader = new PalmDOCHead();
+            var mobiHeader = new MobiHead();
+            var exthHeader = new EXTHHead();
+
+            pdbHeader.SetAttrsToRead(pdbHeader.NumRecordsAttr);
+            palmDocHeader.SetAttrsToRead(null);
+            mobiHeader.SetAttrsToRead(mobiHeader.ExthFlagsAttr, mobiHeader.FirstImageIndexAttr, mobiHeader.LastContentRecordNumberAttr);
+            exthHeader.SetAttrsToRead(exthHeader.CoverOffsetAttr, exthHeader.ThumbOffsetAttr);
+
+            var metadata = new MobiMetadata.MobiMetadata(stream, pdbHeader, palmDocHeader, mobiHeader, exthHeader, throwIfNoExthHeader: true);
 
             var hdContainer = dataFiles.FirstOrDefault(file => file.IsAzwResFile());
             if (hdContainer != null)
