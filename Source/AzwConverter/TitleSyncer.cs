@@ -1,4 +1,5 @@
 ﻿using CbzMage.Shared.Helpers;
+using MobiMetadata;
 using System.Net;
 
 namespace AzwConverter
@@ -30,32 +31,17 @@ namespace AzwConverter
 
                         using var stream = azwFile.Open(FileMode.Open);
 
-                        MobiMetadata.MobiMetadata metadata = null;
-                        try
+                        var metadata = GetMetadata(stream, bookId);
+                        if (metadata == null)
                         {
-                            metadata = new MobiMetadata.MobiMetadata(stream, throwIfNoExthHeader: true);
-                        }
-                        catch (Exception ex)
-                        {
-                            ProgressReporter.Error($"Error reading {bookId}.", ex);
-
                             booksWithErrors.Add(bookId);
                             continue;
                         }
 
-                        var title = Clean(metadata.MobiHeader.FullName);
-                        var publisher = Clean(metadata.MobiHeader.EXTHHeader.Publisher);
+                        var title = CleanStr(metadata.MobiHeader.FullName);
+                        var publisher = CleanStr(metadata.MobiHeader.EXTHHeader.Publisher);
 
-                        // Normalize publisher name
-                        foreach (var trimmedName in Settings.TrimPublishers)
-                        {
-                            if (publisher.StartsWith(trimmedName, StringComparison.OrdinalIgnoreCase))
-                            {
-                                publisher = trimmedName;
-                                break;
-                            }
-                        }
-
+                        publisher = TrimPublisher(publisher);
                         Sync($"[{publisher}] {title}");
                     }
 
@@ -68,12 +54,6 @@ namespace AzwConverter
                         titles[bookId] = new FileInfo(file);
                         syncedBookCount++;
                     }
-
-                    static string Clean(string str)
-                    { 
-                        str = WebUtility.HtmlDecode(str);
-                        return str.ToFileSystemString();
-                    }
                 }
             }
 
@@ -83,6 +63,49 @@ namespace AzwConverter
             }
 
             return syncedBookCount;
+        }
+
+        private static MobiMetadata.MobiMetadata GetMetadata(Stream stream, string bookId)
+        {
+            try
+            {
+                var pdbHeader = new PDBHead();
+                pdbHeader.SetAttrsToRead(null);
+
+                var palmDocHeader = new PalmDOCHead();
+                palmDocHeader.SetAttrsToRead(null);
+
+                var mobiHeader = new MobiHead();
+                mobiHeader.SetAttrsToRead(mobiHeader.FullNameOffsetAttr, mobiHeader.ExthFlagsAttr);
+
+                return new MobiMetadata.MobiMetadata(stream, pdbHeader, palmDocHeader, mobiHeader, throwIfNoExthHeader: true);
+            }
+            catch (Exception ex)
+            {
+                ProgressReporter.Error($"Error reading {bookId}.", ex);
+
+                return null;
+            }
+        }
+
+        private static string TrimPublisher(string publisher)
+        {
+            // Normalize publisher name
+            foreach (var trimmedName in Settings.TrimPublishers)
+            {
+                if (publisher.StartsWith(trimmedName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return trimmedName;
+                }
+            }
+
+            return publisher;
+        }
+
+        private static string CleanStr(string str)
+        {
+            str = WebUtility.HtmlDecode(str);
+            return str.ToFileSystemString();
         }
 
         public int SyncTitlesToArchive(Dictionary<string, FileInfo> titles, ArchiveDb archive, Dictionary<string, FileInfo[]> books)
@@ -127,7 +150,7 @@ namespace AzwConverter
             name = name.RemoveAnyMarker();
 
             var dest = Path.Combine(Settings.ConvertedTitlesDir, name);
-            
+
             File.Copy(titleFile, dest);
             File.SetLastWriteTime(dest, DateTime.Now);
 
