@@ -39,7 +39,7 @@ namespace AzwConverter
                         }
 
                         var title = CleanStr(metadata.MobiHeader.FullName);
-                        var publisher = CleanStr(metadata.MobiHeader.EXTHHeader.Publisher);
+                        var publisher = CleanStr(metadata.MobiHeader.ExthHeader.Publisher);
 
                         publisher = TrimPublisher(publisher);
                         Sync($"[{publisher}] {title}");
@@ -70,15 +70,21 @@ namespace AzwConverter
             try
             {
                 var pdbHeader = new PDBHead();
-                pdbHeader.SetAttrsToRead(null);
-
                 var palmDocHeader = new PalmDOCHead();
+                var mobiHeader = new MobiHead();
+                var exthHeader = new EXTHHead();
+
+                // Don't need anything from these two
+                pdbHeader.SetAttrsToRead(null);
                 palmDocHeader.SetAttrsToRead(null);
 
-                var mobiHeader = new MobiHead();
+                // Get the fullname and the exth header
                 mobiHeader.SetAttrsToRead(mobiHeader.FullNameOffsetAttr, mobiHeader.ExthFlagsAttr);
 
-                return new MobiMetadata.MobiMetadata(stream, pdbHeader, palmDocHeader, mobiHeader, throwIfNoExthHeader: true);
+                // Get the publisher
+                exthHeader.SetAttrsToRead(exthHeader.PublisherAttr);
+
+                return new MobiMetadata.MobiMetadata(stream, pdbHeader, palmDocHeader, mobiHeader, exthHeader, throwIfNoExthHeader: true);
             }
             catch (Exception ex)
             {
