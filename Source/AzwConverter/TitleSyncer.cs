@@ -78,10 +78,9 @@ namespace AzwConverter
                 pdbHeader.SetAttrsToRead(null);
                 palmDocHeader.SetAttrsToRead(null);
 
-                // Get the fullname and the exth header
+                // Want the fullname and the exth header
                 mobiHeader.SetAttrsToRead(mobiHeader.FullNameOffsetAttr, mobiHeader.ExthFlagsAttr);
-
-                // Get the publisher
+                // Want the publisher
                 exthHeader.SetAttrsToRead(exthHeader.PublisherAttr);
 
                 return new MobiMetadata.MobiMetadata(stream, pdbHeader, palmDocHeader, mobiHeader, exthHeader, throwIfNoExthHeader: true);

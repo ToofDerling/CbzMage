@@ -20,9 +20,13 @@ namespace AzwConverter.Engine
             var mobiHeader = new MobiHead();
             var exthHeader = new EXTHHead();
 
+            // Want the records of course
             pdbHeader.SetAttrsToRead(pdbHeader.NumRecordsAttr);
+            // Nothing from this one
             palmDocHeader.SetAttrsToRead(null);
+            // Want the exth header, index of record with first image, index of last content record 
             mobiHeader.SetAttrsToRead(mobiHeader.ExthFlagsAttr, mobiHeader.FirstImageIndexAttr, mobiHeader.LastContentRecordNumberAttr);
+            // Want the record index offsets for the cover and the thumbnail 
             exthHeader.SetAttrsToRead(exthHeader.CoverOffsetAttr, exthHeader.ThumbOffsetAttr);
 
             var metadata = new MobiMetadata.MobiMetadata(stream, pdbHeader, palmDocHeader, mobiHeader, exthHeader, throwIfNoExthHeader: true);
