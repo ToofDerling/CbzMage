@@ -142,8 +142,8 @@ namespace AzwConverter
                 Console.WriteLine();
                 ProgressReporter.Info($"Checking {updatedBooks.Count} updated book{updatedBooks.SIf1()}:");
 
-                Parallel.ForEach(updatedBooks, Settings.ParallelOptions, book =>
-                    ScanUpdatedBook(book.Key, book.Value, titles[book.Key], archive));
+                Parallel.ForEach(updatedBooks, Settings.ParallelOptions, async book =>
+                    await ScanUpdatedBookAsync(book.Key, book.Value, titles[book.Key], archive));
             }
 
             if (unconvertedBooks.Count == 0)
@@ -160,8 +160,8 @@ namespace AzwConverter
             {
                 ProgressReporter.Info($"Converting {unconvertedBooks.Count} book{unconvertedBooks.SIf1()}:");
 
-                Parallel.ForEach(unconvertedBooks, Settings.ParallelOptions, book =>
-                    ConvertBook(book.Key, book.Value, titles[book.Key],
+                Parallel.ForEach(unconvertedBooks, Settings.ParallelOptions, async book =>
+                    await ConvertBookAsync(book.Key, book.Value, titles[book.Key],
                     convertedTitles.ContainsKey(book.Key) ? convertedTitles[book.Key] : null,
                     syncer, archive));
             }
@@ -176,11 +176,12 @@ namespace AzwConverter
             {
                 ProgressReporter.Info($"Analyzing {unconvertedBooks.Count} unconverted book{unconvertedBooks.SIf1()}:");
 
-                Parallel.ForEach(unconvertedBooks, Settings.ParallelOptions, book => AnalyzeBook(book.Key, book.Value, titles[book.Key]));
+                Parallel.ForEach(unconvertedBooks, Settings.ParallelOptions, async book =>
+                    await AnalyzeBookAsync(book.Key, book.Value, titles[book.Key]));
             }
         }
 
-        private void AnalyzeBook(string bookId, FileInfo[] dataFiles, FileInfo titleFile)
+        private async Task AnalyzeBookAsync(string bookId, FileInfo[] dataFiles, FileInfo titleFile)
         {
             string bookDir;
 
@@ -198,12 +199,12 @@ namespace AzwConverter
             }
 
             var engine = new AnalyzeEngine();
-            var state = engine.AnalyzeBook(bookId, dataFiles, bookDir, out var analyzeMessage);
+            var res = await engine.AnalyzeBookAsync(bookId, dataFiles, bookDir);
 
-            PrintCbzState(bookDir, state, errorMsg: analyzeMessage, showAllCovers: true);
+            PrintCbzState(bookDir, res.state, errorMsg: res.analyzeMessage, showAllCovers: true);
         }
 
-        private void ConvertBook(string bookId, FileInfo[] dataFiles, FileInfo titleFile, FileInfo? convertedTitleFile,
+        private async Task ConvertBookAsync(string bookId, FileInfo[] dataFiles, FileInfo titleFile, FileInfo? convertedTitleFile,
             TitleSyncer syncer, ArchiveDb archive)
         {
             if (!TryParseTitleFile(titleFile, out var publisher, out var title))
@@ -221,12 +222,12 @@ namespace AzwConverter
 
             if (coverFile != null && Settings.SaveCoverOnly)
             {
-                SaveCover(bookId, dataFiles, coverFile);
+                await SaveCoverAsync(bookId, dataFiles, coverFile);
             }
             else
             {
                 var engine = new ConvertEngine();
-                state = engine.ConvertBook(bookId, dataFiles, cbzFile, coverFile);
+                state = await engine.ConvertBookAsync(bookId, dataFiles, cbzFile, coverFile);
             }
 
             var newTitleFile = AddMarkerOrRemoveAnyMarker(titleFile);
@@ -264,10 +265,10 @@ namespace AzwConverter
             return true;
         }
 
-        private void SaveCover(string bookId, FileInfo[] dataFiles, string coverFile)
+        private async Task SaveCoverAsync(string bookId, FileInfo[] dataFiles, string coverFile)
         {
             var engine = new CoverEngine();
-            engine.SaveCover(bookId, dataFiles, coverFile);
+            await engine.SaveCoverAsync(bookId, dataFiles, coverFile);
 
             var insert = BookCountOutputHelper(coverFile, out var sb);
 
@@ -304,7 +305,7 @@ namespace AzwConverter
             return insert;
         }
 
-        private void ScanUpdatedBook(string bookId, FileInfo[] dataFiles, FileInfo titleFile, ArchiveDb archive)
+        private async Task ScanUpdatedBookAsync(string bookId, FileInfo[] dataFiles, FileInfo titleFile, ArchiveDb archive)
         {
             CbzState state;
 
@@ -320,7 +321,7 @@ namespace AzwConverter
             else
             {
                 var engine = new ScanEngine();
-                state = engine.ScanBook(bookId, dataFiles);
+                state = await engine.ScanBookAsync(bookId, dataFiles);
 
                 state.Name = titleFile.Name.RemoveAnyMarker();
             }

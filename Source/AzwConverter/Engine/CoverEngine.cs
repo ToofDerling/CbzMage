@@ -7,11 +7,11 @@ namespace AzwConverter.Engine
         private string _coverFile;
         private string _coverString;
 
-        public CbzState? SaveCover(string bookId, FileInfo[] dataFiles, string coverFile)
+        public async Task<CbzState?> SaveCoverAsync(string bookId, FileInfo[] dataFiles, string coverFile)
         {
             _coverFile = coverFile;
 
-            return ReadMetaData(bookId, dataFiles);
+            return await ReadMetaDataAsync(bookId, dataFiles);
         }
 
         public string GetCoverString()

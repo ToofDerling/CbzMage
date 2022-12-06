@@ -11,7 +11,7 @@ namespace AzwConverter.Engine
 
         private long _mappedArchiveLen;
 
-        public CbzState ConvertBook(string bookId, FileInfo[] dataFiles, string cbzFile, string? coverFile)
+        public async Task<CbzState> ConvertBookAsync(string bookId, FileInfo[] dataFiles, string cbzFile, string? coverFile)
         {
             _cbzFile = cbzFile;
             _coverFile = coverFile;
@@ -25,7 +25,7 @@ namespace AzwConverter.Engine
                 _mappedArchiveLen += hdContainer.Length;
             }
 
-            return ReadMetaData(bookId, dataFiles);
+            return await ReadMetaDataAsync(bookId, dataFiles);
         }
 
         protected override CbzState ProcessImages(PageRecords? pageRecordsHd, PageRecords pageRecords)

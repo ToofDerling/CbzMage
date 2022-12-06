@@ -31,9 +31,8 @@ namespace PdfConverter
             Console.WriteLine($"Ghostscript version: {gsVersion.Version}");
             Console.WriteLine($"Ghostscript reader threads: {Settings.GhostscriptReaderThreads}");
             Console.WriteLine($"Jpq quality: {Settings.JpgQuality}");
-#if DEBUG
-            Console.WriteLine($"Running in DEBUG mode");
-#endif
+            Console.WriteLine($"Cbz compression: {Settings.CompressionLevel}");
+
             Console.WriteLine();
 
             var stopwatch = Stopwatch.StartNew();

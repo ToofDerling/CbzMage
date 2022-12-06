@@ -4,9 +4,9 @@ namespace AzwConverter.Engine
 {
     public class ScanEngine : AbstractImageEngine
     {
-        public CbzState ScanBook(string bookId, FileInfo[] dataFiles)
+        public async Task<CbzState> ScanBookAsync(string bookId, FileInfo[] dataFiles)
         {
-            return ReadMetaData(bookId, dataFiles);
+            return await ReadMetaDataAsync(bookId, dataFiles);
         }
 
         protected override CbzState ProcessImages(PageRecords? pageRecordsHd, PageRecords pageRecords)

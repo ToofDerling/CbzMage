@@ -10,14 +10,13 @@ namespace AzwConverter.Engine
         private string _bookDir;
         private string _analyzeMessage;
 
-        public CbzState AnalyzeBook(string bookId, FileInfo[] dataFiles, string bookDir, out string analyzeMessage)
+        public async Task<(CbzState state, string analyzeMessage)> AnalyzeBookAsync(string bookId, FileInfo[] dataFiles, string bookDir)
         {
             _bookDir = bookDir;
 
-            var state = ReadMetaData(bookId, dataFiles);
-            analyzeMessage = _analyzeMessage;
+            var state = await ReadMetaDataAsync(bookId, dataFiles);
 
-            return state;
+            return (state, _analyzeMessage);
         }
 
         protected override CbzState ProcessImages(PageRecords? pageRecordsHd, PageRecords pageRecords)

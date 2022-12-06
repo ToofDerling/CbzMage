@@ -7,7 +7,7 @@ namespace AzwConverter.Engine
 {
     public abstract class AbstractImageEngine
     {
-        protected CbzState? ReadMetaData(string bookId, FileInfo[] dataFiles)
+        protected async Task<CbzState?> ReadMetaDataAsync(string bookId, FileInfo[] dataFiles)
         {
             var azwFile = dataFiles.First(file => file.IsAzwFile());
 
@@ -33,6 +33,7 @@ namespace AzwConverter.Engine
             MobiHeaderFactory.ConfigureRead(exthHeader, exthHeader.CoverOffsetAttr, exthHeader.ThumbOffsetAttr);
 
             var metadata = new MobiMetadata.MobiMetadata(stream, pdbHeader, palmDocHeader, mobiHeader, exthHeader, throwIfNoExthHeader: true);
+            await metadata.ReadImageRecordsAsync(stream);
 
             var hdContainer = dataFiles.FirstOrDefault(file => file.IsAzwResFile());
             if (hdContainer != null)
@@ -40,7 +41,7 @@ namespace AzwConverter.Engine
                 using var hdMappedFile = MemoryMappedFile.CreateFromFile(hdContainer.FullName);
                 using var hdStream = hdMappedFile.CreateViewStream();
 
-                metadata.ReadHDImageRecords(hdStream);
+                await metadata.ReadHDImageRecordsAsync(hdStream);
 
                 return ProcessImages(metadata.PageRecordsHD, metadata.PageRecords);
             }
