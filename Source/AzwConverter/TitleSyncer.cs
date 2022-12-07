@@ -6,7 +6,7 @@ namespace AzwConverter
 {
     public class TitleSyncer
     {
-        public int SyncBooksToTitles(IDictionary<string, FileInfo[]> books, IDictionary<string, FileInfo> titles, ArchiveDb archive)
+        public async Task<int> SyncBooksToTitlesAsync(IDictionary<string, FileInfo[]> books, IDictionary<string, FileInfo> titles, ArchiveDb archive)
         {
             var syncedBookCount = 0;
             var booksWithErrors = new List<string>();
@@ -31,7 +31,7 @@ namespace AzwConverter
 
                         using var stream = azwFile.Open(FileMode.Open);
 
-                        var metadata = GetMetadata(stream, bookId);
+                        var metadata = await GetMetadataAsync(stream, bookId);
                         if (metadata == null)
                         {
                             booksWithErrors.Add(bookId);
@@ -65,7 +65,7 @@ namespace AzwConverter
             return syncedBookCount;
         }
 
-        private static MobiMetadata.MobiMetadata GetMetadata(Stream stream, string bookId)
+        private static async Task<MobiMetadata.MobiMetadata> GetMetadataAsync(Stream stream, string bookId)
         {
             try
             {
@@ -81,7 +81,10 @@ namespace AzwConverter
                 var exthHeader = MobiHeaderFactory.CreateReadAll<EXTHHead>();
                 MobiHeaderFactory.ConfigureRead(exthHeader, exthHeader.PublisherAttr);
 
-                return new MobiMetadata.MobiMetadata(stream, pdbHeader, palmDocHeader, mobiHeader, exthHeader, throwIfNoExthHeader: true);
+                var metadata = new MobiMetadata.MobiMetadata(pdbHeader, palmDocHeader, mobiHeader, exthHeader, throwIfNoExthHeader: true);
+                await metadata.ReadMetadataAsync(stream);
+
+                return metadata;
             }
             catch (Exception ex)
             {

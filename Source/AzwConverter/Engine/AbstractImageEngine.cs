@@ -32,7 +32,9 @@ namespace AzwConverter.Engine
             var exthHeader = MobiHeaderFactory.CreateReadAll<EXTHHead>();
             MobiHeaderFactory.ConfigureRead(exthHeader, exthHeader.CoverOffsetAttr, exthHeader.ThumbOffsetAttr);
 
-            var metadata = new MobiMetadata.MobiMetadata(stream, pdbHeader, palmDocHeader, mobiHeader, exthHeader, throwIfNoExthHeader: true);
+            var metadata = new MobiMetadata.MobiMetadata(pdbHeader, palmDocHeader, mobiHeader, exthHeader, throwIfNoExthHeader: true);
+            
+            await metadata.ReadMetadataAsync(stream);
             await metadata.ReadImageRecordsAsync(stream);
 
             var hdContainer = dataFiles.FirstOrDefault(file => file.IsAzwResFile());

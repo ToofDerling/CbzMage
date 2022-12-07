@@ -77,7 +77,7 @@ namespace AzwConverter
             var syncer = new TitleSyncer();
 
             // Number of books is stable after title syncing.
-            var added = syncer.SyncBooksToTitles(books, titles, archive);
+            var added = await syncer.SyncBooksToTitlesAsync(books, titles, archive);
             Console.WriteLine($"Added {added} missing title{added.SIf1()}");
 
             var archived = syncer.SyncTitlesToArchive(titles, archive, books);
