@@ -83,11 +83,7 @@ PdfConvert [or Pdf Convert] <pdf file> or <directory with pdf files>
             {
                 actionStr += args[next];
 
-                if (Enum.TryParse(typeof(CbzMageAction), actionStr, ignoreCase: true, out var actionObj))
-                {
-                    action = (CbzMageAction)actionObj;
-                    validAction = true;
-                }
+                validAction = Enum.TryParse(actionStr, ignoreCase: true, out action);
 
                 next++;
             }
