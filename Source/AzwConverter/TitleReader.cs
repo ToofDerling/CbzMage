@@ -4,48 +4,47 @@ namespace AzwConverter
 {
     public class TitleReader
     {
-        public Dictionary<string, FileInfo[]> ReadBooks()
+        public IDictionary<string, FileInfo[]> ReadBooks()
         {
             var dict = new ConcurrentDictionary<string, FileInfo[]>();
 
-            var dirs = Directory.GetDirectories(Settings.AzwDir, "*_EBOK");
+            var directoryInfo = new DirectoryInfo(Settings.AzwDir);
+            var allFiles = directoryInfo.EnumerateFiles("*", SearchOption.AllDirectories);
 
-            Parallel.ForEach(dirs, Settings.ParallelOptions, bookDir =>
+            allFiles.ToLookup(dir => dir.DirectoryName).AsParallel().ForAll(files => 
             {
-                var dirInfo = new DirectoryInfo(bookDir);
-                var files = dirInfo.GetFiles();
-
                 if (files.Any(file => file.IsAzwFile()))
                 {
-                    dict[Path.GetFileName(bookDir)] = files;
+                    dict[Path.GetFileName(files.Key)] = files.ToArray();
                 }
             });
 
             return new Dictionary<string, FileInfo[]>(dict);
         }
 
-        public Dictionary<string, FileInfo> ReadTitles()
+        public async Task<IDictionary<string, FileInfo>> ReadTitlesAsync()
         {
             var directoryInfo = new DirectoryInfo(Settings.TitlesDir);
-            var files = directoryInfo.EnumerateFiles().Where(f => f.Name != ArchiveDb.DbName);
+            var files = directoryInfo.EnumerateFiles().AsParallel().Where(f => f.Name != ArchiveDb.DbName);
 
-            return ReadFiles(files);
+            return await ReadFilesAsync(files);
         }
 
-        public Dictionary<string, FileInfo> ReadConvertedTitles()
+        public async Task<IDictionary<string, FileInfo>> ReadConvertedTitlesAsync()
         {
             var directoryInfo = new DirectoryInfo(Settings.ConvertedTitlesDir);
 
-            return ReadFiles(directoryInfo.EnumerateFiles());
+            return await ReadFilesAsync(directoryInfo.EnumerateFiles());
         }
 
-        private Dictionary<string, FileInfo> ReadFiles(IEnumerable<FileInfo> files)
+        private async Task<IDictionary<string, FileInfo>> ReadFilesAsync(IEnumerable<FileInfo> files)
         {
             var dict = new ConcurrentDictionary<string, FileInfo>();
 
-            Parallel.ForEach(files, Settings.ParallelOptions, file =>
+            await Parallel.ForEachAsync(files, async (file, ct) => 
             {
-                dict[File.ReadAllText(file.FullName)] = file;
+                var bookId = await File.ReadAllTextAsync(file.FullName, ct);
+                dict[bookId] = file;
             });
 
             return new Dictionary<string, FileInfo>(dict);

@@ -43,7 +43,7 @@ namespace AzwConverter.Engine
 
                 await metadata.ReadHDImageRecordsAsync(hdStream);
 
-                return ProcessImages(metadata.PageRecordsHD, metadata.PageRecords);
+                return await ProcessImagesAsync(metadata.PageRecordsHD, metadata.PageRecords);
             }
             else
             {
@@ -54,16 +54,10 @@ namespace AzwConverter.Engine
 
                 ProgressReporter.Warning(sb.ToString());
 
-                return ProcessImages(null, metadata.PageRecords);
+                return await ProcessImagesAsync(null, metadata.PageRecords);
             }
         }
 
-        protected abstract CbzState? ProcessImages(PageRecords? pageRecordsHd, PageRecords pageRecords);
-
-        protected void SaveFile(Span<byte> data, string file)
-        {
-            using var fileStream = File.Open(file, FileMode.Create, FileAccess.Write);
-            fileStream.Write(data);
-        }
+        protected abstract Task<CbzState?> ProcessImagesAsync(PageRecords? pageRecordsHd, PageRecords pageRecords);
     }
 }

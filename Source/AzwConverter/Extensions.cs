@@ -39,7 +39,9 @@ namespace AzwConverter
 
         public static string SIf1<T>(this IEnumerable<T> enu) => enu.Count().SIf1();
 
-        public static bool IsAzwFile(this FileInfo fileInfo) => fileInfo.FullName.EndsWith(Settings.AzwExt);
+        public static bool IsAzwFile(this FileInfo fileInfo) => fileInfo.FullName.IsAzwFile();
+        
+        public static bool IsAzwFile(this string file) => file.EndsWith(Settings.AzwExt);
 
         public static bool IsAzwResFile(this FileInfo fileInfo) => fileInfo.FullName.EndsWith(Settings.AzwResExt);
     }

@@ -6,7 +6,7 @@ namespace AzwConverter
 {
     public class TitleSyncer
     {
-        public int SyncBooksToTitles(Dictionary<string, FileInfo[]> books, Dictionary<string, FileInfo> titles, ArchiveDb archive)
+        public int SyncBooksToTitles(IDictionary<string, FileInfo[]> books, IDictionary<string, FileInfo> titles, ArchiveDb archive)
         {
             var syncedBookCount = 0;
             var booksWithErrors = new List<string>();
@@ -111,7 +111,7 @@ namespace AzwConverter
             return str.ToFileSystemString();
         }
 
-        public int SyncTitlesToArchive(Dictionary<string, FileInfo> titles, ArchiveDb archive, Dictionary<string, FileInfo[]> books)
+        public int SyncTitlesToArchive(IDictionary<string, FileInfo> titles, ArchiveDb archive, IDictionary<string, FileInfo[]> books)
         {
             var idsToRemove = new List<string>();
             var archivedTitleCount = 0;

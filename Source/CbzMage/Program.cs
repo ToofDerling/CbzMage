@@ -21,7 +21,7 @@ file for each updated book.
 PdfConvert [or Pdf Convert] <pdf file> or <directory with pdf files>
     Converts one or more pdf comic books to cbz files (DOES NOT WORK YET).
 ";
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             var validAction = false;
             CbzMageAction action = default;
@@ -50,7 +50,7 @@ PdfConvert [or Pdf Convert] <pdf file> or <directory with pdf files>
                             case CbzMageAction.AzwConvert:
                             case CbzMageAction.AzwAnalyze:
                                 var azwConverter = new AzwConverter.AzwConverter(action);
-                                azwConverter.ConvertOrScan();
+                                await azwConverter.ConvertOrScanAsync();
                                 break;
                             case CbzMageAction.PdfConvert:
                                 var pdfConverter = new PdfConverter.PdfConverter();

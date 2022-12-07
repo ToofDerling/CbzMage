@@ -18,12 +18,15 @@ namespace AzwConverter
         {
             _dbFile = Path.Combine(Settings.TitlesDir, DbName);
             _db = new();
+        }
 
+        public async Task ReadArchiveDbAsync()
+        {
             if (File.Exists(_dbFile))
             {
-                var lines = File.ReadAllLines(_dbFile);
+                var lines = await File.ReadAllLinesAsync(_dbFile);
 
-                Parallel.ForEach(lines, line =>
+                lines.AsParallel().ForAll(line =>
                 {
                     var tokens = line.Split(' ', 2);
                     var bookId = tokens[0];
@@ -32,7 +35,7 @@ namespace AzwConverter
                     {
                         throw new InvalidOperationException($"{bookId} already in archive");
                     }
-                    _db[bookId] = JsonSerializer.Deserialize<CbzState>(tokens[1]);
+                    _db[bookId] = JsonSerializer.Deserialize <CbzState>(tokens[1]);
                 });
             }
         }
@@ -93,7 +96,7 @@ namespace AzwConverter
             _isDirty = true;
         }
 
-        public void SaveDb()
+        public async Task SaveArchiveDbAsync()
         {
             if (!_isDirty)
             {
@@ -107,7 +110,7 @@ namespace AzwConverter
                 sb.Append(x.Key).Append(' ').AppendLine(JsonSerializer.Serialize(x.Value));
             }
 
-            File.WriteAllText(_dbFile, sb.ToString());
+            await File.WriteAllTextAsync(_dbFile, sb.ToString());
         }
     }
 }
