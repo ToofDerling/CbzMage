@@ -129,6 +129,10 @@ namespace AzwConverter
             {
                 Console.WriteLine("Done");
             }
+
+#if DEBUG
+            MetadataManager.ThrowIfCacheNotEmpty();
+#endif
         }
 
         private async Task RunActionsInParallelAsync(IReadOnlyCollection<KeyValuePair<string, FileInfo[]>> updatedBooks,

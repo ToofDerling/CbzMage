@@ -1,5 +1,5 @@
 ﻿using CbzMage.Shared.Helpers;
-using MobiMetadata;
+using System.IO.MemoryMappedFiles;
 using System.Net;
 
 namespace AzwConverter
@@ -11,7 +11,7 @@ namespace AzwConverter
             var syncedBookCount = 0;
             var booksWithErrors = new List<string>();
 
-            foreach (var book in books)
+            await Parallel.ForEachAsync(books, Settings.ParallelOptions, async (book, ct) =>
             {
                 var bookId = book.Key;
 
@@ -21,7 +21,7 @@ namespace AzwConverter
                     // Try the archive
                     if (archive.TryGetName(bookId, out var name))
                     {
-                        Sync(name);
+                        await SyncAsync(name);
                     }
                     else
                     {
@@ -29,33 +29,45 @@ namespace AzwConverter
                         var bookFiles = book.Value;
                         var azwFile = bookFiles.First(file => file.IsAzwFile());
 
-                        using var stream = azwFile.Open(FileMode.Open);
+                        var mappedFile = MemoryMappedFile.CreateFromFile(azwFile.FullName);
+                        var stream = mappedFile.CreateViewStream();
 
-                        var metadata = await GetMetadataAsync(stream, bookId);
-                        if (metadata == null)
+                        var metadata = MetadataManager.ConfigureFullMetadata();
+
+                        try
                         {
-                            booksWithErrors.Add(bookId);
-                            continue;
+                            await metadata.ReadMetadataAsync(stream);
                         }
+                        catch (Exception ex)
+                        {
+                            ProgressReporter.Error($"Error reading {bookId}.", ex);
+
+                            MetadataManager.Dispose(stream, mappedFile);
+
+                            booksWithErrors.Add(bookId);
+                            return;
+                        }
+
+                        MetadataManager.CacheMetadata(bookId, metadata, stream, mappedFile);
 
                         var title = CleanStr(metadata.MobiHeader.FullName);
                         var publisher = CleanStr(metadata.MobiHeader.ExthHeader.Publisher);
 
                         publisher = TrimPublisher(publisher);
-                        Sync($"[{publisher}] {title}");
+                        await SyncAsync($"[{publisher}] {title}");
                     }
 
-                    void Sync(string titleFile)
+                    async Task SyncAsync(string titleFile)
                     {
                         var file = Path.Combine(Settings.TitlesDir, titleFile);
-                        File.WriteAllText(file, bookId);
+                        await File.WriteAllTextAsync(file, bookId);
 
                         // Add archived/scanned title to list of current titles
                         titles[bookId] = new FileInfo(file);
                         syncedBookCount++;
                     }
                 }
-            }
+            });
 
             foreach (var bookId in booksWithErrors)
             {
@@ -63,35 +75,6 @@ namespace AzwConverter
             }
 
             return syncedBookCount;
-        }
-
-        private static async Task<MobiMetadata.MobiMetadata> GetMetadataAsync(Stream stream, string bookId)
-        {
-            try
-            {
-                // Don't need anything from these two
-                var pdbHeader = MobiHeaderFactory.CreateReadNone<PDBHead>();
-                var palmDocHeader = MobiHeaderFactory.CreateReadNone<PalmDOCHead>();
-
-                // Want the fullname and the exth header
-                var mobiHeader = MobiHeaderFactory.CreateReadAll<MobiHead>();
-                MobiHeaderFactory.ConfigureRead(mobiHeader, mobiHeader.FullNameOffsetAttr, mobiHeader.ExthFlagsAttr);
-
-                // Want the publisher
-                var exthHeader = MobiHeaderFactory.CreateReadAll<EXTHHead>();
-                MobiHeaderFactory.ConfigureRead(exthHeader, exthHeader.PublisherAttr);
-
-                var metadata = new MobiMetadata.MobiMetadata(pdbHeader, palmDocHeader, mobiHeader, exthHeader, throwIfNoExthHeader: true);
-                await metadata.ReadMetadataAsync(stream);
-
-                return metadata;
-            }
-            catch (Exception ex)
-            {
-                ProgressReporter.Error($"Error reading {bookId}.", ex);
-
-                return null;
-            }
         }
 
         private static string TrimPublisher(string publisher)
@@ -147,10 +130,7 @@ namespace AzwConverter
 
         public string SyncConvertedTitle(string titleFile, FileInfo? convertedTitleFile)
         {
-            if (convertedTitleFile != null)
-            {
-                convertedTitleFile.Delete();
-            }
+            convertedTitleFile?.Delete();
 
             var name = Path.GetFileName(titleFile);
             name = name.RemoveAnyMarker();
