@@ -60,7 +60,7 @@ namespace AzwConverter
                     async Task SyncAsync(string titleFile)
                     {
                         var file = Path.Combine(Settings.TitlesDir, titleFile);
-                        await File.WriteAllTextAsync(file, bookId);
+                        await File.WriteAllTextAsync(file, bookId, CancellationToken.None);
 
                         // Add archived/scanned title to list of current titles
                         titles[bookId] = new FileInfo(file);

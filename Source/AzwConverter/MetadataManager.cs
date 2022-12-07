@@ -9,6 +9,7 @@ namespace AzwConverter
         {
             // Want the record (image) data of course
             var pdbHeader = MobiHeaderFactory.CreateReadAll<PDBHead>();
+
             MobiHeaderFactory.ConfigureRead(pdbHeader, pdbHeader.NumRecordsAttr);
 
             // Nothing from this one
@@ -16,11 +17,13 @@ namespace AzwConverter
 
             // Want the exth header, fullname, idx of first image record, idx of last content record 
             var mobiHeader = MobiHeaderFactory.CreateReadAll<MobiHead>();
+            
             MobiHeaderFactory.ConfigureRead(mobiHeader, mobiHeader.ExthFlagsAttr, mobiHeader.FullNameOffsetAttr,
                 mobiHeader.FirstImageIndexAttr, mobiHeader.LastContentRecordNumberAttr);
 
             // Want the publisher and the record index offsets for the cover and the thumbnail 
             var exthHeader = MobiHeaderFactory.CreateReadAll<EXTHHead>();
+            
             MobiHeaderFactory.ConfigureRead(exthHeader, exthHeader.PublisherAttr,
                 exthHeader.CoverOffsetAttr, exthHeader.ThumbOffsetAttr);
 
@@ -75,16 +78,6 @@ namespace AzwConverter
             {
                 throw new InvalidDataException("Boo hoo");
             }
-            /*
-            foreach (var pair in cache)
-            {
-                Dispose(pair.Value.Disposables);
-                pair.Value.Metadata = null;
-            }
-
-            cache.Clear();
-            cache = null;
-            */
         }
     }
 }

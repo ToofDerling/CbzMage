@@ -121,7 +121,7 @@ namespace AzwConverter.Engine
                 var xml = await records.RescRecord.GetPrettyPrintXmlAsync();
 
                 var path = Path.Combine(dir, "resc.xml");
-                await File.WriteAllTextAsync(path, xml);
+                await File.WriteAllTextAsync(path, xml, CancellationToken.None);
             }
 
             if (records.CoverRecord != null)

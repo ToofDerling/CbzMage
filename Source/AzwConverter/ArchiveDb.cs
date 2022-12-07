@@ -35,7 +35,7 @@ namespace AzwConverter
                     {
                         throw new InvalidOperationException($"{bookId} already in archive");
                     }
-                    _db[bookId] = JsonSerializer.Deserialize <CbzState>(tokens[1]);
+                    _db[bookId] = JsonSerializer.Deserialize<CbzState>(tokens[1]);
                 });
             }
         }
@@ -110,7 +110,7 @@ namespace AzwConverter
                 sb.Append(x.Key).Append(' ').AppendLine(JsonSerializer.Serialize(x.Value));
             }
 
-            await File.WriteAllTextAsync(_dbFile, sb.ToString());
+            await File.WriteAllTextAsync(_dbFile, sb.ToString(), CancellationToken.None);
         }
     }
 }
