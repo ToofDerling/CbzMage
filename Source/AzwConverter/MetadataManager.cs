@@ -7,21 +7,21 @@ namespace AzwConverter
     {
         public static MobiMetadata.MobiMetadata ConfigureFullMetadata()
         {
-            // Want the record (image) data of course
-            var pdbHeader = MobiHeaderFactory.CreateReadAll<PDBHead>();
-
-            MobiHeaderFactory.ConfigureRead(pdbHeader, pdbHeader.NumRecordsAttr);
+            // Want the image records of course, but not any properties
+            var pdbHeader = new PDBHead(skipProperties: true);
 
             // Nothing from this one
-            var palmDocHeader = MobiHeaderFactory.CreateReadNone<PalmDOCHead>();
+            var palmDocHeader = new PalmDOCHead(skipProperties: true);
 
-            // Want the exth header, fullname, idx of first image record, idx of last content record 
-            var mobiHeader = MobiHeaderFactory.CreateReadAll<MobiHead>();
-            
-            MobiHeaderFactory.ConfigureRead(mobiHeader, mobiHeader.ExthFlagsAttr, mobiHeader.FullNameOffsetAttr,
-                mobiHeader.FirstImageIndexAttr, mobiHeader.LastContentRecordNumberAttr);
+            // Want the exth header,
+            // fullname,
+            // idx of first image record,
+            // idx of last content record 
+            var mobiHeader = new MobiHead();
 
-            // Want the publisher and the record index offsets for the cover and the thumbnail 
+            // Want the publisher,
+            // the cover record index offset,
+            // thumbnail record index offset 
             var exthHeader = MobiHeaderFactory.CreateReadAll<EXTHHead>();
             
             MobiHeaderFactory.ConfigureRead(exthHeader, exthHeader.PublisherAttr,
