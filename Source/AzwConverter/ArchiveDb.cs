@@ -34,7 +34,7 @@ namespace AzwConverter
                 await stream.ReadAsync(linesData);
 
                 var linesString = Encoding.UTF8.GetString(linesData.Span);
-                var lines = linesString.Split(Environment.NewLine);
+                var lines = linesString.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
 
                 lines.AsParallel().ForAll(line =>
                 {
