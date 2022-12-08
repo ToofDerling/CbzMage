@@ -48,9 +48,13 @@ namespace AzwConverter
                             return;
                         }
 
-                        MetadataManager.CacheMetadata(bookId, metadata, stream, mappedFile);
+                        var title = metadata.MobiHeader.ExthHeader.UpdatedTitle;
+                        if (string.IsNullOrWhiteSpace(title))
+                        {
+                            title = metadata.MobiHeader.FullName;
+                        }
 
-                        var title = CleanStr(metadata.MobiHeader.FullName);
+                        title = CleanStr(metadata.MobiHeader.FullName);
                         var publisher = CleanStr(metadata.MobiHeader.ExthHeader.Publisher);
 
                         publisher = TrimPublisher(publisher);
