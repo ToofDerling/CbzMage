@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.IO.MemoryMappedFiles;
 using System.Text;
 using System.Text.Json;
 
@@ -22,9 +23,18 @@ namespace AzwConverter
 
         public async Task ReadArchiveDbAsync()
         {
+            var dbFileInfo = new FileInfo(_dbFile);
+
             if (File.Exists(_dbFile))
             {
-                var lines = await File.ReadAllLinesAsync(_dbFile);
+                using var mappedFile = MemoryMappedFile.CreateFromFile(_dbFile, FileMode.Open);
+                using var stream = mappedFile.CreateViewStream();
+
+                var linesData = new byte[dbFileInfo.Length].AsMemory();
+                await stream.ReadAsync(linesData);
+
+                var linesString = Encoding.UTF8.GetString(linesData.Span);
+                var lines = linesString.Split(Environment.NewLine);
 
                 lines.AsParallel().ForAll(line =>
                 {
