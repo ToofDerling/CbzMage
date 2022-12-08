@@ -38,7 +38,13 @@ namespace AzwConverter
                             continue;
                         }
 
-                        var title = CleanStr(metadata.MobiHeader.FullName);
+                        var title = metadata.MobiHeader.ExthHeader.UpdatedTitle;
+                        if (string.IsNullOrWhiteSpace(title))
+                        {
+                            title = metadata.MobiHeader.FullName;
+                        }
+
+                        title = CleanStr(metadata.MobiHeader.FullName);
                         var publisher = CleanStr(metadata.MobiHeader.ExthHeader.Publisher);
 
                         publisher = TrimPublisher(publisher);
@@ -79,7 +85,7 @@ namespace AzwConverter
 
                 // Want the publisher
                 var exthHeader = MobiHeaderFactory.CreateReadAll<EXTHHead>();
-                MobiHeaderFactory.ConfigureRead(exthHeader, exthHeader.PublisherAttr);
+                MobiHeaderFactory.ConfigureRead(exthHeader, exthHeader.PublisherAttr, exthHeader.UpdatedTitleAttr);
 
                 return new MobiMetadata.MobiMetadata(stream, pdbHeader, palmDocHeader, mobiHeader, exthHeader, throwIfNoExthHeader: true);
             }
