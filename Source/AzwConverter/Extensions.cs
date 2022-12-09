@@ -4,15 +4,18 @@ namespace AzwConverter
 {
     public static class Extensions
     {
+        private static readonly char[] _invalidChars = Path.GetInvalidFileNameChars();
+
+        private const int _space = 32;
+
         public static string ToFileSystemString(this string str)
         {
-            var invalidChars = Path.GetInvalidFileNameChars();
             var sb = new StringBuilder(str);
 
             for (int i = 0, sz = sb.Length; i < sz; i++)
             {   
                 var ch = sb[i];
-                if (invalidChars.Contains(ch) || (char.IsWhiteSpace(ch) && ch != 32))
+                if (_invalidChars.Contains(ch) || (char.IsWhiteSpace(ch) && ch != _space))
                 {
                     sb[i] = ' ';
                 }
