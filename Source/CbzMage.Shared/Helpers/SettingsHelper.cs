@@ -31,7 +31,7 @@ namespace CbzMage.Shared.Helpers
 
             if (settingsThreadCount <= 0)
             {
-                var threadCountFraction = Environment.ProcessorCount / fraction;
+                var threadCountFraction = Environment.ProcessorCount * fraction;
                 
                 var calculatedThreadCount = Convert.ToInt32(threadCountFraction);
 
