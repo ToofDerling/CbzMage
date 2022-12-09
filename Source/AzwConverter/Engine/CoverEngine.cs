@@ -11,7 +11,7 @@ namespace AzwConverter.Engine
         {
             _coverFile = coverFile;
 
-            return await ReadMetaDataAsync(bookId, dataFiles);
+            return await ReadImageDataAsync(bookId, dataFiles);
         }
 
         public string GetCoverString()

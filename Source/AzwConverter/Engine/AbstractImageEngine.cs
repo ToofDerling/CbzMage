@@ -2,30 +2,46 @@
 using CbzMage.Shared.Helpers;
 using System.IO.MemoryMappedFiles;
 using System.Text;
+using System.Net;
 
 namespace AzwConverter.Engine
 {
     public abstract class AbstractImageEngine
     {
-        protected async Task<CbzState?> ReadMetaDataAsync(string bookId, FileInfo[] dataFiles)
+        protected async Task<(MobiMetadata.MobiMetadata, IDisposable[])> ReadMetadataAsync(FileInfo[] dataFiles)
+        {
+            var azwFile = dataFiles.First(file => file.IsAzwFile());
+
+            //TODO: Handle IOException when Kdle is running.
+            var mappedFile = MemoryMappedFile.CreateFromFile(azwFile.FullName);
+            var stream = mappedFile.CreateViewStream();
+
+            var disposables = new IDisposable[] { stream, mappedFile };
+            var metadata = MetadataManager.ConfigureMetadata();
+            try
+            {
+                await metadata.ReadMetadataAsync(stream);
+            }
+            catch(Exception ex) 
+            {
+                ProgressReporter.Error($"Error reading metadate from {azwFile}.", ex);
+                MetadataManager.DisposeDisposables(disposables);
+
+                throw;
+            }
+
+            return (metadata, disposables);
+        }
+
+        protected async Task<CbzState?> ReadImageDataAsync(string bookId, FileInfo[] dataFiles)
         {
             var metadata = MetadataManager.GetCachedMetadata(bookId);
             IDisposable[] disposables = null;
-
             try
             {
                 if (metadata == null)
                 {
-                    var azwFile = dataFiles.First(file => file.IsAzwFile());
-
-                    //TODO: Handle IOException when Kdle is running.
-                    var mappedFile = MemoryMappedFile.CreateFromFile(azwFile.FullName);
-                    var stream = mappedFile.CreateViewStream();
-
-                    disposables = new IDisposable[] { stream, mappedFile };
-
-                    metadata = MetadataManager.ConfigureFullMetadata();
-                    await metadata.ReadMetadataAsync(stream);
+                    (metadata, disposables) = await ReadMetadataAsync(dataFiles);
                 }
 
                 await metadata.ReadImageRecordsAsync();

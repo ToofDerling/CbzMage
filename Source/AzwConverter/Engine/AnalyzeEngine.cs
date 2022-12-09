@@ -14,7 +14,7 @@ namespace AzwConverter.Engine
         {
             _bookDir = bookDir;
 
-            return await ReadMetaDataAsync(bookId, dataFiles);
+            return await ReadImageDataAsync(bookId, dataFiles);
         }
 
         public string GetAnalyzeMessage()

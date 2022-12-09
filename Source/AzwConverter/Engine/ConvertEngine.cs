@@ -25,7 +25,7 @@ namespace AzwConverter.Engine
                 _mappedArchiveLen += hdContainer.Length;
             }
 
-            return await ReadMetaDataAsync(bookId, dataFiles);
+            return await ReadImageDataAsync(bookId, dataFiles);
         }
 
         protected override async Task<CbzState?> ProcessImagesAsync(PageRecords? pageRecordsHd, PageRecords pageRecords)

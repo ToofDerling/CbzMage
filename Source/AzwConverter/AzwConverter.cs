@@ -404,6 +404,8 @@ namespace AzwConverter
             var newTitleFile = AddMarkerOrRemoveAnyMarker(titleFile, Settings.NewTitleMarker);
             BookCountOutputHelper(newTitleFile, out var sb);
 
+            MetadataManager.DisposeCachedMetadata(bookId);
+
             ProgressReporter.Done(sb.ToString());
         }
 

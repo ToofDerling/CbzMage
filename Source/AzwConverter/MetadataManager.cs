@@ -5,7 +5,7 @@ namespace AzwConverter
 {
     public class MetadataManager
     {
-        public static MobiMetadata.MobiMetadata ConfigureFullMetadata()
+        public static MobiMetadata.MobiMetadata ConfigureMetadata()
         {
             // Want the image records of course, but not any properties
             var pdbHeader = new PDBHead(skipProperties: true);

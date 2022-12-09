@@ -1,6 +1,5 @@
-﻿using CbzMage.Shared.Helpers;
+﻿using AzwConverter.Engine;
 using System.Collections.Concurrent;
-using System.IO.MemoryMappedFiles;
 using System.Net;
 
 namespace AzwConverter
@@ -12,7 +11,7 @@ namespace AzwConverter
             var syncedBookCount = 0;
             var booksWithErrors = new List<string>();
 
-            await Parallel.ForEachAsync(books, Settings.ParallelOptions, async (book, ct) =>
+            foreach (var book in books)
             {
                 var bookId = book.Key;
 
@@ -27,29 +26,22 @@ namespace AzwConverter
                     else
                     {
                         // Or scan the book file
-                        var bookFiles = book.Value;
-                        var azwFile = bookFiles.First(file => file.IsAzwFile());
-
-                        var mappedFile = MemoryMappedFile.CreateFromFile(azwFile.FullName);
-                        var stream = mappedFile.CreateViewStream();
-
-                        var metadata = MetadataManager.ConfigureFullMetadata();
-
+                        MobiMetadata.MobiMetadata metadata;
+                        IDisposable[] disposables;
                         try
                         {
-                            await metadata.ReadMetadataAsync(stream);
+                            var bookFiles = book.Value;
+
+                            var engine = new MetadataEngine();
+                            (metadata, disposables) = await engine.ReadMetadataAsync(bookFiles);
+ 
+                            MetadataManager.CacheMetadata(bookId, metadata, disposables);
                         }
-                        catch (Exception ex)
+                        catch (Exception)
                         {
-                            ProgressReporter.Error($"Error reading {bookId}.", ex);
-
-                            MetadataManager.DisposeDisposables(stream, mappedFile);
-
                             booksWithErrors.Add(bookId);
-                            return;
+                            continue;
                         }
-
-                        MetadataManager.CacheMetadata(bookId, metadata, stream, mappedFile);
 
                         var title = metadata.MobiHeader.ExthHeader.UpdatedTitle;
                         if (string.IsNullOrWhiteSpace(title))
@@ -57,7 +49,7 @@ namespace AzwConverter
                             title = metadata.MobiHeader.FullName;
                         }
 
-                        title = CleanStr(metadata.MobiHeader.FullName);
+                        title = CleanStr(title);
                         var publisher = CleanStr(metadata.MobiHeader.ExthHeader.Publisher);
 
                         publisher = TrimPublisher(publisher);
@@ -74,7 +66,7 @@ namespace AzwConverter
                         syncedBookCount++;
                     }
                 }
-            });
+            }
 
             foreach (var bookId in booksWithErrors)
             {
