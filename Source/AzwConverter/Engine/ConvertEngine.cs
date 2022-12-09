@@ -119,7 +119,6 @@ namespace AzwConverter.Engine
             }
 
             return state;
-
         }
 
         private async Task<bool> WriteRecordAsync(ZipArchive zipArchive, string pageName, CbzState state, 

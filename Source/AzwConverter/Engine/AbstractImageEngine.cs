@@ -2,7 +2,6 @@
 using CbzMage.Shared.Helpers;
 using System.IO.MemoryMappedFiles;
 using System.Text;
-using System.Net;
 
 namespace AzwConverter.Engine
 {
@@ -43,7 +42,6 @@ namespace AzwConverter.Engine
                 {
                     (metadata, disposables) = await ReadMetadataAsync(dataFiles);
                 }
-
                 await metadata.ReadImageRecordsAsync();
 
                 var hdContainer = dataFiles.FirstOrDefault(file => file.IsAzwResFile());
