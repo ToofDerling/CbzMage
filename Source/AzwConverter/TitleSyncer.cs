@@ -1,4 +1,5 @@
 ﻿using CbzMage.Shared.Helpers;
+using System.Collections.Concurrent;
 using System.IO.MemoryMappedFiles;
 using System.Net;
 
@@ -105,10 +106,10 @@ namespace AzwConverter
 
         public int SyncTitlesToArchive(IDictionary<string, FileInfo> titles, ArchiveDb archive, IDictionary<string, FileInfo[]> books)
         {
-            var idsToRemove = new List<string>();
+            var idsToRemove = new ConcurrentBag<string>();
             var archivedTitleCount = 0;
 
-            foreach (var title in titles)
+            titles.AsParallel().ForAll(title =>
             {
                 var bookId = title.Key;
                 var titleFile = title.Value;
@@ -123,7 +124,7 @@ namespace AzwConverter
                     idsToRemove.Add(bookId);
                     titleFile.Delete();
                 }
-            }
+            });
 
             // Update current titles
             foreach (var bookId in idsToRemove)
