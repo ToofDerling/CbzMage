@@ -44,7 +44,7 @@ namespace AzwConverter
                             title = metadata.MobiHeader.FullName;
                         }
 
-                        title = CleanStr(metadata.MobiHeader.FullName);
+                        title = CleanStr(title);
                         var publisher = CleanStr(metadata.MobiHeader.ExthHeader.Publisher);
 
                         publisher = TrimPublisher(publisher);
