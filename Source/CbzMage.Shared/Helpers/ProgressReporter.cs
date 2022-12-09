@@ -89,7 +89,7 @@ namespace CbzMage.Shared.Helpers
             var errorMessage = $"{message} {ex.TypeAndMessage()}";
 
 #if DEBUG
-            errorMessage = ex.ToString();
+            errorMessage =  $"{message}{Environment.NewLine}{ex}";
 #endif
 
             Error(errorMessage);

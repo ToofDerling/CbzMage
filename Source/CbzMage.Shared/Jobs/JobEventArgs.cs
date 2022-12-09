@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace CbzMage.Shared.Jobs
+﻿namespace CbzMage.Shared.Jobs
 {
     public class JobEventArgs<T> : EventArgs
     {
