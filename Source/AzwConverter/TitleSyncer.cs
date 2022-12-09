@@ -6,7 +6,8 @@ namespace AzwConverter
 {
     public class TitleSyncer
     {
-        public async Task<int> SyncBooksToTitlesAsync(IDictionary<string, FileInfo[]> books, IDictionary<string, FileInfo> titles, ArchiveDb archive)
+        public async Task<int> SyncBooksToTitlesAsync(IDictionary<string, FileInfo[]> books, 
+            IDictionary<string, FileInfo> titles, ArchiveDb archive)
         {
             var syncedBookCount = 0;
             var booksWithErrors = new List<string>();
@@ -37,7 +38,7 @@ namespace AzwConverter
  
                             MetadataManager.CacheMetadata(bookId, metadata, disposables);
                         }
-                        catch (Exception)
+                        catch (MobiMetadata.MobiMetadataException)
                         {
                             booksWithErrors.Add(bookId);
                             continue;
