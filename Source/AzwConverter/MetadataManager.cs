@@ -10,24 +10,21 @@ namespace AzwConverter
             // Want the image records of course, but not any properties
             var pdbHeader = new PDBHead(skipProperties: true);
 
-            // Nothing from this one
+            // Nothing from this one (PalmDOCHead has no records).
             var palmDocHeader = new PalmDOCHead(skipProperties: true);
 
+            // MobiHead:
             // Want the exth header,
             // fullname,
             // idx of first image record,
             // idx of last content record 
-            var mobiHeader = new MobiHead();
 
+            // EXTHHead:
             // Want the publisher,
             // the cover record index offset,
             // thumbnail record index offset 
-            var exthHeader = MobiHeaderFactory.CreateReadAll<EXTHHead>();
-            
-            MobiHeaderFactory.ConfigureRead(exthHeader, exthHeader.PublisherAttr,
-                exthHeader.CoverOffsetAttr, exthHeader.ThumbOffsetAttr);
 
-            return new MobiMetadata.MobiMetadata(pdbHeader, palmDocHeader, mobiHeader, exthHeader, throwIfNoExthHeader: true);
+            return new MobiMetadata.MobiMetadata(pdbHeader, palmDocHeader, throwIfNoExthHeader: true);
         }
 
         private class CacheItem
