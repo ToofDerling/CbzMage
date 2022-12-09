@@ -323,9 +323,8 @@ namespace AzwConverter
             var oldState = archive.GetState(bookId);
             if (oldState.Changed != null)
             {
-                // If the Changed state hasn't been removed by converting the book 
-                // there's no need to rescan - we can use the old values to display
-                // any up/downgrade.
+                // If the Changed state hasn't been removed by converting the book there's no 
+                // need to rescan - we can use the old values to display any up/downgrade.
                 state = oldState;
                 oldState = oldState.Changed;
             }

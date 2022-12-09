@@ -24,8 +24,8 @@ namespace AzwConverter.Engine
             catch(Exception ex) 
             {
                 ProgressReporter.Error($"Error reading metadate from {azwFile}.", ex);
+                
                 MetadataManager.DisposeDisposables(disposables);
-
                 throw;
             }
 

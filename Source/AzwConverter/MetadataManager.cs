@@ -34,14 +34,14 @@ namespace AzwConverter
             public IDisposable[] Disposables { get; set; }
         }
 
-        private static readonly ConcurrentDictionary<string, CacheItem> cache = new();
+        private static readonly ConcurrentDictionary<string, CacheItem> _cache = new();
 
         public static void CacheMetadata(string bookId, MobiMetadata.MobiMetadata metadata, 
             params IDisposable[] disposables)
         {
             var item = new CacheItem { Metadata = metadata, Disposables = disposables };
 
-            if (!cache.TryAdd(bookId, item))
+            if (!_cache.TryAdd(bookId, item))
             {
                 throw new Exception($"Metadata for book {bookId} is already cached");
             }
@@ -49,12 +49,12 @@ namespace AzwConverter
 
         public static MobiMetadata.MobiMetadata? GetCachedMetadata(string bookId)
         {
-            return cache.TryGetValue(bookId, out var item) ? item.Metadata : default;
+            return _cache.TryGetValue(bookId, out var item) ? item.Metadata : default;
         }
 
         public static void DisposeCachedMetadata(string bookId)
         {
-            if (cache.TryRemove(bookId, out var item))
+            if (_cache.TryRemove(bookId, out var item))
             {
                 DisposeDisposables(item.Disposables);
                 item.Metadata = null;
@@ -71,7 +71,7 @@ namespace AzwConverter
 
         public static void ThrowIfCacheNotEmpty()
         {
-            if (!cache.IsEmpty)
+            if (!_cache.IsEmpty)
             {
                 throw new InvalidDataException("Boo hoo");
             }
