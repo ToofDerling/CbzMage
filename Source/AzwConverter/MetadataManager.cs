@@ -56,12 +56,12 @@ namespace AzwConverter
         {
             if (cache.TryRemove(bookId, out var item))
             {
-                Dispose(item.Disposables);
+                DisposeDisposables(item.Disposables);
                 item.Metadata = null;
             }
         }
 
-        public static void Dispose(params IDisposable[] disposables)
+        public static void DisposeDisposables(params IDisposable[] disposables)
         {
             foreach (var disposable in disposables)
             {

@@ -56,7 +56,7 @@ namespace AzwConverter.Engine
             {
                 if (disposables != null)
                 {
-                    MetadataManager.Dispose(disposables);
+                    MetadataManager.DisposeDisposables(disposables);
                 }
                 else
                 {

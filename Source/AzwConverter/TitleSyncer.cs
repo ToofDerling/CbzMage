@@ -42,7 +42,7 @@ namespace AzwConverter
                         {
                             ProgressReporter.Error($"Error reading {bookId}.", ex);
 
-                            MetadataManager.Dispose(stream, mappedFile);
+                            MetadataManager.DisposeDisposables(stream, mappedFile);
 
                             booksWithErrors.Add(bookId);
                             return;
