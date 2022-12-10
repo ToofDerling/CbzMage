@@ -41,11 +41,10 @@ namespace AzwConverter
                     var tokens = line.Split(' ', 2);
                     var bookId = tokens[0];
 
-                    if (_db.ContainsKey(bookId))
+                    if (!_db.TryAdd(bookId, JsonSerializer.Deserialize<CbzState>(tokens[1])))
                     {
                         throw new InvalidOperationException($"{bookId} already in archive");
                     }
-                    _db[bookId] = JsonSerializer.Deserialize<CbzState>(tokens[1]);
                 });
             }
         }
