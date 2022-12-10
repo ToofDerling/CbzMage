@@ -1,7 +1,6 @@
 ﻿using AzwConverter.Engine;
 using MobiMetadata;
 using System.Collections.Concurrent;
-using System.Net;
 
 namespace AzwConverter
 {
@@ -50,9 +49,9 @@ namespace AzwConverter
                         {
                             title = metadata.MobiHeader.FullName;
                         }
-                        title = CleanStr(title);
+                        title = title.ToFileSystemString();
 
-                        var publisher = CleanStr(metadata.MobiHeader.ExthHeader.Publisher);
+                        var publisher = metadata.MobiHeader.ExthHeader.Publisher.ToFileSystemString();
                         publisher = TrimPublisher(publisher);
 
                         await SyncAsync($"[{publisher}] {title}");
@@ -94,12 +93,6 @@ namespace AzwConverter
             }
 
             return publisher;
-        }
-
-        private static string CleanStr(string str)
-        {
-            str = WebUtility.HtmlDecode(str);
-            return str.ToFileSystemString();
         }
 
         public int SyncTitlesToArchive(IDictionary<string, FileInfo> titles, ArchiveDb archive, IDictionary<string, FileInfo[]> books)

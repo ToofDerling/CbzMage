@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Net;
+using System.Text;
 
 namespace AzwConverter
 {
@@ -6,16 +7,18 @@ namespace AzwConverter
     {
         private static readonly char[] _invalidChars = Path.GetInvalidFileNameChars();
 
-        private const int _space = 32;
+        private const int _spaceCh = 32;
 
         public static string ToFileSystemString(this string str)
         {
+            str = WebUtility.HtmlDecode(str);
+
             var sb = new StringBuilder(str);
 
             for (int i = 0, sz = sb.Length; i < sz; i++)
             {   
                 var ch = sb[i];
-                if (_invalidChars.Contains(ch) || (ch != _space && char.IsWhiteSpace(ch)))
+                if (_invalidChars.Contains(ch) || (ch != _spaceCh && char.IsWhiteSpace(ch)))
                 {
                     sb[i] = ' ';
                 }
