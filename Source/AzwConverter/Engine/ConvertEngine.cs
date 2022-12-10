@@ -89,13 +89,9 @@ namespace AzwConverter.Engine
             }
             coverRecord = sdImageRecords.CoverRecord;
 
-            var foundRealCover = false;
-
-            if (hdCoverRecord != null || coverRecord != null)
-            {
-                foundRealCover = await WriteRecordAsync(zipArchive, coverName, state, hdCoverRecord, coverRecord, 
-                    isRealCover: true, isFakeCover: false);
-            }
+            var foundRealCover = (hdCoverRecord != null || coverRecord != null)
+                && await WriteRecordAsync(zipArchive, coverName, state,
+                    hdCoverRecord, coverRecord, isRealCover: true, isFakeCover: false);
 
             // Pages
             PageRecord? pageRecord;
@@ -121,7 +117,7 @@ namespace AzwConverter.Engine
             return state;
         }
 
-        private async Task<bool> WriteRecordAsync(ZipArchive zipArchive, string pageName, CbzState state, 
+        private async Task<bool> WriteRecordAsync(ZipArchive zipArchive, string pageName, CbzState state,
             PageRecord? hdRecord, PageRecord record, bool isRealCover, bool isFakeCover)
         {
             // Write a cover file?
