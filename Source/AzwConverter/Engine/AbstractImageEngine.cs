@@ -79,6 +79,12 @@ namespace AzwConverter.Engine
             }
         }
 
+        protected FileStream AsyncFileStream(string filePath)
+        {
+            return new FileStream(filePath, FileMode.Create, FileAccess.Write,
+                    FileShare.None, 0, FileOptions.Asynchronous | FileOptions.SequentialScan);
+        }
+
         protected abstract Task<CbzState?> ProcessImagesAsync(PageRecords? pageRecordsHd, PageRecords pageRecords);
     }
 }

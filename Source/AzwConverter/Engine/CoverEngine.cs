@@ -27,7 +27,7 @@ namespace AzwConverter.Engine
 
         private async Task SaveCoverAsync(PageRecords? hdImageRecords, PageRecords sdImageRecords)
         {
-            using var stream = File.Open(_coverFile, FileMode.Create, FileAccess.Write);
+            using var stream = AsyncFileStream(_coverFile);
 
             // First try HD cover
             if (hdImageRecords != null && hdImageRecords.CoverRecord != null 

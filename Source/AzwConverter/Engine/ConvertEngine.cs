@@ -34,12 +34,10 @@ namespace AzwConverter.Engine
         private async Task<CbzState> CreateCbzAsync(PageRecords? hdImageRecords, PageRecords sdImageRecords)
         {
             var tempFile = $"{_cbzFile}.temp";
-            File.Delete(tempFile);
 
             var state = await ReadAndCompressAsync(tempFile, hdImageRecords, sdImageRecords);
 
-            File.Delete(_cbzFile);
-            File.Move(tempFile, _cbzFile);
+            File.Move(tempFile, _cbzFile, overwrite: true);
 
             return state;
         }
@@ -49,7 +47,7 @@ namespace AzwConverter.Engine
             CbzState state;
             long realArchiveLen;
 
-            using (var mappedFileStream = new FileStream(tempFile, FileMode.CreateNew))
+            using (var mappedFileStream = AsyncFileStream(tempFile))
             {
                 using (var mappedArchive = MemoryMappedFile.CreateFromFile(mappedFileStream, null,
                     _mappedArchiveLen, MemoryMappedFileAccess.ReadWrite, HandleInheritability.None, true))
@@ -121,13 +119,15 @@ namespace AzwConverter.Engine
             PageRecord? hdRecord, PageRecord record, bool isRealCover, bool isFakeCover)
         {
             // Write a cover file?
-            var coverFile = (isRealCover || isFakeCover) && _coverFile != null ? _coverFile : null;
+            Stream? coverStream = (isRealCover || isFakeCover) && _coverFile != null 
+                ? AsyncFileStream(_coverFile) 
+                : null;
 
             var entry = zipArchive.CreateEntry(pageName, Settings.CompressionLevel);
             using var stream = entry.Open();
 
             if (hdRecord != null
-                && await hdRecord.WriteDataAsync(stream, ImageRecordHD.RecordId, coverFile))
+                && await hdRecord.WriteDataAsync(stream, ImageRecordHD.RecordId, coverStream!))
             {
                 if (isRealCover)
                 {
@@ -142,7 +142,7 @@ namespace AzwConverter.Engine
 
             if (record != null)
             {
-                await record.WriteDataAsync(stream, file: coverFile);
+                await record.WriteDataAsync(stream, additionalStream: coverStream!);
                 if (isRealCover)
                 {
                     state.SdCover = true;
