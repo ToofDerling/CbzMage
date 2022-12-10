@@ -21,7 +21,7 @@ namespace AzwConverter.Engine
             {
                 await metadata.ReadMetadataAsync(stream);
             }
-            catch(Exception ex) 
+            catch(MobiMetadataException ex) 
             {
                 ProgressReporter.Error($"Error reading metadate from {azwFile}.", ex);
                 
