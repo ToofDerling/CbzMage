@@ -15,7 +15,7 @@ namespace AzwConverter
             for (int i = 0, sz = sb.Length; i < sz; i++)
             {   
                 var ch = sb[i];
-                if (_invalidChars.Contains(ch) || (char.IsWhiteSpace(ch) && ch != _space))
+                if (_invalidChars.Contains(ch) || (ch != _space && char.IsWhiteSpace(ch)))
                 {
                     sb[i] = ' ';
                 }
