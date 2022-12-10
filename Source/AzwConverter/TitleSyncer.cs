@@ -105,7 +105,6 @@ namespace AzwConverter
         public int SyncTitlesToArchive(IDictionary<string, FileInfo> titles, ArchiveDb archive, IDictionary<string, FileInfo[]> books)
         {
             var idsToRemove = new ConcurrentBag<string>();
-            var archivedTitleCount = 0;
 
             titles.AsParallel().ForAll(title =>
             {
@@ -117,8 +116,6 @@ namespace AzwConverter
                 // Delete title if no longer in books.
                 if (!books.ContainsKey(bookId))
                 {
-                    archivedTitleCount++;
-
                     idsToRemove.Add(bookId);
                     titleFile.Delete();
                 }
@@ -130,7 +127,7 @@ namespace AzwConverter
                 titles.Remove(bookId);
             }
 
-            return archivedTitleCount;
+            return idsToRemove.Count;
         }
 
         public string SyncConvertedTitle(string titleFile, FileInfo? convertedTitleFile)
