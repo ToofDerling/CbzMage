@@ -11,14 +11,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CbzMage.Shared", "Source\Cb
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzwConverter", "Source\AzwConverter\AzwConverter.csproj", "{A03C4A66-534E-4C23-94E9-5EFC38A220E2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MobiMetadata", "..\CbzMageExternal\MobiMetadata\Source\MobiMetadata\MobiMetadata.csproj", "{8C5A9FDD-EB47-49E4-A3C0-DB8D847DB592}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ghostscript.Core", "ExternalProjects\Ghostscript.Core\Ghostscript.NET\Ghostscript.Core.csproj", "{6A05A9B8-C65F-4E6B-849A-E3804F515F7F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ExternalProjects", "ExternalProjects", "{926715BF-4197-4640-A99E-80F88BBBFA99}"
 	ProjectSection(SolutionItems) = preProject
 		ExternalProjects\ExternalProjects.txt = ExternalProjects\ExternalProjects.txt
 	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MobiMetadata", "ExternalProjects\MobiMetadata\Source\MobiMetadata\MobiMetadata.csproj", "{02CF92F9-D7D8-41D5-B4C4-8521BF0C7172}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -78,18 +78,6 @@ Global
 		{A03C4A66-534E-4C23-94E9-5EFC38A220E2}.Release|x64.Build.0 = Release|Any CPU
 		{A03C4A66-534E-4C23-94E9-5EFC38A220E2}.Release|x86.ActiveCfg = Release|Any CPU
 		{A03C4A66-534E-4C23-94E9-5EFC38A220E2}.Release|x86.Build.0 = Release|Any CPU
-		{8C5A9FDD-EB47-49E4-A3C0-DB8D847DB592}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8C5A9FDD-EB47-49E4-A3C0-DB8D847DB592}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8C5A9FDD-EB47-49E4-A3C0-DB8D847DB592}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{8C5A9FDD-EB47-49E4-A3C0-DB8D847DB592}.Debug|x64.Build.0 = Debug|Any CPU
-		{8C5A9FDD-EB47-49E4-A3C0-DB8D847DB592}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{8C5A9FDD-EB47-49E4-A3C0-DB8D847DB592}.Debug|x86.Build.0 = Debug|Any CPU
-		{8C5A9FDD-EB47-49E4-A3C0-DB8D847DB592}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8C5A9FDD-EB47-49E4-A3C0-DB8D847DB592}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8C5A9FDD-EB47-49E4-A3C0-DB8D847DB592}.Release|x64.ActiveCfg = Release|Any CPU
-		{8C5A9FDD-EB47-49E4-A3C0-DB8D847DB592}.Release|x64.Build.0 = Release|Any CPU
-		{8C5A9FDD-EB47-49E4-A3C0-DB8D847DB592}.Release|x86.ActiveCfg = Release|Any CPU
-		{8C5A9FDD-EB47-49E4-A3C0-DB8D847DB592}.Release|x86.Build.0 = Release|Any CPU
 		{6A05A9B8-C65F-4E6B-849A-E3804F515F7F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6A05A9B8-C65F-4E6B-849A-E3804F515F7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6A05A9B8-C65F-4E6B-849A-E3804F515F7F}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -102,6 +90,18 @@ Global
 		{6A05A9B8-C65F-4E6B-849A-E3804F515F7F}.Release|x64.Build.0 = Release|Any CPU
 		{6A05A9B8-C65F-4E6B-849A-E3804F515F7F}.Release|x86.ActiveCfg = Release|Any CPU
 		{6A05A9B8-C65F-4E6B-849A-E3804F515F7F}.Release|x86.Build.0 = Release|Any CPU
+		{02CF92F9-D7D8-41D5-B4C4-8521BF0C7172}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02CF92F9-D7D8-41D5-B4C4-8521BF0C7172}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02CF92F9-D7D8-41D5-B4C4-8521BF0C7172}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{02CF92F9-D7D8-41D5-B4C4-8521BF0C7172}.Debug|x64.Build.0 = Debug|Any CPU
+		{02CF92F9-D7D8-41D5-B4C4-8521BF0C7172}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{02CF92F9-D7D8-41D5-B4C4-8521BF0C7172}.Debug|x86.Build.0 = Debug|Any CPU
+		{02CF92F9-D7D8-41D5-B4C4-8521BF0C7172}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02CF92F9-D7D8-41D5-B4C4-8521BF0C7172}.Release|Any CPU.Build.0 = Release|Any CPU
+		{02CF92F9-D7D8-41D5-B4C4-8521BF0C7172}.Release|x64.ActiveCfg = Release|Any CPU
+		{02CF92F9-D7D8-41D5-B4C4-8521BF0C7172}.Release|x64.Build.0 = Release|Any CPU
+		{02CF92F9-D7D8-41D5-B4C4-8521BF0C7172}.Release|x86.ActiveCfg = Release|Any CPU
+		{02CF92F9-D7D8-41D5-B4C4-8521BF0C7172}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
