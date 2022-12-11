@@ -259,6 +259,7 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
+
 /Source/AzwConverter/appsettings.Development.json
 /lib/gsdll64.dll
 /Source/CbzMage/Properties/PublishProfiles
@@ -266,4 +267,4 @@ __pycache__/
 /Source/AzwConverter/AzwSettings.Development.json
 /Source/CbzMage/Properties/launchSettings.json
 /Source/PdfConverter/PdfSettings.Development.json
-/ExternalProjects
+
