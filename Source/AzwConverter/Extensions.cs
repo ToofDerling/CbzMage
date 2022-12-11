@@ -1,18 +1,24 @@
-﻿using System.Text;
+﻿using System.Net;
+using System.Text;
 
 namespace AzwConverter
 {
     public static class Extensions
     {
+        private static readonly char[] _invalidChars = Path.GetInvalidFileNameChars();
+
+        private const int _spaceCh = 32;
+
         public static string ToFileSystemString(this string str)
         {
-            var invalidChars = Path.GetInvalidFileNameChars();
+            str = WebUtility.HtmlDecode(str);
+
             var sb = new StringBuilder(str);
 
             for (int i = 0, sz = sb.Length; i < sz; i++)
             {   
                 var ch = sb[i];
-                if (invalidChars.Contains(ch) || (char.IsWhiteSpace(ch) && ch != 32))
+                if (_invalidChars.Contains(ch) || (ch != _spaceCh && char.IsWhiteSpace(ch)))
                 {
                     sb[i] = ' ';
                 }
@@ -39,7 +45,9 @@ namespace AzwConverter
 
         public static string SIf1<T>(this IEnumerable<T> enu) => enu.Count().SIf1();
 
-        public static bool IsAzwFile(this FileInfo fileInfo) => fileInfo.FullName.EndsWith(Settings.AzwExt);
+        public static bool IsAzwFile(this FileInfo fileInfo) => fileInfo.FullName.IsAzwFile();
+        
+        public static bool IsAzwFile(this string file) => file.EndsWith(Settings.AzwExt);
 
         public static bool IsAzwResFile(this FileInfo fileInfo) => fileInfo.FullName.EndsWith(Settings.AzwResExt);
     }

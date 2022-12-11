@@ -4,21 +4,18 @@ namespace AzwConverter.Engine
 {
     public class ScanEngine : AbstractImageEngine
     {
-        public CbzState ScanBook(string bookId, FileInfo[] dataFiles)
-        {
-            return ReadMetaData(bookId, dataFiles);
-        }
+        public async Task<CbzState?> ScanBookAsync(string bookId, FileInfo[] dataFiles) 
+            => await ReadImageDataAsync(bookId, dataFiles);
 
-        protected override CbzState ProcessImages(PageRecords? pageRecordsHd, PageRecords pageRecords)
-        {
-            return ReadCbzState(pageRecordsHd, pageRecords);
-        }
+        protected override async Task<CbzState?> ProcessImagesAsync(PageRecords? pageRecordsHd, PageRecords pageRecords) 
+            => await ReadCbzStateAsync(pageRecordsHd, pageRecords);
 
-        private CbzState ReadCbzState(PageRecords? hdImageRecords, PageRecords sdImageRecords)
+        private static async Task<CbzState?> ReadCbzStateAsync(PageRecords? hdImageRecords, PageRecords sdImageRecords)
         {
             var state = new CbzState
             {
-                HdCover = hdImageRecords != null && hdImageRecords.CoverRecord != null && hdImageRecords.CoverRecord.IsCresRecord
+                HdCover = hdImageRecords != null && hdImageRecords.CoverRecord != null 
+                    && await hdImageRecords.CoverRecord.IsCresRecordAsync()
             };
 
             if (!state.HdCover)
@@ -30,7 +27,8 @@ namespace AzwConverter.Engine
             {
                 state.Pages++;
 
-                if (hdImageRecords != null && hdImageRecords.ContentRecords[i].IsCresRecord)
+                if (hdImageRecords != null 
+                    && await hdImageRecords.ContentRecords[i].IsCresRecordAsync())
                 {
                     state.HdImages++;
                 }

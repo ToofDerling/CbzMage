@@ -1,17 +1,18 @@
-﻿using CbzMage.Shared.Helpers;
+﻿using AzwConverter.Engine;
 using MobiMetadata;
-using System.Net;
+using System.Collections.Concurrent;
 
 namespace AzwConverter
 {
     public class TitleSyncer
     {
-        public int SyncBooksToTitles(Dictionary<string, FileInfo[]> books, Dictionary<string, FileInfo> titles, ArchiveDb archive)
+        public async Task<int> SyncBooksToTitlesAsync(IDictionary<string, FileInfo[]> books, 
+            IDictionary<string, FileInfo> titles, ArchiveDb archive)
         {
-            var syncedBookCount = 0;
-            var booksWithErrors = new List<string>();
+            var booksWithErrors = new ConcurrentBag<string>();
+            var newOrArchivedTitles = new ConcurrentDictionary<string, FileInfo>();
 
-            foreach (var book in books)
+            await Parallel.ForEachAsync(books, Settings.ParallelOptions, async (book, ct) =>
             {
                 var bookId = book.Key;
 
@@ -21,21 +22,26 @@ namespace AzwConverter
                     // Try the archive
                     if (archive.TryGetName(bookId, out var name))
                     {
-                        Sync(name);
+                        await SyncAsync(name);
                     }
                     else
                     {
                         // Or scan the book file
-                        var bookFiles = book.Value;
-                        var azwFile = bookFiles.First(file => file.IsAzwFile());
+                        MobiMetadata.MobiMetadata metadata;
+                        IDisposable[] disposables;
+                        try
+                        {
+                            var bookFiles = book.Value;
 
-                        using var stream = azwFile.Open(FileMode.Open);
+                            var engine = new MetadataEngine();
+                            (metadata, disposables) = await engine.ReadMetadataAsync(bookFiles);
 
-                        var metadata = GetMetadata(stream, bookId);
-                        if (metadata == null)
+                            MetadataManager.CacheMetadata(bookId, metadata, disposables);
+                        }
+                        catch (MobiMetadataException)
                         {
                             booksWithErrors.Add(bookId);
-                            continue;
+                            return;
                         }
 
                         var title = metadata.MobiHeader.ExthHeader.UpdatedTitle;
@@ -43,58 +49,36 @@ namespace AzwConverter
                         {
                             title = metadata.MobiHeader.FullName;
                         }
+                        title = title.ToFileSystemString();
 
-                        title = CleanStr(title);
-                        var publisher = CleanStr(metadata.MobiHeader.ExthHeader.Publisher);
-
+                        var publisher = metadata.MobiHeader.ExthHeader.Publisher.ToFileSystemString();
                         publisher = TrimPublisher(publisher);
-                        Sync($"[{publisher}] {title}");
+
+                        await SyncAsync($"[{publisher}] {title}");
                     }
 
-                    void Sync(string titleFile)
+                    async Task SyncAsync(string titleFile)
                     {
                         var file = Path.Combine(Settings.TitlesDir, titleFile);
-                        File.WriteAllText(file, bookId);
+                        await File.WriteAllTextAsync(file, bookId, CancellationToken.None);
 
                         // Add archived/scanned title to list of current titles
-                        titles[bookId] = new FileInfo(file);
-                        syncedBookCount++;
+                        newOrArchivedTitles[bookId] = new FileInfo(file);
                     }
                 }
-            }
+            });
 
             foreach (var bookId in booksWithErrors)
             {
                 books.Remove(bookId);
             }
 
-            return syncedBookCount;
-        }
-
-        private static MobiMetadata.MobiMetadata GetMetadata(Stream stream, string bookId)
-        {
-            try
+            foreach (var title in newOrArchivedTitles)
             {
-                // Don't need anything from these two
-                var pdbHeader = MobiHeaderFactory.CreateReadNone<PDBHead>();
-                var palmDocHeader = MobiHeaderFactory.CreateReadNone<PalmDOCHead>();
-
-                // Want the fullname and the exth header
-                var mobiHeader = MobiHeaderFactory.CreateReadAll<MobiHead>();
-                MobiHeaderFactory.ConfigureRead(mobiHeader, mobiHeader.FullNameOffsetAttr, mobiHeader.ExthFlagsAttr);
-
-                // Want the publisher
-                var exthHeader = MobiHeaderFactory.CreateReadAll<EXTHHead>();
-                MobiHeaderFactory.ConfigureRead(exthHeader, exthHeader.PublisherAttr, exthHeader.UpdatedTitleAttr);
-
-                return new MobiMetadata.MobiMetadata(stream, pdbHeader, palmDocHeader, mobiHeader, exthHeader, throwIfNoExthHeader: true);
+                titles.Add(title);                
             }
-            catch (Exception ex)
-            {
-                ProgressReporter.Error($"Error reading {bookId}.", ex);
 
-                return null;
-            }
+            return newOrArchivedTitles.Count;
         }
 
         private static string TrimPublisher(string publisher)
@@ -111,18 +95,11 @@ namespace AzwConverter
             return publisher;
         }
 
-        private static string CleanStr(string str)
+        public int SyncTitlesToArchive(IDictionary<string, FileInfo> titles, ArchiveDb archive, IDictionary<string, FileInfo[]> books)
         {
-            str = WebUtility.HtmlDecode(str);
-            return str.ToFileSystemString();
-        }
+            var idsToRemove = new ConcurrentBag<string>();
 
-        public int SyncTitlesToArchive(Dictionary<string, FileInfo> titles, ArchiveDb archive, Dictionary<string, FileInfo[]> books)
-        {
-            var idsToRemove = new List<string>();
-            var archivedTitleCount = 0;
-
-            foreach (var title in titles)
+            titles.AsParallel().ForAll(title =>
             {
                 var bookId = title.Key;
                 var titleFile = title.Value;
@@ -132,12 +109,10 @@ namespace AzwConverter
                 // Delete title if no longer in books.
                 if (!books.ContainsKey(bookId))
                 {
-                    archivedTitleCount++;
-
                     idsToRemove.Add(bookId);
                     titleFile.Delete();
                 }
-            }
+            });
 
             // Update current titles
             foreach (var bookId in idsToRemove)
@@ -145,15 +120,12 @@ namespace AzwConverter
                 titles.Remove(bookId);
             }
 
-            return archivedTitleCount;
+            return idsToRemove.Count;
         }
 
         public string SyncConvertedTitle(string titleFile, FileInfo? convertedTitleFile)
         {
-            if (convertedTitleFile != null)
-            {
-                convertedTitleFile.Delete();
-            }
+            convertedTitleFile?.Delete();
 
             var name = Path.GetFileName(titleFile);
             name = name.RemoveAnyMarker();

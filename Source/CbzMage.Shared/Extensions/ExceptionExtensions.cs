@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace CbzMage.Shared.Extensions
+﻿namespace CbzMage.Shared.Extensions
 {
     public static class ExceptionExtensions
     {

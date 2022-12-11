@@ -24,12 +24,21 @@ namespace CbzMage.Shared.Helpers
 
         public int GetThreadCount(int settingsThreadCount)
         {
+            const double fraction = 0.75;
+
+            const int maxThreads = 8;
+            const int minThreads = 2;
+
             if (settingsThreadCount <= 0)
             {
-                var cores = (Environment.ProcessorCount / 2) * 0.7;
+                var threadCountFraction = Environment.ProcessorCount * fraction;
+                
+                var calculatedThreadCount = Convert.ToInt32(threadCountFraction);
 
-                var threadCount = Convert.ToInt32(cores);
-                return Math.Max(2, threadCount);
+                calculatedThreadCount = Math.Min(calculatedThreadCount, maxThreads);
+                calculatedThreadCount = Math.Max(calculatedThreadCount, minThreads);
+
+                return calculatedThreadCount;
             }
 
             return settingsThreadCount;

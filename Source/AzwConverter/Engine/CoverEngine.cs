@@ -7,11 +7,11 @@ namespace AzwConverter.Engine
         private string _coverFile;
         private string _coverString;
 
-        public CbzState? SaveCover(string bookId, FileInfo[] dataFiles, string coverFile)
+        public async Task<CbzState?> SaveCoverAsync(string bookId, FileInfo[] dataFiles, string coverFile)
         {
             _coverFile = coverFile;
 
-            return ReadMetaData(bookId, dataFiles);
+            return await ReadImageDataAsync(bookId, dataFiles);
         }
 
         public string GetCoverString()
@@ -19,42 +19,40 @@ namespace AzwConverter.Engine
             return _coverString;
         }
 
-        protected override CbzState ProcessImages(PageRecords? pageRecordsHd, PageRecords pageRecords)
+        protected override async Task<CbzState?> ProcessImagesAsync(PageRecords? pageRecordsHd, PageRecords pageRecords)
         {
-            SaveCover(pageRecordsHd, pageRecords);
+            await SaveCoverAsync(pageRecordsHd, pageRecords);
             return null;
         }
 
-        private void SaveCover(PageRecords? hdImageRecords, PageRecords sdImageRecords)
+        private async Task SaveCoverAsync(PageRecords? hdImageRecords, PageRecords sdImageRecords)
         {
-            PageRecord coverRecord;
+            using var stream = AsyncFileStream(_coverFile);
 
             // First try HD cover
-            if (hdImageRecords != null && hdImageRecords.CoverRecord != null && hdImageRecords.CoverRecord.IsCresRecord)
+            if (hdImageRecords != null && hdImageRecords.CoverRecord != null 
+                && await hdImageRecords.CoverRecord.WriteDataAsync(stream, ImageRecordHD.RecordId))
             {
-                coverRecord = hdImageRecords.CoverRecord;
                 _coverString = "HD cover";
             }
             // Then the SD cover
             else if (sdImageRecords.CoverRecord != null)
             {
-                coverRecord = sdImageRecords.CoverRecord;
+                await sdImageRecords.CoverRecord.WriteDataAsync(stream);
                 _coverString = "SD cover";
             }
             // Then the first HD page
-            else if (hdImageRecords != null && hdImageRecords.ContentRecords.Count > 0 && hdImageRecords.ContentRecords[0].IsCresRecord)
+            else if (hdImageRecords != null && hdImageRecords.ContentRecords.Count > 0
+                && await hdImageRecords.ContentRecords[0].WriteDataAsync(stream, ImageRecordHD.RecordId))
             {
-                coverRecord = hdImageRecords.ContentRecords[0];
                 _coverString = "HD page 1";
             }
             // Then the first SD page
             else
             {
-                coverRecord = sdImageRecords.ContentRecords[0];
+                await sdImageRecords.ContentRecords[0].WriteDataAsync(stream);
                 _coverString = "SD page 1";
             }
-
-            SaveFile(coverRecord.ReadData(), _coverFile);
         }
     }
 }

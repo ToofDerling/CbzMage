@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.IO.MemoryMappedFiles;
 using System.Text;
 using System.Text.Json;
 
@@ -18,21 +19,32 @@ namespace AzwConverter
         {
             _dbFile = Path.Combine(Settings.TitlesDir, DbName);
             _db = new();
+        }
+
+        public async Task ReadArchiveDbAsync()
+        {
+            var dbFileInfo = new FileInfo(_dbFile);
 
             if (File.Exists(_dbFile))
             {
-                var lines = File.ReadAllLines(_dbFile);
+                using var mappedFile = MemoryMappedFile.CreateFromFile(_dbFile, FileMode.Open);
+                using var stream = mappedFile.CreateViewStream();
 
-                Parallel.ForEach(lines, line =>
+                var linesData = new byte[dbFileInfo.Length].AsMemory();
+                await stream.ReadAsync(linesData);
+
+                var linesString = Encoding.UTF8.GetString(linesData.Span);
+                var lines = linesString.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
+
+                lines.AsParallel().ForAll(line =>
                 {
                     var tokens = line.Split(' ', 2);
                     var bookId = tokens[0];
 
-                    if (_db.ContainsKey(bookId))
+                    if (!_db.TryAdd(bookId, JsonSerializer.Deserialize<CbzState>(tokens[1])))
                     {
                         throw new InvalidOperationException($"{bookId} already in archive");
                     }
-                    _db[bookId] = JsonSerializer.Deserialize<CbzState>(tokens[1]);
                 });
             }
         }
@@ -93,7 +105,7 @@ namespace AzwConverter
             _isDirty = true;
         }
 
-        public void SaveDb()
+        public async Task SaveArchiveDbAsync()
         {
             if (!_isDirty)
             {
@@ -107,7 +119,7 @@ namespace AzwConverter
                 sb.Append(x.Key).Append(' ').AppendLine(JsonSerializer.Serialize(x.Value));
             }
 
-            File.WriteAllText(_dbFile, sb.ToString());
+            await File.WriteAllTextAsync(_dbFile, sb.ToString(), CancellationToken.None);
         }
     }
 }
