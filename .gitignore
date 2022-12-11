@@ -269,3 +269,4 @@ __pycache__/
 /Source/PdfConverter/PdfSettings.Development.json
 
 /ExternalProjects/Ghostscript.Core
+/ExternalProjects/MobiMetadata
