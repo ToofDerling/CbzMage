@@ -268,3 +268,4 @@ __pycache__/
 /Source/CbzMage/Properties/launchSettings.json
 /Source/PdfConverter/PdfSettings.Development.json
 
+/ExternalProjects/Ghostscript.Core
