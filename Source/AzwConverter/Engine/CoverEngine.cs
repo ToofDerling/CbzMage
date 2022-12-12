@@ -31,7 +31,7 @@ namespace AzwConverter.Engine
 
             // First try HD cover
             if (hdImageRecords != null && hdImageRecords.CoverRecord != null 
-                && await hdImageRecords.CoverRecord.WriteDataAsync(stream, ImageRecordHD.RecordId))
+                && await hdImageRecords.CoverRecord.TryWriteHDImageDataAsync(stream))
             {
                 _coverString = "HD cover";
             }
@@ -43,7 +43,7 @@ namespace AzwConverter.Engine
             }
             // Then the first HD page
             else if (hdImageRecords != null && hdImageRecords.ContentRecords.Count > 0
-                && await hdImageRecords.ContentRecords[0].WriteDataAsync(stream, ImageRecordHD.RecordId))
+                && await hdImageRecords.ContentRecords[0].TryWriteHDImageDataAsync(stream))
             {
                 _coverString = "HD page 1";
             }

@@ -127,7 +127,7 @@ namespace AzwConverter.Engine
             using var stream = entry.Open();
 
             if (hdRecord != null
-                && await hdRecord.WriteDataAsync(stream, ImageRecordHD.RecordId, coverStream!))
+                && await hdRecord.TryWriteHDImageDataAsync(stream, coverStream!))
             {
                 if (isRealCover)
                 {
