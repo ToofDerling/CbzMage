@@ -119,7 +119,7 @@ namespace AzwConverter
                 if (convertedTitles.TryGetValue(bookId, out var convertedTitleFile)
                     && convertedTitleFile.Name != titleFile.Name)
                 { 
-                    var newConvertedTitleFile = Path.Combine(convertedTitleFile.DirectoryName, titleFile.Name);
+                    var newConvertedTitleFile = Path.Combine(convertedTitleFile.DirectoryName!, titleFile.Name);
                     convertedTitleFile.MoveTo(newConvertedTitleFile);
                 }
             });
