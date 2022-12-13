@@ -35,7 +35,7 @@ namespace AzwConverter.Engine
         protected async Task<CbzState?> ReadImageDataAsync(string bookId, FileInfo[] dataFiles)
         {
             var metadata = MetadataManager.GetCachedMetadata(bookId);
-            IDisposable[] disposables = null;
+            IDisposable[]? disposables = null;
             try
             {
                 if (metadata == null)
