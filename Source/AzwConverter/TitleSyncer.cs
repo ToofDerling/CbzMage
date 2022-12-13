@@ -95,7 +95,9 @@ namespace AzwConverter
             return publisher;
         }
 
-        public int SyncTitlesToArchive(IDictionary<string, FileInfo> titles, ArchiveDb archive, IDictionary<string, FileInfo[]> books)
+        public int SyncAndArchiveTitles(IDictionary<string, FileInfo> titles, 
+            IDictionary<string, FileInfo> convertedTitles,
+            ArchiveDb archive, IDictionary<string, FileInfo[]> books)
         {
             var idsToRemove = new ConcurrentBag<string>();
 
@@ -111,6 +113,14 @@ namespace AzwConverter
                 {
                     idsToRemove.Add(bookId);
                     titleFile.Delete();
+                }
+
+                // Sync title -> converted title
+                if (convertedTitles.TryGetValue(bookId, out var convertedTitleFile)
+                    && convertedTitleFile.Name != titleFile.Name)
+                { 
+                    var newConvertedTitleFile = Path.Combine(convertedTitleFile.DirectoryName, titleFile.Name);
+                    convertedTitleFile.MoveTo(newConvertedTitleFile);
                 }
             });
 

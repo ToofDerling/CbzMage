@@ -80,7 +80,7 @@ namespace AzwConverter
             var added = await syncer.SyncBooksToTitlesAsync(books, titles, archive);
             Console.WriteLine($"Added {added} missing title{added.SIf1()}");
 
-            var archived = syncer.SyncTitlesToArchive(titles, archive, books);
+            var archived = syncer.SyncAndArchiveTitles(titles, convertedTitles, archive, books);
             Console.WriteLine($"Archived {archived} title{archived.SIf1()}");
 
             Console.WriteLine();
@@ -148,7 +148,7 @@ namespace AzwConverter
                 Console.WriteLine();
                 ProgressReporter.Info($"Checking {updatedBooks.Count} updated book{updatedBooks.SIf1()}:");
 
-                await Parallel.ForEachAsync(updatedBooks, Settings.ParallelOptions, 
+                await Parallel.ForEachAsync(updatedBooks, Settings.ParallelOptions,
                     async (book, ct) =>
                     await ScanUpdatedBookAsync(book.Key, book.Value, titles[book.Key], archive));
             }
@@ -167,7 +167,7 @@ namespace AzwConverter
             {
                 ProgressReporter.Info($"Converting {unconvertedBooks.Count} book{unconvertedBooks.SIf1()}:");
 
-                await Parallel.ForEachAsync(unconvertedBooks, Settings.ParallelOptions, 
+                await Parallel.ForEachAsync(unconvertedBooks, Settings.ParallelOptions,
                     async (book, ct) =>
                     await ConvertBookAsync(book.Key, book.Value, titles[book.Key],
                     convertedTitles.ContainsKey(book.Key) ? convertedTitles[book.Key] : null,
@@ -184,8 +184,8 @@ namespace AzwConverter
             {
                 ProgressReporter.Info($"Analyzing {unconvertedBooks.Count} unconverted book{unconvertedBooks.SIf1()}:");
 
-                await Parallel.ForEachAsync(unconvertedBooks, Settings.ParallelOptions, 
-                    async (book, ct) => 
+                await Parallel.ForEachAsync(unconvertedBooks, Settings.ParallelOptions,
+                    async (book, ct) =>
                     await AnalyzeBookAsync(book.Key, book.Value, titles[book.Key]));
             }
         }
