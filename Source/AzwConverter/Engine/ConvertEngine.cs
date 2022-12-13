@@ -89,7 +89,7 @@ namespace AzwConverter.Engine
 
             var foundRealCover = (hdCoverRecord != null || coverRecord != null)
                 && await WriteRecordAsync(zipArchive, coverName, state,
-                    hdCoverRecord, coverRecord, isRealCover: true, isFakeCover: false);
+                    hdCoverRecord, coverRecord!, isRealCover: true, isFakeCover: false);
 
             // Pages
             PageRecord? pageRecord;
