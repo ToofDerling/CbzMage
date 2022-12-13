@@ -15,7 +15,7 @@ namespace AzwConverter
             {
                 if (files.Any(file => file.IsAzwFile()))
                 {
-                    dict[Path.GetFileName(files.Key)] = files.ToArray();
+                    dict[Path.GetFileName(files.Key)!] = files.ToArray();
                 }
             });
 
