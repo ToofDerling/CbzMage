@@ -25,6 +25,8 @@ namespace AzwConverter
 
         public static string CbzDir { get; set; }
 
+        public static bool ConvertAllBookTypes { get; set; }
+
         public static bool SaveCover { get; set; }
         public static bool SaveCoverOnly { get; set; }
         public static string? SaveCoverDir { get; set; }

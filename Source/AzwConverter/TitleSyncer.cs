@@ -1,4 +1,5 @@
 ﻿using AzwConverter.Engine;
+using CbzMage.Shared.Extensions;
 using MobiMetadata;
 using System.Collections.Concurrent;
 
@@ -6,11 +7,13 @@ namespace AzwConverter
 {
     public class TitleSyncer
     {
-        public async Task<int> SyncBooksToTitlesAsync(IDictionary<string, FileInfo[]> books, 
-            IDictionary<string, FileInfo> titles, ArchiveDb archive)
+        public async Task<(int skippedBooks, int ignoredBooks)> SyncBooksToTitlesAsync(
+            IDictionary<string, FileInfo[]> books, IDictionary<string, FileInfo> titles, ArchiveDb archive)
         {
             var booksWithErrors = new ConcurrentBag<string>();
-            var newOrArchivedTitles = new ConcurrentDictionary<string, FileInfo>();
+            var skippedBooks = new ConcurrentBag<string>();
+
+            var addedTitles = new ConcurrentDictionary<string, FileInfo>();
 
             await Parallel.ForEachAsync(books, Settings.ParallelOptions, async (book, ct) =>
             {
@@ -35,6 +38,12 @@ namespace AzwConverter
 
                             var engine = new MetadataEngine();
                             (metadata, disposables) = await engine.ReadMetadataAsync(bookFiles);
+
+                            if (!metadata.MobiHeader.ExthHeader.BookType.EqualsIgnoreCase("comic"))
+                            {
+                                skippedBooks.Add(bookId);
+                                return;
+                            }
 
                             MetadataManager.CacheMetadata(bookId, metadata, disposables);
                         }
@@ -63,7 +72,7 @@ namespace AzwConverter
                         await File.WriteAllTextAsync(file, bookId, CancellationToken.None);
 
                         // Add archived/scanned title to list of current titles
-                        newOrArchivedTitles[bookId] = new FileInfo(file);
+                        addedTitles[bookId] = new FileInfo(file);
                     }
                 }
             });
@@ -73,12 +82,17 @@ namespace AzwConverter
                 books.Remove(bookId);
             }
 
-            foreach (var title in newOrArchivedTitles)
-            {
-                titles.Add(title);                
+            foreach (var bookId in skippedBooks)
+            { 
+                books.Remove(bookId);
             }
 
-            return newOrArchivedTitles.Count;
+            foreach (var title in addedTitles)
+            {
+                titles.Add(title);
+            }
+
+            return (skippedBooks: addedTitles.Count, ignoredBooks: skippedBooks.Count);
         }
 
         private static string TrimPublisher(string publisher)
@@ -95,7 +109,7 @@ namespace AzwConverter
             return publisher;
         }
 
-        public int SyncAndArchiveTitles(IDictionary<string, FileInfo> titles, 
+        public int SyncAndArchiveTitles(IDictionary<string, FileInfo> titles,
             IDictionary<string, FileInfo> convertedTitles,
             ArchiveDb archive, IDictionary<string, FileInfo[]> books)
         {
@@ -118,7 +132,7 @@ namespace AzwConverter
                 // Sync title -> converted title
                 if (convertedTitles.TryGetValue(bookId, out var convertedTitleFile)
                     && convertedTitleFile.Name != titleFile.Name)
-                { 
+                {
                     var newConvertedTitleFile = Path.Combine(convertedTitleFile.DirectoryName!, titleFile.Name);
                     convertedTitleFile.MoveTo(newConvertedTitleFile);
                 }

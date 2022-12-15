@@ -34,6 +34,11 @@
   // Note: SaveCover must also be true for SaveCoverOnly to work. 
   "SaveCoverOnly": false,
 
+  // Normally CbzMage only scans and converts books where the BookType is "comic".
+  // If you run into books that are ignored and you're sure they're comics try
+  // changing ConvertAllBookTypes to true.
+  "ConvertAllBookTypes": false,
+
   // The converted titles directory is a subdirectory of TitlesDir. The default
   // name is "Converted Titles", you can change it to something else below. Don't
   // forget to rename the actual directory if you do.
