@@ -8,18 +8,27 @@ namespace AzwConverter.Engine
     public class AnalyzeEngine : AbstractImageEngine
     {
         private string _bookDir;
-        private string _analyzeMessage;
+        private string _analyzeMessageOk;
+        private string _analyzeMessageError;
 
-        public async Task<CbzState> AnalyzeBookAsync(string bookId, FileInfo[] dataFiles, string bookDir)
+        private bool _analyzeImages;
+
+        public async Task<CbzState> AnalyzeBookAsync(string bookId, FileInfo[] dataFiles, bool analyzeImages, string bookDir)
         {
+            _analyzeImages = analyzeImages;
             _bookDir = bookDir;
 
             return await ReadImageDataAsync(bookId, dataFiles);
         }
 
-        public string GetAnalyzeMessage()
-        { 
-            return _analyzeMessage; 
+        public string GetAnalyzeMessageOk()
+        {
+            return _analyzeMessageOk;
+        }
+
+        public string GetAnalyzeMessageError()
+        {
+            return _analyzeMessageError;
         }
 
         protected override async Task<CbzState?> ProcessImagesAsync(PageRecords? pageRecordsHd, PageRecords pageRecords)
@@ -28,6 +37,22 @@ namespace AzwConverter.Engine
         private async Task<CbzState> AnalyzeBookAsync(PageRecords? hdImageRecords, PageRecords sdImageRecords)
         {
             var state = new CbzState();
+
+            var bookType = Metadata.MobiHeader.ExthHeader.BookType;
+            if (bookType.EqualsIgnoreCase("comic"))
+            {
+                _analyzeMessageOk = bookType;
+            }
+            else
+            {
+                _analyzeMessageError = bookType;
+            }
+
+            if (!_analyzeImages)
+            {
+                state.Pages = sdImageRecords.ContentRecords.Count;
+                return state;
+            }
 
             var sdDir = Path.Combine(_bookDir, "SD");
 
@@ -127,7 +152,7 @@ namespace AzwConverter.Engine
             if (records.CoverRecord != null)
             {
                 var name = await records.CoverRecord.IsCresRecordAsync() ? "cover-cres.jpg" : "cover.jpg";
-                
+
                 var path = Path.Combine(dir, name);
                 await SaveRecordDataAsync(records.CoverRecord, path);
             }
@@ -164,17 +189,19 @@ namespace AzwConverter.Engine
             var sdStream = new MemoryStream();
             await sdRecord.WriteDataAsync(sdStream);
             using var sdImage = new MagickImage();
+            sdStream.Position = 0;
             sdImage.Ping(sdStream);
 
             var hdStream = new MemoryStream();
             await hdRecord.WriteDataAsync(hdStream);
             using var hdImage = new MagickImage();
+            hdStream.Position = 0;
             hdImage.Ping(hdStream);
 
             // If SD cover is "better than" HD cover, save both and have a look.
             if (sdImage.Height > hdImage.Height || sdImage.Quality > hdImage.Quality)
             {
-                _analyzeMessage = $"Height SD: {sdImage.Height} vs HD: {hdImage.Height}. Quality SD {sdImage.Quality} vs HD {hdImage.Quality}";
+                _analyzeMessageOk = $"Height SD: {sdImage.Height} vs HD: {hdImage.Height}. Quality SD {sdImage.Quality} vs HD {hdImage.Quality}";
 
                 sdDir.CreateDirIfNotExists();
                 var sdPath = Path.Combine(sdDir, name);

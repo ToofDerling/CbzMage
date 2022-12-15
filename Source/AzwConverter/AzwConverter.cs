@@ -95,9 +95,10 @@ namespace AzwConverter
             stopWatch.Start();
             try
             {
-                if (updatedBooks.Count > 0 || unconvertedBooks.Count > 0)
+                if (updatedBooks.Count > 0 || unconvertedBooks.Count > 0 || _action == CbzMageAction.AzwAnalyze)
                 {
-                    await RunActionsInParallelAsync(updatedBooks, unconvertedBooks, titles, convertedTitles, syncer, archive);
+                    await RunActionsInParallelAsync(books, updatedBooks, unconvertedBooks, 
+                        titles, convertedTitles, syncer, archive);
                 }
             }
             finally
@@ -135,7 +136,8 @@ namespace AzwConverter
 #endif
         }
 
-        private async Task RunActionsInParallelAsync(IReadOnlyCollection<KeyValuePair<string, FileInfo[]>> updatedBooks,
+        private async Task RunActionsInParallelAsync(IDictionary<string, FileInfo[]> books, 
+            IReadOnlyCollection<KeyValuePair<string, FileInfo[]>> updatedBooks,
             IReadOnlyCollection<KeyValuePair<string, FileInfo[]>> unconvertedBooks,
             IDictionary<string, FileInfo> titles, IDictionary<string, FileInfo> convertedTitles,
             TitleSyncer syncer, ArchiveDb archive)
@@ -153,12 +155,11 @@ namespace AzwConverter
                     await ScanUpdatedBookAsync(book.Key, book.Value, titles[book.Key], archive));
             }
 
-            if (unconvertedBooks.Count == 0)
+            if (unconvertedBooks.Count == 0 && _action != CbzMageAction.AzwAnalyze)
             {
                 return;
             }
 
-            totalBooks = unconvertedBooks.Count;
             bookCount = 0;
 
             Console.WriteLine();
@@ -166,6 +167,7 @@ namespace AzwConverter
             if (_action == CbzMageAction.AzwConvert)
             {
                 ProgressReporter.Info($"Converting {unconvertedBooks.Count} book{unconvertedBooks.SIf1()}:");
+                totalBooks = unconvertedBooks.Count;
 
                 await Parallel.ForEachAsync(unconvertedBooks, Settings.ParallelOptions,
                     async (book, ct) =>
@@ -176,15 +178,17 @@ namespace AzwConverter
             else if (_action == CbzMageAction.AzwScan)
             {
                 ProgressReporter.Info($"Listing {unconvertedBooks.Count} unconverted book{unconvertedBooks.SIf1()}:");
+                totalBooks = unconvertedBooks.Count;
 
                 Parallel.ForEach(unconvertedBooks, Settings.ParallelOptions, book =>
                     SyncNewBook(book.Key, titles[book.Key], archive));
             }
             else if (_action == CbzMageAction.AzwAnalyze)
             {
-                ProgressReporter.Info($"Analyzing {unconvertedBooks.Count} unconverted book{unconvertedBooks.SIf1()}:");
+                ProgressReporter.Info($"Analyzing {books.Count} book{books.SIf1()}:");
+                totalBooks = books.Count;
 
-                await Parallel.ForEachAsync(unconvertedBooks, Settings.ParallelOptions,
+                await Parallel.ForEachAsync(books, Settings.ParallelOptions,
                     async (book, ct) =>
                     await AnalyzeBookAsync(book.Key, book.Value, titles[book.Key]));
             }
@@ -208,11 +212,19 @@ namespace AzwConverter
             }
 
             var engine = new AnalyzeEngine();
+            var state = await engine.AnalyzeBookAsync(bookId, dataFiles, analyzeImages: false, bookDir);
 
-            var state = await engine.AnalyzeBookAsync(bookId, dataFiles, bookDir);
-            var analyzeMessage = engine.GetAnalyzeMessage();
+            var analyzeMessageOk = engine.GetAnalyzeMessageOk();
+            var analyzeMessageError = engine.GetAnalyzeMessageError();
 
-            PrintCbzState(bookDir, state, errorMsg: analyzeMessage, showAllCovers: true);
+            if (analyzeMessageError != null)
+            {
+                PrintCbzState(bookDir, state, showPagesAndCover: false, doneMsg: analyzeMessageOk, errorMsg: analyzeMessageError);
+            }
+            else
+            {
+                Interlocked.Increment(ref bookCount);
+            }
         }
 
         private async Task ConvertBookAsync(string bookId, FileInfo[] dataFiles, FileInfo titleFile, FileInfo? convertedTitleFile,
@@ -331,8 +343,8 @@ namespace AzwConverter
             else
             {
                 var engine = new ScanEngine();
-
                 state = await engine.ScanBookAsync(bookId, dataFiles);
+
                 state.Name = titleFile.Name.RemoveAnyMarker();
             }
 
@@ -463,7 +475,8 @@ namespace AzwConverter
         }
 
         private void PrintCbzState(string cbzFile, CbzState state,
-            string doneMsg = null, string errorMsg = null, bool showAllCovers = false)
+            bool showPagesAndCover = true, bool showAllCovers = false,
+            string doneMsg = null, string errorMsg = null)
         {
             Interlocked.Add(ref pagesCount, state.Pages);
 
@@ -471,57 +484,61 @@ namespace AzwConverter
             sb.AppendLine();
 
             sb.Append(insert);
-            sb.Append(state.Pages).Append(" pages (");
-            if (state.HdImages > 0)
-            {
-                sb.Append(state.HdImages).Append(" HD");
-                if (state.SdImages > 0)
-                {
-                    sb.Append('/');
-                }
-            }
-            if (state.SdImages > 0)
-            {
-                sb.Append(state.SdImages).Append(" SD");
-            }
+            sb.Append(state.Pages).Append(" pages");
 
-            sb.Append(". ");
-            if (showAllCovers)
+            if (showPagesAndCover)
             {
-                if (state.HdCover)
+                if (state.HdImages > 0)
                 {
-                    sb.Append("HD");
-                    if (state.SdCover)
+                    sb.Append(state.HdImages).Append(" HD");
+                    if (state.SdImages > 0)
                     {
                         sb.Append('/');
                     }
                 }
-                if (state.SdCover)
+                if (state.SdImages > 0)
                 {
-                    sb.Append("SD");
+                    sb.Append(state.SdImages).Append(" SD");
                 }
-                if (!state.HdCover && !state.SdCover)
+
+                sb.Append(". ");
+                if (showAllCovers)
                 {
-                    sb.Append("No");
-                }
-                sb.Append(" cover");
-            }
-            else
-            {
-                if (state.HdCover)
-                {
-                    sb.Append("HD cover");
-                }
-                else if (state.HdCover)
-                {
-                    sb.Append("SD cover)");
+                    if (state.HdCover)
+                    {
+                        sb.Append("HD");
+                        if (state.SdCover)
+                        {
+                            sb.Append('/');
+                        }
+                    }
+                    if (state.SdCover)
+                    {
+                        sb.Append("SD");
+                    }
+                    if (!state.HdCover && !state.SdCover)
+                    {
+                        sb.Append("No");
+                    }
+                    sb.Append(" cover");
                 }
                 else
                 {
-                    sb.Append("No cover");
+                    if (state.HdCover)
+                    {
+                        sb.Append("HD cover");
+                    }
+                    else if (state.HdCover)
+                    {
+                        sb.Append("SD cover)");
+                    }
+                    else
+                    {
+                        sb.Append("No cover");
+                    }
                 }
+                sb.Append(')');
             }
-            sb.Append(')');
 
             if (doneMsg != null || errorMsg != null)
             {

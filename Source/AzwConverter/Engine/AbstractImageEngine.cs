@@ -7,6 +7,8 @@ namespace AzwConverter.Engine
 {
     public abstract class AbstractImageEngine
     {
+        protected MobiMetadata.MobiMetadata Metadata { get; private set; }
+
         protected async Task<(MobiMetadata.MobiMetadata, IDisposable[])> ReadMetadataAsync(FileInfo[] dataFiles)
         {
             var azwFile = dataFiles.First(file => file.IsAzwFile());
@@ -42,6 +44,7 @@ namespace AzwConverter.Engine
                 {
                     (metadata, disposables) = await ReadMetadataAsync(dataFiles);
                 }
+                Metadata = metadata;
                 await metadata.ReadImageRecordsAsync();
 
                 var hdContainer = dataFiles.FirstOrDefault(file => file.IsAzwResFile());
