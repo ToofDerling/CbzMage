@@ -9,7 +9,12 @@
             return Cache.Get();
         }
 
-        private readonly byte[] _buffer;
+        private readonly byte[]? _buffer;
+
+        public ManagedMemoryStream(int size) : base(size)
+        {
+            _buffer = null;
+        }
 
         public ManagedMemoryStream(byte[] buffer) : base(buffer)
         {
@@ -19,12 +24,19 @@
 
         public override byte[] GetBuffer()
         {
+            if (_buffer == null)
+            { 
+                return base.GetBuffer();
+            }
             return _buffer;
         }
 
         public void Release()
         {
-            Cache.Release(_buffer);
+            if (_buffer != null)
+            {
+                Cache.Release(_buffer);
+            }
         }
     }
 }

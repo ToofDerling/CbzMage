@@ -3,6 +3,7 @@ using ImageMagick;
 using PdfConverter.Exceptions;
 using PdfConverter.Helpers;
 using PdfConverter.ManagedBuffers;
+using System.Buffers;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 
@@ -37,7 +38,7 @@ namespace PdfConverter.Jobs
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 #endif
-            
+
             var pngSize = _buffer.Count;
             using var image = new MagickImage(_buffer.Buffer, 0, _buffer.Count);
 
@@ -60,13 +61,29 @@ namespace PdfConverter.Jobs
 
             // Reuse the png buffer for the jpg stream. 
             var stream = new ManagedMemoryStream(_buffer.Buffer);
-            image.Write(stream);
+
+            bool largerBufferNeeded = false;
+            try
+            {
+                image.Write(stream);
+            }
+            catch (MagickErrorException)
+            {
+                // This can happen when the conversion ends up with a jpg larger than the png.
+                // So try with a regular resizable memorystream before giving up
+                stream.Release();
+                stream = new ManagedMemoryStream(pngSize * 2);
+
+                image.Write(stream);
+                largerBufferNeeded = true;
+            }
 
             var jpgSize = (int)stream.Length;
 
 #if DEBUG 
             stopwatch.Stop();
-            StatsCount.AddImageConversion((int)stopwatch.ElapsedMilliseconds, resized, pngSize, jpgSize);
+            StatsCount.AddImageConversion((int)stopwatch.ElapsedMilliseconds, 
+                resized, pngSize, jpgSize, largerBufferNeeded);
 #endif
 
             if (!_convertedImages.TryAdd(_page, stream))
