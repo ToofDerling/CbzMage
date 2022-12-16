@@ -497,6 +497,8 @@ namespace AzwConverter
 
             if (showPagesAndCover)
             {
+                sb.Append(" (");
+
                 if (state.HdImages > 0)
                 {
                     sb.Append(state.HdImages).Append(" HD");
