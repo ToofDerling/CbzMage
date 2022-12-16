@@ -93,7 +93,7 @@
                 Console.WriteLine($"Image conversions: {imageConversionCount} (resizes: {imageResizeCount}) Average ms: {totalConversionTime / imageConversionCount}");
                 Console.WriteLine($"Largest Png: {largestPng} Average: {totalPngSize / imageConversionCount}");
                 Console.WriteLine($"Largest Jpg: {largestJpg} Average: {totalJpgSize / imageConversionCount}");
-                Console.WriteLine($"Jpg > Png: {jpgLargerThanPngCount} Larger buffer needed: {largerBuffersNeededCount}"); ;
+                Console.WriteLine($"Jpg > Png: {jpgLargerThanPngCount} Emergency buffers needed: {largerBuffersNeededCount}"); ;
             }
 
             if (AllBuffers > 0)

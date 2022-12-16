@@ -7,9 +7,10 @@
   "GhostscriptReaderThreads": 0,
 
   // This determines the quality of jpg images in the cbz file. You want this as high
-  // as possible (90+). The default is 95 because a higher value causes CbzMage to 
-  // create much larger cbzfiles.
-  "JpgQuality": 95,
+  // as possible (90+). The default quality quality 93 (95 create images that are 15% 
+  // larger. 98 create images that are 50% larger).
+  // images are 
+  "JpgQuality": 93,
 
   // MinimumDpi determines the minimum quality of the pages Ghostscript reads from the 
   // pdf. It's not recommended to set this lower than 300, and setting it higher can

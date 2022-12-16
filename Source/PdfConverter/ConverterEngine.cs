@@ -135,7 +135,17 @@ namespace PdfConverter
 
         private List<int>[] CreatePageLists(Pdf pdf)
         {
-            var parallelThreads = Settings.GhostscriptReaderThreads;
+            var struf = pdf.PageCount / 5;
+            if (struf < 5) 
+            {
+                struf = pdf.PageCount / 4;
+                if (struf < 4) 
+                {
+                    struf = 1;
+                }
+            }
+
+            var parallelThreads = Math.Min(struf, Settings.GhostscriptReaderThreads);
 
             var pageChunker = new PageChunker();
             var pageLists = pageChunker.CreatePageLists(pdf.PageCount, parallelThreads);

@@ -22,6 +22,9 @@
     <None Update="PdfSettings.Development.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="PdfSettings.Development.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="PdfSettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
