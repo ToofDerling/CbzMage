@@ -22,7 +22,7 @@ namespace PdfConverter
                 return;
             }
 
-            var gsVersion = GhostscriptPageMachineManager.GetGhostscriptVersion();
+            var gsVersion = GhostscriptVersionInfo.GetGhostscriptVersion();
             if (gsVersion == null)
             {
                 return;
@@ -37,13 +37,10 @@ namespace PdfConverter
 
             var stopwatch = Stopwatch.StartNew();
 
-            using (var pageMachineManager = new GhostscriptPageMachineManager(gsVersion))
-            {
-                using var bufferCache = new BufferCache(Settings.BufferSize);
+            var bufferCache = new BufferCache(Settings.BufferSize);
 
-                var converter = new ConverterEngine(pageMachineManager);
-                pdfList.ForEach(pdf => ConvertPdf(pdf, converter));
-            }
+            var converter = new ConverterEngine();
+            pdfList.ForEach(pdf => ConvertPdf(pdf, converter));
 
 #if DEBUG
             StatsCount.ShowStats();

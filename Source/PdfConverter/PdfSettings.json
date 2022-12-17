@@ -1,6 +1,8 @@
 // Punction is important! Don't remove quotes, colons, commas or curly braces 
 // (or otherwise change the structure).
 {
+  "GhostscriptPath": "",
+
   // Number of Ghostscript reader threads. Set this to 0 to have CbzMage try to
   // figure out a good value. If memory usage is too high try setting this to a 
   // lower value than the calculated.

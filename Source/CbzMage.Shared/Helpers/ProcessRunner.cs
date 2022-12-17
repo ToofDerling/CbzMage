@@ -2,14 +2,18 @@
 
 namespace CbzMage.Shared.Helpers
 {
-    public static class ProcessRunner
+    public class ProcessRunner
     {
-        public static List<string> RunAndWaitForProcess(string path, string args, string workingDirectory, EventHandler<DataReceivedEventArgs> outputReceived = null)
+        private readonly List<string> _errorLines = new();
+
+        public int RunAndWaitForProcess(string path, params string[] args)
         {
-            return RunAndWaitForProcess(path, args, workingDirectory, outputReceived, ProcessPriorityClass.Idle);
+            var parameters = string.Join(' ', args);
+            return RunAndWaitForProcess(path, parameters);
         }
 
-        public static List<string> RunAndWaitForProcess(string path, string args, string workingDirectory, EventHandler<DataReceivedEventArgs> outputReceived, ProcessPriorityClass priorityClass)
+        public int RunAndWaitForProcess(string path, string args = "", string workingDirectory = "", 
+            ProcessPriorityClass priorityClass = ProcessPriorityClass.Normal, EventHandler<DataReceivedEventArgs>? outputReceived = null)
         {
             using var process = new Process
             {
@@ -30,7 +34,6 @@ namespace CbzMage.Shared.Helpers
                 process.OutputDataReceived += (s, e) => outputReceived(s, e);
             }
 
-            List<string> _errorLines = new List<string>();
             process.ErrorDataReceived += (s, e) => OnError(e.Data);
 
             process.Start();
@@ -46,7 +49,7 @@ namespace CbzMage.Shared.Helpers
 
             process.WaitForExit();
 
-            return _errorLines;
+            return process.ExitCode;
 
             void OnError(string line)
             {
@@ -55,6 +58,11 @@ namespace CbzMage.Shared.Helpers
                     _errorLines.Add(line);
                 }
             }
+        }
+
+        public List<string> GetStandardErrorLines()
+        {
+            return _errorLines;
         }
     }
 }

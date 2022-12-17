@@ -7,6 +7,10 @@
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Ghostscript\GhostscriptPageMachineManager.cs" />
+  </ItemGroup>
  
   <ItemGroup>
     <PackageReference Include="itext7" Version="7.2.4" />

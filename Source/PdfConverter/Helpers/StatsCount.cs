@@ -24,21 +24,6 @@
         public static volatile int AllBuffers = 0;
         public static volatile int ExpandedBuffers = 0;
 
-        private static volatile int newPageMachines = 0;
-        private static volatile int cachedPageMachines = 0;
-
-        public static void AddPageMachine(bool cached)
-        {
-            if (cached)
-            {
-                cachedPageMachines++;
-            }
-            else
-            {
-                newPageMachines++;
-            }
-        }
-
         private static volatile int totalConversionTime = 0;
         private static volatile int imageConversionCount = 0;
         private static volatile int imageResizeCount = 0;
@@ -99,11 +84,6 @@
             if (AllBuffers > 0)
             {
                 Console.WriteLine($"All buffers: {AllBuffers} (expansions: {ExpandedBuffers})");
-            }
-
-            if (newPageMachines > 0)
-            {
-                Console.WriteLine($"Cached/new pagemachines: {cachedPageMachines}/{newPageMachines}");
             }
         }
     }

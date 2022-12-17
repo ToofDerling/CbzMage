@@ -22,6 +22,8 @@ namespace PdfConverter
 
         public static int GhostscriptMinVersion => 10;
 
+        public static string GhostscriptPath { get; set; }
+
         public static int BufferRemainingThreshold => 262144;
 
         public static int PipeBufferSize => 262144;

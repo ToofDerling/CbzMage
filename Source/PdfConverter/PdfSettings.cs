@@ -17,6 +17,8 @@ namespace PdfConverter
 
         private void ConfigureSettings()
         {
+            Settings.GhostscriptPath = @"C:\Program Files\gs\gs10.00.0\bin\gswin64c.exe";
+
             //MinimumDpi
             if (Settings.MinimumDpi <= 0)
             {
