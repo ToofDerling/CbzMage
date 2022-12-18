@@ -1,5 +1,4 @@
 using CbzMage.Shared.Extensions;
-using PdfConverter.Ghostscript;
 using PdfConverter.Helpers;
 using PdfConverter.ManagedBuffers;
 using System.Diagnostics;
@@ -22,13 +21,7 @@ namespace PdfConverter
                 return;
             }
 
-            var gsVersion = GhostscriptVersionInfo.GetGhostscriptVersion();
-            if (gsVersion == null)
-            {
-                return;
-            }
-
-            Console.WriteLine($"Ghostscript version: {gsVersion.Version}");
+            Console.WriteLine($"Ghostscript version: {Settings.GhostscriptVersion}");
             Console.WriteLine($"Ghostscript reader threads: {Settings.GhostscriptReaderThreads}");
             Console.WriteLine($"Jpq quality: {Settings.JpgQuality}");
             Console.WriteLine($"Cbz compression: {Settings.CompressionLevel}");

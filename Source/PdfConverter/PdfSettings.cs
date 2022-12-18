@@ -1,4 +1,6 @@
 ﻿using CbzMage.Shared.Helpers;
+using PdfConverter.AppVersions;
+using System.Diagnostics;
 
 namespace PdfConverter
 {
@@ -17,7 +19,36 @@ namespace PdfConverter
 
         private void ConfigureSettings()
         {
-            Settings.GhostscriptPath = @"C:\Program Files\gs\gs10.00.0\bin\gswin64c.exe";
+            if (!string.IsNullOrEmpty(Settings.GhostscriptPath))
+            {
+                if (!File.Exists(Settings.GhostscriptPath))
+                {
+                    throw new Exception($"{nameof(Settings.GhostscriptPath)} [{Settings.GhostscriptPath}] does not exist");
+                }
+
+                var version = FileVersionInfo.GetVersionInfo(Settings.GhostscriptPath).FileVersion;
+                if (version == null)
+                {
+                    ProgressReporter.Warning($"{Settings.GhostscriptPath} does not contain any version information.");
+                }
+                else
+                {
+                    var appVersion = new AppVersion(Settings.GhostscriptPath, new Version(version));
+
+                    // Throws if version is invalid
+                    appVersion = GetValidGhostscriptVersion(new List<AppVersion> { appVersion });
+
+                    Settings.SetGhostscriptVersion(appVersion.Version);
+                }
+            }
+            else if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+            {
+                var versionList = AppVersionManager.GetInstalledVersionsOf(App.Ghostscript);
+                var appVersion = GetValidGhostscriptVersion(versionList);
+
+                Settings.GhostscriptPath = appVersion.Exe;
+                Settings.SetGhostscriptVersion(appVersion.Version);
+            }
 
             //MinimumDpi
             if (Settings.MinimumDpi <= 0)
@@ -45,7 +76,23 @@ namespace PdfConverter
 
             //NumberOfThreads
             Settings.GhostscriptReaderThreads =
-                _settingsHelper.GetThreadCount(Settings.GhostscriptReaderThreads); 
+                _settingsHelper.GetThreadCount(Settings.GhostscriptReaderThreads);
+        }
+
+        public static AppVersion GetValidGhostscriptVersion(List<AppVersion> gsVersions)
+        {
+            var gsVersion = gsVersions.OrderByDescending(gs => gs.Version).FirstOrDefault();
+
+            if (gsVersion == null || gsVersion.Version < Settings.GhostscriptMinVersion)
+            {
+                var foundVersion = gsVersion != null
+                    ? $". (found version {gsVersion.Version})"
+                    : string.Empty;
+
+                throw new Exception($"CbzMage requires Ghostscript version {Settings.GhostscriptMinVersion}+ is installed{foundVersion}");
+
+            }
+            return gsVersion!;
         }
     }
 }

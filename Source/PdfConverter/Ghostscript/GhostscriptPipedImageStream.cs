@@ -11,19 +11,16 @@ namespace PdfConverter.Ghostscript
         private readonly IPipedImageDataHandler _imageDatahandler;
 
         private NamedPipeServerStream _pipe;
-        //private AnonymousPipeServerStream _pipe;
 
         public string PipeName { get; private set; }
 
-        private static readonly Random r = new();
+        private static readonly Random random = new();
 
         public GhostscriptPipedImageStream(IPipedImageDataHandler imageDatahandler)
         {
             _imageDatahandler = imageDatahandler;
 
-            //_pipe = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable, Settings.PipeBufferSize);
-
-            PipeName = $"{r.Next():X2}";
+            PipeName = $"CbzMage-{random.Next():X2}";
 
             _pipe = new NamedPipeServerStream(PipeName, PipeDirection.In, NamedPipeServerStream.MaxAllowedServerInstances, 
                 PipeTransmissionMode.Byte, PipeOptions.None, Settings.PipeBufferSize, Settings.PipeBufferSize);
@@ -31,15 +28,6 @@ namespace PdfConverter.Ghostscript
             var thread = new Thread(new ThreadStart(ReadGhostscriptPipedOutput));
             thread.Start();
         }
-
-        //public string GetOutputPipeHandle()
-        //{
-        //    //Pipe handle format: %handle%hexvalue
-        //    //var outputPipeHandle = $"%handle%{int.Parse(_pipe.GetClientHandleAsString()):X2}";
-        //    //return outputPipeHandle;
-
-        //    return $"%%handle%%{_pipeName}";
-        //}
 
         private void ReadGhostscriptPipedOutput()
         {
@@ -98,6 +86,8 @@ namespace PdfConverter.Ghostscript
             //_pipe.ClientSafePipeHandle.SetHandleAsInvalid();
             //_pipe.ClientSafePipeHandle.Dispose();
             
+            //_pipe.SafePipeHandle.
+
             _pipe.Dispose();
             _pipe = null;
 
