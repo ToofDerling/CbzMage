@@ -120,11 +120,19 @@ namespace PdfConverter
             return Convert.ToInt32(bigStep);
         }
 
+        private readonly List<string> _warningsOrErrors = new();
+        private int _foundErrors = 0;
+
+        public (int foundErrors, List<string> warningsOrErrors) WarningsOrErrors => (_foundErrors, _warningsOrErrors);
+
         private bool TryGetImageWidth(int dpi, out int width)
         {
             var imageHandler = new GetSinglePipedImageDataHandler();
 
-            _ghostScriptPageMachine.ReadPageList(_pdf, new List<int> { 1 }, dpi, imageHandler);
+            var (exitCode, warningsOrErrors) = _ghostScriptPageMachine.ReadPageList(_pdf, new List<int> { 1 }, dpi, imageHandler);
+
+            _foundErrors += exitCode;
+            _warningsOrErrors.AddRange(warningsOrErrors);
 
             var buffer = imageHandler.WaitForImageDate();
 

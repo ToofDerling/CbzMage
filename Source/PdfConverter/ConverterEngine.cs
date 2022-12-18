@@ -120,6 +120,13 @@ namespace PdfConverter
 
             var dpi = dpiCalculator.CalculateDpi();
 
+            var (foundErrors, warningsOrErrors) = dpiCalculator.WarningsOrErrors;
+            if (warningsOrErrors.Count > 0)
+            {
+                var isWarnings = foundErrors == 0;
+                DumpWarningsOrErrors(isWarnings, warningsOrErrors);
+            }
+
             Console.WriteLine($"Selected dpi: {dpi}");
             return (dpi, dpiHeight);
         }
@@ -204,8 +211,8 @@ namespace PdfConverter
 
             if (!linesQueue.IsEmpty)
             {
-                var linesIsWarnings = foundErrors == 0;
-                DumpWarningsOrErrors(linesIsWarnings, linesQueue);
+                var isWarnings = foundErrors == 0;
+                DumpWarningsOrErrors(isWarnings, linesQueue.ToArray());
             }
 
             return pagesCompressed;
@@ -216,11 +223,11 @@ namespace PdfConverter
             }
         }
 
-        private static void DumpWarningsOrErrors(bool linesIsWarnings, ConcurrentQueue<List<string>> linesQueue)
+        private static void DumpWarningsOrErrors(bool linesIsWarnings, params List<string>[] allWarningsOrErrors)
         {
             var linesDict = new Dictionary<string, int>();
 
-            foreach (var foundLines in linesQueue)
+            foreach (var foundLines in allWarningsOrErrors)
             {
                 foreach (var foundLine in foundLines)
                 {
