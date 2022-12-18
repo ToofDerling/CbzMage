@@ -10,20 +10,19 @@ namespace PdfConverter.Ghostscript
 
         private readonly IPipedImageDataHandler _imageDatahandler;
 
-        private NamedPipeServerStream _pipe;
+        private readonly NamedPipeServerStream _pipe;
 
-        public string PipeName { get; private set; }
-
-        private static readonly Random random = new();
+        public string PipeName { get; }
 
         public GhostscriptPipedImageStream(IPipedImageDataHandler imageDatahandler)
         {
             _imageDatahandler = imageDatahandler;
 
-            PipeName = $"CbzMage-{random.Next():X2}";
+            PipeName = $"CbzMage-{Guid.NewGuid()}";
 
-            _pipe = new NamedPipeServerStream(PipeName, PipeDirection.In, NamedPipeServerStream.MaxAllowedServerInstances, 
-                PipeTransmissionMode.Byte, PipeOptions.None, Settings.PipeBufferSize, Settings.PipeBufferSize);
+            _pipe = new NamedPipeServerStream(PipeName, PipeDirection.In, 1,
+                PipeTransmissionMode.Byte, PipeOptions.WriteThrough | PipeOptions.Asynchronous, 
+                Settings.PipeBufferSize, Settings.PipeBufferSize);
 
             var thread = new Thread(new ThreadStart(ReadGhostscriptPipedOutput));
             thread.Start();
@@ -31,13 +30,13 @@ namespace PdfConverter.Ghostscript
 
         private void ReadGhostscriptPipedOutput()
         {
+            _pipe.WaitForConnection();
+
             var currentBuffer = new ManagedBuffer();
             var firstImage = true;
 
             var offset = 0;
             int readCount;
-
-            _pipe.WaitForConnection();
 
             while ((readCount = currentBuffer.ReadFrom(_pipe)) > 0)
             {
@@ -78,27 +77,11 @@ namespace PdfConverter.Ghostscript
             }
 
             // Signal we're done.
-            _imageDatahandler.HandleImageData(null);
+            _imageDatahandler.HandleImageData(null!);
 
-            // Close clienthandle and pipe safely when we're done reading.
             // Relying on the IDisposable pattern can cause a nullpointerexception
             // because the pipe is ripped out right under the last read.
-            //_pipe.ClientSafePipeHandle.SetHandleAsInvalid();
-            //_pipe.ClientSafePipeHandle.Dispose();
-            
-            //_pipe.SafePipeHandle.
-
             _pipe.Dispose();
-            _pipe = null;
-
-            // Original Ghostscript.NET comment on why SetHandleAsInvalid is
-            // necessary:
-            // for some reason at this point the handle is invalid for real.
-            // DisposeLocalCopyOfClientHandle should be called instead, but it 
-            // throws an exception saying that the handle is invalid pointing to 
-            // CloseHandle method in the dissasembled code.
-            // this is a workaround, if we don't set the handle as invalid, when
-            // garbage collector tries to dispose this handle, exception is thrown
         }
     }
 }

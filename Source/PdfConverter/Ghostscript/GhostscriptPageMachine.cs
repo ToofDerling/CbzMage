@@ -57,6 +57,7 @@ namespace PdfConverter.Ghostscript
             var gsSwitches = GetSwitches(pdf.Path, pageList, dpi, pipeName);
 
             var runner = new ProcessRunner();
+
             var exitCode = runner.RunAndWaitForProcess(gsPath, gsSwitches);
             var warningsOrErrors = runner.GetStandardErrorLines();
 

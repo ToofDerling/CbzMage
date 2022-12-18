@@ -54,22 +54,5 @@ namespace PdfConverter.AppVersions
 
             return versionList;
         }
-
-        public static AppVersion GetInstalledVersion(Dictionary<Version, AppVersion> versionsMap)
-        {
-            var sevenZipVersions = versionsMap.Values.AsList();
-
-            if (sevenZipVersions.Count == 0)
-            {
-                return null;
-            }
-
-            if (sevenZipVersions.Count > 1)
-            {
-                sevenZipVersions = sevenZipVersions.OrderByDescending(g => g.Version).AsList();
-            }
-
-            return sevenZipVersions.First();
-        }
     }
 }

@@ -3,7 +3,6 @@ using ImageMagick;
 using PdfConverter.Exceptions;
 using PdfConverter.Helpers;
 using PdfConverter.ManagedBuffers;
-using System.Buffers;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 
