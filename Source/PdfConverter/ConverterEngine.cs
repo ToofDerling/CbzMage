@@ -1,8 +1,8 @@
 ﻿using CbzMage.Shared.Extensions;
 using CbzMage.Shared.Helpers;
+using CbzMage.Shared.ManagedBuffers;
 using PdfConverter.Exceptions;
 using PdfConverter.Ghostscript;
-using PdfConverter.ManagedBuffers;
 using System.Collections.Concurrent;
 
 namespace PdfConverter

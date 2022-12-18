@@ -1,5 +1,5 @@
 ﻿using PdfConverter.Helpers;
-using PdfConverter.ManagedBuffers;
+using CbzMage.Shared.ManagedBuffers;
 using System.IO.Pipes;
 
 namespace PdfConverter.Ghostscript

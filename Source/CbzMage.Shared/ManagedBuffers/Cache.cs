@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
 
-namespace PdfConverter.ManagedBuffers
+namespace CbzMage.Shared.ManagedBuffers
 {
     public abstract class Cache<T> : IDisposable where T : class
     {

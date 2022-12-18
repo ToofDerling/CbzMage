@@ -1,4 +1,4 @@
-﻿namespace PdfConverter.AppVersions
+﻿namespace CbzMage.Shared.AppVersions
 {
     public class AppVersion
     {

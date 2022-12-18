@@ -1,4 +1,4 @@
-﻿using PdfConverter.ManagedBuffers;
+﻿using CbzMage.Shared.ManagedBuffers;
 using System.Collections.Concurrent;
 
 namespace PdfConverter.Ghostscript

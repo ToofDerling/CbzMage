@@ -1,6 +1,4 @@
-﻿using PdfConverter.Helpers;
-
-namespace PdfConverter.ManagedBuffers
+﻿namespace CbzMage.Shared.ManagedBuffers
 {
     public sealed class ManagedBuffer
     {
@@ -35,15 +33,11 @@ namespace PdfConverter.ManagedBuffers
             {
                 Count += readCount;
 
-                if (remaining < Settings.BufferRemainingThreshold)
+                if (remaining < Cache.BufferRemainingThreshold)
                 {
                     var newBuffer = Cache.Get(Buffer.Length + _originalLength);
 
                     System.Buffer.BlockCopy(Buffer, 0, newBuffer, 0, Count);
-
-#if DEBUG
-                    StatsCount.ExpandedBuffers++;
-#endif
 
                     Buffer = newBuffer;
                 }

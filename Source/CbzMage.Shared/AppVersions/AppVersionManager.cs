@@ -1,6 +1,6 @@
 ﻿using Microsoft.Win32;
 
-namespace PdfConverter.AppVersions
+namespace CbzMage.Shared.AppVersions
 {
     public static class AppVersionManager
     {
