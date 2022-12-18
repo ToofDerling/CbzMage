@@ -49,6 +49,10 @@ namespace PdfConverter
                 Settings.GhostscriptPath = appVersion.Exe;
                 Settings.SetGhostscriptVersion(appVersion.Version);
             }
+            else
+            {
+                throw new Exception($"Ghostscript installation not found ({nameof(Settings.GhostscriptPath)} is \"{Settings.GhostscriptPath}\")");
+            }
 
             //MinimumDpi
             if (Settings.MinimumDpi <= 0)
