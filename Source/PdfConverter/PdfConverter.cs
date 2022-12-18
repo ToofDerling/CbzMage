@@ -1,5 +1,4 @@
 using CbzMage.Shared.Extensions;
-using PdfConverter.Ghostscript;
 using PdfConverter.Helpers;
 using PdfConverter.ManagedBuffers;
 using System.Diagnostics;
@@ -22,13 +21,7 @@ namespace PdfConverter
                 return;
             }
 
-            var gsVersion = GhostscriptPageMachineManager.GetGhostscriptVersion();
-            if (gsVersion == null)
-            {
-                return;
-            }
-
-            Console.WriteLine($"Ghostscript version: {gsVersion.Version}");
+            Console.WriteLine($"Ghostscript version: {Settings.GhostscriptVersion}");
             Console.WriteLine($"Ghostscript reader threads: {Settings.GhostscriptReaderThreads}");
             Console.WriteLine($"Jpq quality: {Settings.JpgQuality}");
             Console.WriteLine($"Cbz compression: {Settings.CompressionLevel}");
@@ -37,13 +30,10 @@ namespace PdfConverter
 
             var stopwatch = Stopwatch.StartNew();
 
-            using (var pageMachineManager = new GhostscriptPageMachineManager(gsVersion))
-            {
-                using var bufferCache = new BufferCache(Settings.BufferSize);
+            var bufferCache = new BufferCache(Settings.BufferSize);
 
-                var converter = new ConverterEngine(pageMachineManager);
-                pdfList.ForEach(pdf => ConvertPdf(pdf, converter));
-            }
+            var converter = new ConverterEngine();
+            pdfList.ForEach(pdf => ConvertPdf(pdf, converter));
 
 #if DEBUG
             StatsCount.ShowStats();

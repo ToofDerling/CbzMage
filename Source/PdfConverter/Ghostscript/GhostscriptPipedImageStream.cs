@@ -10,23 +10,23 @@ namespace PdfConverter.Ghostscript
 
         private readonly IPipedImageDataHandler _imageDatahandler;
 
-        private AnonymousPipeServerStream _pipe;
+        private NamedPipeServerStream _pipe;
+
+        public string PipeName { get; private set; }
+
+        private static readonly Random random = new();
 
         public GhostscriptPipedImageStream(IPipedImageDataHandler imageDatahandler)
         {
             _imageDatahandler = imageDatahandler;
 
-            _pipe = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable, Settings.PipeBufferSize);
+            PipeName = $"CbzMage-{random.Next():X2}";
+
+            _pipe = new NamedPipeServerStream(PipeName, PipeDirection.In, NamedPipeServerStream.MaxAllowedServerInstances, 
+                PipeTransmissionMode.Byte, PipeOptions.None, Settings.PipeBufferSize, Settings.PipeBufferSize);
 
             var thread = new Thread(new ThreadStart(ReadGhostscriptPipedOutput));
             thread.Start();
-        }
-
-        public string GetOutputPipeHandle()
-        {
-            //Pipe handle format: %handle%hexvalue
-            var outputPipeHandle = $"%handle%{int.Parse(_pipe.GetClientHandleAsString()):X2}";
-            return outputPipeHandle;
         }
 
         private void ReadGhostscriptPipedOutput()
@@ -36,6 +36,8 @@ namespace PdfConverter.Ghostscript
 
             var offset = 0;
             int readCount;
+
+            _pipe.WaitForConnection();
 
             while ((readCount = currentBuffer.ReadFrom(_pipe)) > 0)
             {
@@ -81,9 +83,11 @@ namespace PdfConverter.Ghostscript
             // Close clienthandle and pipe safely when we're done reading.
             // Relying on the IDisposable pattern can cause a nullpointerexception
             // because the pipe is ripped out right under the last read.
-            _pipe.ClientSafePipeHandle.SetHandleAsInvalid();
-            _pipe.ClientSafePipeHandle.Dispose();
+            //_pipe.ClientSafePipeHandle.SetHandleAsInvalid();
+            //_pipe.ClientSafePipeHandle.Dispose();
             
+            //_pipe.SafePipeHandle.
+
             _pipe.Dispose();
             _pipe = null;
 

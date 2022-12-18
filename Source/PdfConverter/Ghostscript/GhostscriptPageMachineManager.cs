@@ -14,34 +14,14 @@ namespace PdfConverter.Ghostscript
 
         private readonly GhostscriptLibrary _library;
 
-        public static GhostscriptVersionInfo GetGhostscriptVersion()
-        {
-            if (Environment.OSVersion.Platform != PlatformID.Win32NT)
-            {
-                Console.WriteLine("Sorry, at the moment pdf to cbz conversion only works on Windows");
-
-                return null;
-            }
-
-            var gsVersion = GhostscriptVersionInfo.GetInstalledVersions()
-                .OrderByDescending(gs => gs.Version)
-                .FirstOrDefault();
-
-            if (gsVersion == null || gsVersion.Version.Major < Settings.GhostscriptMinVersion)
-            {
-                ProgressReporter.Error($"CbzMage requires Ghostscript version {Settings.GhostscriptMinVersion}+ is installed");
-                if (gsVersion != null)
-                {
-                    ProgressReporter.Info($"Found Ghostscript version {gsVersion.Version}");
-                }
-                return null;
-
-            }
-            return gsVersion;
-        }
+  
+        public string GsPath { get; private set; }
 
         public GhostscriptPageMachineManager(GhostscriptVersionInfo gsVersion)
         {
+            var gsDir = Path.GetDirectoryName(gsVersion.DllPath);
+            GsPath = Path.Combine(gsDir, "gswin64c.exe");
+
             _library = new GhostscriptLibrary(gsVersion);
 
             _stoppedMachines = new ConcurrentBag<GhostscriptPageMachine>();
@@ -54,8 +34,8 @@ namespace PdfConverter.Ghostscript
             
             if (!isCached)
             {
-                var processor = new GhostscriptProcessor(_library);
-                machine = new GhostscriptPageMachine(processor);
+                //var processor = new GhostscriptProcessor(_library);
+                machine = new GhostscriptPageMachine(GsPath);
             }
 
 #if DEBUG

@@ -1,4 +1,5 @@
 ﻿using CbzMage.Shared.Extensions;
+using System.Text;
 
 namespace CbzMage.Shared.Helpers
 {
@@ -76,12 +77,16 @@ namespace CbzMage.Shared.Helpers
             Show(message, ConsoleColor.DarkYellow);
         }
 
+        public static void DumpWarnings(IEnumerable<string> warningLines)
+        {
+            var warnings = string.Join(Environment.NewLine, warningLines);
+            Warning(warnings);
+        }
+
         public static void DumpErrors(IEnumerable<string> errorLines)
         {
-            foreach (var message in errorLines)
-            {
-                Error(message);
-            }
+            var errors = string.Join(Environment.NewLine, errorLines);
+            Error(errors);
         }
 
         public static void Error(string message, Exception ex)
@@ -89,7 +94,7 @@ namespace CbzMage.Shared.Helpers
             var errorMessage = $"{message} {ex.TypeAndMessage()}";
 
 #if DEBUG
-            errorMessage =  $"{message}{Environment.NewLine}{ex}";
+            errorMessage = $"{message}{Environment.NewLine}{ex}";
 #endif
 
             Error(errorMessage);

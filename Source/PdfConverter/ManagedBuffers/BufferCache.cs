@@ -39,5 +39,14 @@ namespace PdfConverter.ManagedBuffers
         {
             return Get();
         }
+
+        /// <summary>
+        /// This method does nothing.
+        /// </summary>
+        /// <param name="disposing"></param>
+        protected override void Dispose(bool disposing)
+        {
+            //NOP
+        }
     }
 }

@@ -7,6 +7,10 @@
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Ghostscript\GhostscriptPageMachineManager.cs" />
+  </ItemGroup>
  
   <ItemGroup>
     <PackageReference Include="itext7" Version="7.2.4" />
@@ -14,11 +18,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\ExternalProjects\Ghostscript.Core\Ghostscript.NET\Ghostscript.Core.csproj" />
     <ProjectReference Include="..\CbzMage.Shared\CbzMage.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="PdfSettings.Development.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="PdfSettings.Development.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
