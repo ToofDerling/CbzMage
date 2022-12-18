@@ -192,11 +192,11 @@ namespace PdfConverter
                 var pageMachine = new GhostscriptPageMachine();
                 var (exitCode, warningsOrErrors) = pageMachine.ReadPageList(pdf, pageList, dpi, pageConverter);
 
-                if (exitCode != 0 && foundErrors == 0)
-                {
-                    foundErrors++;
+                if (exitCode != 0) 
+                { 
+                    Interlocked.Increment(ref foundErrors);
                 }
-                if (warningsOrErrors.Count> 0)
+                if (warningsOrErrors.Count > 0)
                 {
                     linesQueue.Enqueue(warningsOrErrors);
                 }
