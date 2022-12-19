@@ -18,7 +18,7 @@ namespace PdfConverter.Ghostscript
         {
             _imageDatahandler = imageDatahandler;
 
-            PipeName = $"CbzMage-{Guid.NewGuid()}";
+            PipeName = PipeHelper.GetPipeName();
 
             _pipe = new NamedPipeServerStream(PipeName, PipeDirection.In, 1,
                 PipeTransmissionMode.Byte, PipeOptions.WriteThrough | PipeOptions.Asynchronous,
