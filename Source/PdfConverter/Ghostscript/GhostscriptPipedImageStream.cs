@@ -42,10 +42,7 @@ namespace PdfConverter.Ghostscript
 
                 while ((readCount = currentBuffer.ReadFrom(_pipe)) > 0)
                 {
-
-#if DEBUG
-                    StatsCount.AddPipeRead(readCount);
-#endif
+                    LogPipeRead(readCount);
 
                     //Image header is found at the start position of a read
                     if (currentBuffer.StartsWith(offset, readCount, pngHeader))
@@ -87,6 +84,13 @@ namespace PdfConverter.Ghostscript
                 // because the pipe is ripped out right under the last read.
                 _pipe.Dispose();
             }
+        }
+
+        private static void LogPipeRead(int readCount)
+        {
+#if DEBUG
+            StatsCount.AddPipeRead(readCount);
+#endif
         }
     }
 }
