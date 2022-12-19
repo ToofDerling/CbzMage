@@ -1,15 +1,18 @@
-﻿using PdfConverter.Helpers;
-using System.Buffers;
+﻿using System.Buffers;
 
-namespace PdfConverter.ManagedBuffers
+namespace CbzMage.Shared.ManagedBuffers
 {
     public sealed class BufferCache : Cache<byte[]>
     {
         private readonly int _size;
 
-        public BufferCache(int size)
+        public int BufferRemainingThreshold { get; }
+
+        public BufferCache(int size, int bufferRemainingThreshold)
         {
             _size = size;
+
+            BufferRemainingThreshold = bufferRemainingThreshold;
 
             ManagedBuffer.Cache = this;
             ManagedMemoryStream.Cache = this;
@@ -22,11 +25,6 @@ namespace PdfConverter.ManagedBuffers
 
         public byte[] Get(int size)
         {
-
-#if DEBUG
-            StatsCount.AllBuffers++;
-#endif
-
             return ArrayPool<byte>.Shared.Rent(size);
         }
 

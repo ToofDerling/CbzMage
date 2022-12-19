@@ -1,8 +1,8 @@
 ﻿using CbzMage.Shared.Extensions;
 using CbzMage.Shared.Helpers;
+using CbzMage.Shared.ManagedBuffers;
 using PdfConverter.Exceptions;
 using PdfConverter.Ghostscript;
-using PdfConverter.ManagedBuffers;
 using System.Collections.Concurrent;
 
 namespace PdfConverter
@@ -133,21 +133,21 @@ namespace PdfConverter
 
         private List<int>[] CreatePageLists(Pdf pdf)
         {
-            var parallelThreads = Settings.GhostscriptReaderThreads;
-            if (pdf.PageCount < parallelThreads)
+            var pageCount = pdf.PageCount;
+            var maxThreads = Settings.GhostscriptReaderThreads;
+
+            // The goal is to have no pagelist with only one page (unless pageCount is 1) 
+            var parallelThreads = 1;
+            for (; parallelThreads < maxThreads; parallelThreads++)
             {
-                parallelThreads = 1;
+                if ((pageCount / parallelThreads) < 4)
+                {
+                    break;
+                }
             }
 
-            //for (; parallelThreads > 0; parallelThreads--)
-            //{ 
-
-            //}
-            //parallelThreads = 1;
-
-
             var pageChunker = new PageChunker();
-            var pageLists = pageChunker.CreatePageLists(pdf.PageCount, parallelThreads);
+            var pageLists = pageChunker.CreatePageLists(pageCount, parallelThreads);
 
             Array.ForEach(pageLists, p => Console.WriteLine($"  Reader{p.First()}: {p.Count} pages"));
 

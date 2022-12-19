@@ -1,7 +1,7 @@
 ﻿using CbzMage.Shared.Jobs;
+using CbzMage.Shared.ManagedBuffers;
 using PdfConverter.Ghostscript;
 using PdfConverter.Jobs;
-using PdfConverter.ManagedBuffers;
 using System.Collections.Concurrent;
 
 namespace PdfConverter

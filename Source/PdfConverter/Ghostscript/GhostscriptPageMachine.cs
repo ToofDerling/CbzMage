@@ -50,13 +50,13 @@ namespace PdfConverter.Ghostscript
             var pageList = CreatePageList(pageNumbers);
 
             var pipeName = gsPipedOutput.PipeName;
-            //TODO: Move this to a helper
-            pipeName = $"\\\\.\\pipe\\{pipeName}";
+            var pipePath = PipeHelper.GetPipePath(pipeName);
 
             var gsPath = Settings.GhostscriptPath;
-            var gsSwitches = GetSwitches(pdf.Path, pageList, dpi, pipeName);
+            var gsSwitches = GetSwitches(pdf.Path, pageList, dpi, pipePath);
 
             var runner = new ProcessRunner();
+
             var exitCode = runner.RunAndWaitForProcess(gsPath, gsSwitches);
             var warningsOrErrors = runner.GetStandardErrorLines();
 

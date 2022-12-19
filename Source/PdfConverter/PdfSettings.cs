@@ -1,5 +1,5 @@
-﻿using CbzMage.Shared.Helpers;
-using PdfConverter.AppVersions;
+﻿using CbzMage.Shared.AppVersions;
+using CbzMage.Shared.Helpers;
 using System.Diagnostics;
 
 namespace PdfConverter

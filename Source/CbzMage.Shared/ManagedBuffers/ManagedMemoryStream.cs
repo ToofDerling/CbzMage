@@ -1,4 +1,4 @@
-﻿namespace PdfConverter.ManagedBuffers
+﻿namespace CbzMage.Shared.ManagedBuffers
 {
     public sealed class ManagedMemoryStream : MemoryStream
     {
@@ -25,7 +25,7 @@
         public override byte[] GetBuffer()
         {
             if (_buffer == null)
-            { 
+            {
                 return base.GetBuffer();
             }
             return _buffer;

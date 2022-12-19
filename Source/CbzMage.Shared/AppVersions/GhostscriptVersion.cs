@@ -3,7 +3,7 @@ using CbzMage.Shared.Extensions;
 using CbzMage.Shared.Helpers;
 using Microsoft.Win32;
 
-namespace PdfConverter.AppVersions
+namespace CbzMage.Shared.AppVersions
 {
     public static class GhostscriptVersion
     {

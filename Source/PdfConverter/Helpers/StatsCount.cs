@@ -21,9 +21,6 @@
             }
         }
 
-        public static volatile int AllBuffers = 0;
-        public static volatile int ExpandedBuffers = 0;
-
         private static volatile int totalConversionTime = 0;
         private static volatile int imageConversionCount = 0;
         private static volatile int imageResizeCount = 0;
@@ -77,13 +74,8 @@
             {
                 Console.WriteLine($"Image conversions: {imageConversionCount} (resizes: {imageResizeCount}) Average ms: {totalConversionTime / imageConversionCount}");
                 Console.WriteLine($"Largest Png: {largestPng} Average: {totalPngSize / imageConversionCount}");
-                Console.WriteLine($"Largest Jpg: {largestJpg} Average: {totalJpgSize / imageConversionCount}");
-                Console.WriteLine($"Jpg > Png: {jpgLargerThanPngCount} Emergency buffers needed: {largerBuffersNeededCount}"); ;
-            }
-
-            if (AllBuffers > 0)
-            {
-                Console.WriteLine($"All buffers: {AllBuffers} (expansions: {ExpandedBuffers})");
+                Console.WriteLine($"Largest Jpg: {largestJpg} Average: {totalJpgSize / imageConversionCount} (BufferSize: {Settings.BufferSize}");
+                Console.WriteLine($"Jpg > Png: {jpgLargerThanPngCount} Emergency buffers needed: {largerBuffersNeededCount})"); ;
             }
         }
     }
