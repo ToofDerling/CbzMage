@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\ExternalProjects\MobiMetadata\Source\MobiMetadata\MobiMetadata.csproj" />
+    <ProjectReference Include="..\..\..\CbzMageExternal\MobiMetadata\Source\MobiMetadata\MobiMetadata.csproj" />
     <ProjectReference Include="..\CbzMage.Shared\CbzMage.Shared.csproj" />
   </ItemGroup>
 
