@@ -43,7 +43,7 @@ namespace PdfConverter.Ghostscript
             return sb.ToString();
         }
 
-        public (int exitCode, List<string> warningsOrErrors) ReadPageList(Pdf pdf, List<int> pageNumbers, int dpi, IPipedImageDataHandler imageDataHandler)
+        public ProcessRunner StartReadingPages(Pdf pdf, List<int> pageNumbers, int dpi, IPipedImageDataHandler imageDataHandler)
         {
             var gsPipedOutput = new GhostscriptPipedImageStream(imageDataHandler);
 
@@ -55,12 +55,10 @@ namespace PdfConverter.Ghostscript
             var gsPath = Settings.GhostscriptPath;
             var gsSwitches = GetSwitches(pdf.Path, pageList, dpi, pipePath);
 
-            var runner = new ProcessRunner();
+            var gsRunner = new ProcessRunner(gsPath, string.Join(' ', gsSwitches));
+            gsRunner.Run();
 
-            var exitCode = runner.RunAndWaitForProcess(gsPath, gsSwitches);
-            var warningsOrErrors = runner.GetStandardErrorLines();
-
-            return (exitCode, warningsOrErrors);
+            return gsRunner;
         }
     }
 }

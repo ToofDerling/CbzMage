@@ -129,14 +129,11 @@ namespace PdfConverter
         {
             var imageHandler = new GetSinglePipedImageDataHandler();
 
-            var (exitCode, warningsOrErrors) = _ghostScriptPageMachine.ReadPageList(_pdf, new List<int> { 1 }, dpi, imageHandler);
-
-            _foundErrors += exitCode;
-            _warningsOrErrors.AddRange(warningsOrErrors);
-
+            using var gsRunner = _ghostScriptPageMachine.StartReadingPages(_pdf, new List<int> { 1 }, dpi, imageHandler);
+             
             var buffer = imageHandler.WaitForImageDate();
 
-            var image = new MagickImage();
+            using var image = new MagickImage();
             image.Ping(buffer.Buffer, 0, buffer.Count);
 
             width = image.Width;
@@ -145,7 +142,10 @@ namespace PdfConverter
             buffer.Release();
 
             DpiCalculated?.Invoke(this, new DpiCalculatedEventArgs(dpi, width, dpiHeight));
-     
+
+            _foundErrors += gsRunner.WaitForExitCode();
+            _warningsOrErrors.AddRange(gsRunner.GetStandardErrorLines());
+
             // Hard cap at the maximum height
             return dpiHeight <= Settings.MaximumHeight;
         }

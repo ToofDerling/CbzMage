@@ -27,7 +27,7 @@
         public int ReadFrom(Stream stream)
         {
             var remaining = Buffer.Length - Count;
-            var readCount = stream.Read(Buffer, Count, remaining);
+            var readCount = stream.Read(Buffer.AsSpan(Count, remaining));
 
             if (readCount > 0)
             {

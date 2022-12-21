@@ -2,20 +2,18 @@
 
 namespace CbzMage.Shared.Helpers
 {
-    public class ProcessRunner
+    public class ProcessRunner : IDisposable
     {
         private readonly List<string> _errorLines = new();
 
-        public int RunAndWaitForProcess(string path, params string[] args)
-        {
-            var parameters = string.Join(' ', args);
-            return RunAndWaitForProcess(path, parameters);
-        }
+        private readonly Process _process;
 
-        public int RunAndWaitForProcess(string path, string args = "", string workingDirectory = "", 
-            ProcessPriorityClass priorityClass = ProcessPriorityClass.Normal, EventHandler<DataReceivedEventArgs>? outputReceived = null)
+        private readonly ProcessPriorityClass _priorityClass;
+
+        public ProcessRunner(string path, string args = "", string workingDirectory = "",
+            ProcessPriorityClass processPriority = ProcessPriorityClass.Normal, EventHandler<DataReceivedEventArgs>? outputReceived = null)
         {
-            using var process = new Process
+            _process = new Process
             {
                 StartInfo = new ProcessStartInfo
                 {
@@ -31,32 +29,37 @@ namespace CbzMage.Shared.Helpers
 
             if (outputReceived != null)
             {
-                process.OutputDataReceived += (s, e) => outputReceived(s, e);
+                _process.OutputDataReceived += (s, e) => outputReceived(s, e);
             }
 
-            process.ErrorDataReceived += (s, e) => OnError(e.Data);
+            _process.ErrorDataReceived += (s, e) => OnError(e.Data!);
 
-            process.Start();
+            _priorityClass = processPriority;
+        }
 
-            process.PriorityClass = priorityClass;
+        public void Run()
+        {
+            _process.Start();
 
-            process.BeginErrorReadLine();
+            _process.PriorityClass = _priorityClass;
 
-            if (outputReceived != null)
+            _process.BeginErrorReadLine();
+        }
+
+        public int RunAndWaitForExit()
+        {
+            Run();
+
+            _process.WaitForExit();
+
+            return _process.ExitCode;
+        }
+
+        private void OnError(string line)
+        {
+            if (!string.IsNullOrEmpty(line))
             {
-                process.BeginOutputReadLine();
-            }
-
-            process.WaitForExit();
-
-            return process.ExitCode;
-
-            void OnError(string line)
-            {
-                if (!string.IsNullOrEmpty(line))
-                {
-                    _errorLines.Add(line);
-                }
+                _errorLines.Add(line);
             }
         }
 
@@ -64,5 +67,49 @@ namespace CbzMage.Shared.Helpers
         {
             return _errorLines;
         }
+
+        public int WaitForExitCode()
+        {
+            if (!_process.HasExited)
+            {
+                _process.WaitForExit();
+            }
+            return _process.ExitCode;
+        }
+
+        #region Dispose
+
+        private bool disposedValue;
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    _process.Dispose();
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+                // TODO: set large fields to null
+                disposedValue = true;
+            }
+        }
+
+        // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
+        // ~ProcessRunner()
+        // {
+        //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        //     Dispose(disposing: false);
+        // }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
+        #endregion
     }
 }

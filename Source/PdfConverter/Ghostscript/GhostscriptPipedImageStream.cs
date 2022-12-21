@@ -20,9 +20,8 @@ namespace PdfConverter.Ghostscript
 
             PipeName = PipeHelper.GetPipeName();
 
-            _pipe = new NamedPipeServerStream(PipeName, PipeDirection.In, 1,
-                PipeTransmissionMode.Byte, PipeOptions.WriteThrough | PipeOptions.Asynchronous,
-                Settings.PipeBufferSize, Settings.PipeBufferSize);
+            _pipe = new NamedPipeServerStream(PipeName, PipeDirection.In, 1, PipeTransmissionMode.Byte,
+                PipeOptions.WriteThrough, Settings.PipeBufferSize, Settings.PipeBufferSize);
 
             var thread = new Thread(new ThreadStart(ReadGhostscriptPipedOutput));
             thread.Start();

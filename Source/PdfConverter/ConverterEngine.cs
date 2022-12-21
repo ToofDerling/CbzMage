@@ -176,10 +176,7 @@ namespace PdfConverter
             var pageCompressor = new PageCompressor(pdf, convertedPages);
             pageCompressor.PagesCompressed += (s, e) => OnPagesCompressed(e);
 
-            // If foundErrors > 0 we got a non-zero exitcode from the pagemachine and the lines
-            // in linesQueue should be treated as errors instead of warnings.
-            var foundErrors = 0;
-            var linesQueue = new ConcurrentQueue<List<string>>();
+            var gsRunners = new ConcurrentBag<ProcessRunner>();
 
             Parallel.For(0, pageLists.Length, (id) =>
             {
@@ -190,16 +187,7 @@ namespace PdfConverter
                 pageConverter.PageConverted += (s, e) => pageCompressor.OnPageConverted(e);
 
                 var pageMachine = new GhostscriptPageMachine();
-                var (exitCode, warningsOrErrors) = pageMachine.ReadPageList(pdf, pageList, dpi, pageConverter);
-
-                if (exitCode != 0) 
-                { 
-                    Interlocked.Increment(ref foundErrors);
-                }
-                if (warningsOrErrors.Count > 0)
-                {
-                    linesQueue.Enqueue(warningsOrErrors);
-                }
+                gsRunners.Add(pageMachine.StartReadingPages(pdf, pageList, dpi, pageConverter));
 
                 pageConverter.WaitForPagesConverted();
             });
@@ -209,10 +197,20 @@ namespace PdfConverter
 
             Console.WriteLine();
 
-            if (!linesQueue.IsEmpty)
+            var foundErrors = 0;
+            var warningsOrErrors = new List<string>();
+
+            foreach (var gsRunner in gsRunners)
+            {
+                foundErrors += gsRunner.WaitForExitCode();
+                warningsOrErrors.AddRange(gsRunner.GetStandardErrorLines());
+                gsRunner.Dispose();
+            }
+
+            if (warningsOrErrors.Count > 0)
             {
                 var isWarnings = foundErrors == 0;
-                DumpWarningsOrErrors(isWarnings, linesQueue.ToArray());
+                DumpWarningsOrErrors(isWarnings, warningsOrErrors);
             }
 
             return pagesCompressed;
