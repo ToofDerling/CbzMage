@@ -221,16 +221,13 @@ namespace PdfConverter
             }
         }
 
-        private static void DumpWarningsOrErrors(bool linesIsWarnings, params List<string>[] allWarningsOrErrors)
+        private static void DumpWarningsOrErrors(bool linesIsWarnings, List<string> warningsOrErrors)
         {
             var linesDict = new Dictionary<string, int>();
 
-            foreach (var foundLines in allWarningsOrErrors)
+            foreach (var foundLine in warningsOrErrors)
             {
-                foreach (var foundLine in foundLines)
-                {
-                    linesDict[foundLine] = linesDict.TryGetValue(foundLine, out var count) ? count + 1 : 1;
-                }
+                linesDict[foundLine] = linesDict.TryGetValue(foundLine, out var count) ? count + 1 : 1;
             }
 
             var lines = new List<string>();
