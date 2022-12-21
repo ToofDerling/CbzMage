@@ -1,6 +1,0 @@
-Check out 
-
-https://github.com/ToofDerling/Ghostscript.Core.git (as "Ghostscript.Core") and
-https://github.com/ToofDerling/MobiMetadata.git (as "MobiMetadata")
-
-in this folder and you should be good to go

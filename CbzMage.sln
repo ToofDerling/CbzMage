@@ -11,9 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CbzMage.Shared", "Source\Cb
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzwConverter", "Source\AzwConverter\AzwConverter.csproj", "{A03C4A66-534E-4C23-94E9-5EFC38A220E2}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ExternalProjects", "ExternalProjects", "{926715BF-4197-4640-A99E-80F88BBBFA99}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CbzMageExternal", "CbzMageExternal", "{926715BF-4197-4640-A99E-80F88BBBFA99}"
 	ProjectSection(SolutionItems) = preProject
-		ExternalProjects\ExternalProjects.txt = ExternalProjects\ExternalProjects.txt
+		Source\ReadmeExternalProjects.txt = Source\ReadmeExternalProjects.txt
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MobiMetadata", "..\CbzMageExternal\MobiMetadata\Source\MobiMetadata\MobiMetadata.csproj", "{E849A028-6AE9-478D-B405-B3038F5D1777}"
