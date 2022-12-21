@@ -79,8 +79,7 @@ namespace PdfConverter
             }
 
             //NumberOfThreads
-            Settings.GhostscriptReaderThreads =
-                _settingsHelper.GetThreadCount(Settings.GhostscriptReaderThreads);
+            Settings.GhostscriptReaderThreads = _settingsHelper.GetThreadCount(Settings.GhostscriptReaderThreads);
         }
 
         public static AppVersion GetValidGhostscriptVersion(List<AppVersion> gsVersions)

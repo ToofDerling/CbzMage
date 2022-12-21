@@ -41,7 +41,17 @@ namespace CbzMage.Shared.Helpers
         {
             _process.Start();
 
-            _process.PriorityClass = _priorityClass;
+            if (_priorityClass != ProcessPriorityClass.Normal && !_process.HasExited)
+            {
+                try
+                {
+                    _process.PriorityClass = _priorityClass;
+                }
+                catch
+                {
+                    //This can fail if process has already exited, so ignore any error
+                }
+            }
 
             _process.BeginErrorReadLine();
         }
