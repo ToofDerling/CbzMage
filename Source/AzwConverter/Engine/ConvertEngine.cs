@@ -142,7 +142,7 @@ namespace AzwConverter.Engine
 
             if (record != null)
             {
-                await record.WriteDataAsync(stream, additionalStream: coverStream!);
+                await record.WriteDataAsync(stream, coverStream!);
                 if (isRealCover)
                 {
                     state.SdCover = true;
