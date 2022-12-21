@@ -261,7 +261,6 @@ __pycache__/
 *.pyc
 
 /Source/AzwConverter/appsettings.Development.json
-/lib/gsdll64.dll
 /Source/CbzMage/Properties/PublishProfiles
 /Source/PdfConverter/Properties/PublishProfiles
 /Source/AzwConverter/AzwSettings.Development.json
