@@ -204,6 +204,7 @@ namespace PdfConverter
             {
                 foundErrors += gsRunner.WaitForExitCode();
                 warningsOrErrors.AddRange(gsRunner.GetStandardErrorLines());
+                
                 gsRunner.Dispose();
             }
 

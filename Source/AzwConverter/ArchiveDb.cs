@@ -25,9 +25,9 @@ namespace AzwConverter
         {
             var dbFileInfo = new FileInfo(_dbFile);
 
-            if (File.Exists(_dbFile))
+            if (dbFileInfo.Exists)
             {
-                using var mappedFile = MemoryMappedFile.CreateFromFile(_dbFile, FileMode.Open);
+                using var mappedFile = MemoryMappedFile.CreateFromFile(dbFileInfo.FullName, FileMode.Open);
                 using var stream = mappedFile.CreateViewStream();
 
                 var linesData = new byte[dbFileInfo.Length].AsMemory();

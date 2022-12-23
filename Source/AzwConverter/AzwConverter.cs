@@ -160,7 +160,7 @@ namespace AzwConverter
                 ProgressReporter.Info($"Checking {updatedBooks.Count} updated book{updatedBooks.SIf1()}:");
 
                 await Parallel.ForEachAsync(updatedBooks, Settings.ParallelOptions,
-                    async (book, ct) =>
+                    async (book, _) =>
                     await ScanUpdatedBookAsync(book.Key, book.Value, titles[book.Key], archive));
             }
 
@@ -179,7 +179,7 @@ namespace AzwConverter
                 totalBooks = unconvertedBooks.Count;
 
                 await Parallel.ForEachAsync(unconvertedBooks, Settings.ParallelOptions,
-                    async (book, ct) =>
+                    async (book, _) =>
                     await ConvertBookAsync(book.Key, book.Value, titles[book.Key],
                     convertedTitles.ContainsKey(book.Key) ? convertedTitles[book.Key] : null,
                     syncer, archive));
@@ -198,7 +198,7 @@ namespace AzwConverter
                 totalBooks = books.Count;
 
                 await Parallel.ForEachAsync(books, Settings.ParallelOptions,
-                    async (book, ct) =>
+                    async (book, _) =>
                     await AnalyzeBookAsync(book.Key, book.Value, titles[book.Key]));
             }
         }
@@ -226,9 +226,9 @@ namespace AzwConverter
             var analyzeMessageOk = engine.GetAnalyzeMessageOk();
             var analyzeMessageError = engine.GetAnalyzeMessageError();
 
-            if (analyzeMessageError != null)
+            if (analyzeMessageOk != null || analyzeMessageError != null)
             {
-                PrintCbzState(bookDir, state, showPagesAndCover: false, doneMsg: analyzeMessageOk, errorMsg: analyzeMessageError);
+                PrintCbzState(bookDir, state, showPagesAndCover: false, doneMsg: analyzeMessageOk!, errorMsg: analyzeMessageError);
             }
             else
             {
@@ -282,7 +282,7 @@ namespace AzwConverter
 
         private bool TryParseTitleFile(FileInfo titleFile, out string publisher, out string title)
         {
-            publisher = title = null;
+            publisher = title = null!;
 
             var match = _publisherTitleRegex.Match(titleFile.Name);
             if (!match.Success)
