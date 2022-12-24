@@ -1,6 +1,5 @@
 ﻿using PdfConverter.Helpers;
 using CbzMage.Shared.ManagedBuffers;
-using System.IO.Pipes;
 
 namespace PdfConverter.Ghostscript
 {
@@ -10,19 +9,17 @@ namespace PdfConverter.Ghostscript
 
         private readonly IPipedImageDataHandler _imageDatahandler;
 
-        private readonly NamedPipeServerStream _pipe;
+        private readonly Stream _pipe;
 
-        public string PipeName { get; }
-
-        public GhostscriptPipedImageStream(IPipedImageDataHandler imageDatahandler)
+        public GhostscriptPipedImageStream(Stream stream, IPipedImageDataHandler imageDatahandler)
         {
+            _pipe = stream;
             _imageDatahandler = imageDatahandler;
 
-            PipeName = PipeHelper.GetPipeName();
+        }
 
-            _pipe = new NamedPipeServerStream(PipeName, PipeDirection.In, 1, PipeTransmissionMode.Byte,
-                PipeOptions.WriteThrough, Settings.PipeBufferSize, Settings.PipeBufferSize);
-
+        public void StartReadingImages()
+        {
             var thread = new Thread(new ThreadStart(ReadGhostscriptPipedOutput));
             thread.Start();
         }
@@ -31,8 +28,6 @@ namespace PdfConverter.Ghostscript
         {
             try
             {
-                _pipe.WaitForConnection();
-
                 var currentBuffer = new ManagedBuffer();
                 var firstImage = true;
 

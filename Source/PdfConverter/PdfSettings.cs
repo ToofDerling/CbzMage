@@ -21,24 +21,22 @@ namespace PdfConverter
         {
             if (!string.IsNullOrEmpty(Settings.GhostscriptPath))
             {
-                if (!File.Exists(Settings.GhostscriptPath))
+                if (File.Exists(Settings.GhostscriptPath))
                 {
-                    throw new Exception($"{nameof(Settings.GhostscriptPath)} [{Settings.GhostscriptPath}] does not exist");
-                }
+                    var version = FileVersionInfo.GetVersionInfo(Settings.GhostscriptPath).FileVersion;
+                    if (version == null)
+                    {
+                        ProgressReporter.Warning($"{Settings.GhostscriptPath} does not contain any version information.");
+                    }
+                    else
+                    {
+                        var appVersion = new AppVersion(Settings.GhostscriptPath, new Version(version));
 
-                var version = FileVersionInfo.GetVersionInfo(Settings.GhostscriptPath).FileVersion;
-                if (version == null)
-                {
-                    ProgressReporter.Warning($"{Settings.GhostscriptPath} does not contain any version information.");
-                }
-                else
-                {
-                    var appVersion = new AppVersion(Settings.GhostscriptPath, new Version(version));
+                        // TODO:
+                        appVersion = GetValidGhostscriptVersion(new List<AppVersion> { appVersion });
 
-                    // Throws if version is invalid
-                    appVersion = GetValidGhostscriptVersion(new List<AppVersion> { appVersion });
-
-                    Settings.SetGhostscriptVersion(appVersion.Version);
+                        Settings.SetGhostscriptVersion(appVersion.Version);
+                    }
                 }
             }
             else if (Environment.OSVersion.Platform == PlatformID.Win32NT)

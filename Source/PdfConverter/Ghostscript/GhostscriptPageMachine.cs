@@ -7,6 +7,12 @@ namespace PdfConverter.Ghostscript
     {
         private static string[] GetSwitches(string pdfFile, string pageList, int dpi, string output)
         {
+            var numRenderingThreads = string.Empty;
+            if (Settings.GhostscriptReaderThreads == 1)
+            {
+                numRenderingThreads = $"-dNumRenderingThreads={Environment.ProcessorCount}";
+            }
+
             var switches = new[]
             {
                 //"-empty", wut?
@@ -21,11 +27,11 @@ namespace PdfConverter.Ghostscript
                 "-sDEVICE=png16m",
                 //"-sDEVICE=png16malpha", causes inverted colors on editorial pages in many books
                 //$"-dMaxBitmap={BufferSize}", this is for X only
-                //$"-dNumRenderingThreads={Environment.ProcessorCount}",
+                numRenderingThreads,            
                 $"-sPageList={pageList}",
                 $"-r{dpi}",
-                $"-o{output}",
-                "-q", // Don't write to stdout (and set -dQUIET)
+                $"-o -", // write image output to stdout
+                "-q", // Don't write text output to stdout (and set -dQUIET)
                 $"-f\"{pdfFile}\"", // -f skips a few filename checks
                 //pdfFile
             };
@@ -45,18 +51,20 @@ namespace PdfConverter.Ghostscript
 
         public ProcessRunner StartReadingPages(Pdf pdf, List<int> pageNumbers, int dpi, IPipedImageDataHandler imageDataHandler)
         {
-            var gsPipedOutput = new GhostscriptPipedImageStream(imageDataHandler);
-
             var pageList = CreatePageList(pageNumbers);
 
-            var pipeName = gsPipedOutput.PipeName;
-            var pipePath = PipeHelper.GetPipePath(pipeName);
-
             var gsPath = Settings.GhostscriptPath;
-            var gsSwitches = GetSwitches(pdf.Path, pageList, dpi, pipePath);
+            var gsSwitches = GetSwitches(pdf.Path, pageList, dpi, string.Empty);
 
-            var gsRunner = new ProcessRunner(gsPath, string.Join(' ', gsSwitches));
+            var parameters = string.Join(' ', gsSwitches);
+
+            var gsRunner = new ProcessRunner(gsPath, parameters);
             gsRunner.Run();
+
+            var stream = gsRunner.GetOutputStream();
+
+            var gsPipedOutput = new GhostscriptPipedImageStream(stream, imageDataHandler);
+            gsPipedOutput.StartReadingImages();
 
             return gsRunner;
         }
