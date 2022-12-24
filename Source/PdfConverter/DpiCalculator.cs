@@ -127,7 +127,7 @@ namespace PdfConverter
 
         private bool TryGetImageWidth(int dpi, out int width)
         {
-            var imageHandler = new GetSinglePipedImageDataHandler();
+            var imageHandler = new SingleImageDataHandler();
 
             using var gsRunner = _ghostScriptPageMachine.StartReadingPages(_pdf, new List<int> { 1 }, dpi, imageHandler);
              

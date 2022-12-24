@@ -2,7 +2,7 @@
 
 namespace PdfConverter.Ghostscript
 {
-    public interface IPipedImageDataHandler
+    public interface IImageDataHandler
     {
         void HandleImageData(ManagedBuffer image);
     }

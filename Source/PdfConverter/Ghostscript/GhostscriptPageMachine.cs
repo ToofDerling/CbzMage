@@ -10,7 +10,7 @@ namespace PdfConverter.Ghostscript
             var numRenderingThreads = string.Empty;
             if (Settings.GhostscriptReaderThreads == 1)
             {
-                numRenderingThreads = $"-dNumRenderingThreads={Environment.ProcessorCount}";
+                numRenderingThreads = $"-dNumRenderingThreads={Environment.ProcessorCount / 2}";
             }
 
             var switches = new[]
@@ -27,7 +27,7 @@ namespace PdfConverter.Ghostscript
                 "-sDEVICE=png16m",
                 //"-sDEVICE=png16malpha", causes inverted colors on editorial pages in many books
                 //$"-dMaxBitmap={BufferSize}", this is for X only
-                numRenderingThreads,            
+                numRenderingThreads,
                 $"-sPageList={pageList}",
                 $"-r{dpi}",
                 $"-o -", // write image output to stdout
@@ -49,7 +49,7 @@ namespace PdfConverter.Ghostscript
             return sb.ToString();
         }
 
-        public ProcessRunner StartReadingPages(Pdf pdf, List<int> pageNumbers, int dpi, IPipedImageDataHandler imageDataHandler)
+        public ProcessRunner StartReadingPages(Pdf pdf, List<int> pageNumbers, int dpi, IImageDataHandler imageDataHandler)
         {
             var pageList = CreatePageList(pageNumbers);
 
@@ -57,14 +57,13 @@ namespace PdfConverter.Ghostscript
             var gsSwitches = GetSwitches(pdf.Path, pageList, dpi, string.Empty);
 
             var parameters = string.Join(' ', gsSwitches);
-
             var gsRunner = new ProcessRunner(gsPath, parameters);
-            gsRunner.Run();
 
+            gsRunner.Run();
             var stream = gsRunner.GetOutputStream();
 
-            var gsPipedOutput = new GhostscriptPipedImageStream(stream, imageDataHandler);
-            gsPipedOutput.StartReadingImages();
+            var gsOutputReader = new GhostscriptImageStreamReader(stream, imageDataHandler);
+            gsOutputReader.StartReadingImages();
 
             return gsRunner;
         }

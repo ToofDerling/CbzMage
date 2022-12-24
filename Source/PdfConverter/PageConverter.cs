@@ -6,7 +6,7 @@ using System.Collections.Concurrent;
 
 namespace PdfConverter
 {
-    public class PageConverter : IPipedImageDataHandler
+    public class PageConverter : IImageDataHandler
     {
         private readonly JobExecutor<string> _converterExecutor;
         private readonly JobWaiter _jobWaiter;

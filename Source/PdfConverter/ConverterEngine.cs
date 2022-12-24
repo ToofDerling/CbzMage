@@ -164,9 +164,10 @@ namespace PdfConverter
                 throw new ApplicationException($"{nameof(pageLists)} pageSum {pageSum} should be {pdf.PageCount}");
             }
 
-            // Each page converter is given a range of pages that are continously read and saved as png images.
+            // Each page machine reads a range of pages continously and saves them as png images in memory.
+            // Each machine has a dedicated converter thread that converts images to jpg, also in memory 
             // The page compressor job thread picks up converted images as they are saved (in page order)
-            // and creates the cbz file.
+            // and writes them to the cbz file.
 
             // Key is page name (page-001.jpg etc)
             var convertedPages = new ConcurrentDictionary<string, ManagedMemoryStream>(pageLists.Length, pdf.PageCount);

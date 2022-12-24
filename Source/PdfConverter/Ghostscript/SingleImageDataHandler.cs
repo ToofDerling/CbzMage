@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 
 namespace PdfConverter.Ghostscript
 {
-    public class GetSinglePipedImageDataHandler : IPipedImageDataHandler
+    public class SingleImageDataHandler : IImageDataHandler
     {
         private readonly BlockingCollection<ManagedBuffer> _queue = new();
 
