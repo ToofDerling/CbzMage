@@ -32,7 +32,7 @@ namespace PdfConverter
                     {
                         var appVersion = new AppVersion(Settings.GhostscriptPath, new Version(version));
 
-                        // TODO:
+                        // Throws is version is not valid
                         appVersion = GetValidGhostscriptVersion(new List<AppVersion> { appVersion });
 
                         Settings.SetGhostscriptVersion(appVersion.Version);
@@ -49,7 +49,7 @@ namespace PdfConverter
             }
             else
             {
-                throw new Exception($"Ghostscript installation not found ({nameof(Settings.GhostscriptPath)} is \"{Settings.GhostscriptPath}\")");
+                Settings.GhostscriptPath = "gs";
             }
 
             //MinimumDpi
