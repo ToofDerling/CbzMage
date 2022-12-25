@@ -1,6 +1,11 @@
-// Punction is important! Don't remove quotes, colons, commas or curly braces 
-// (or otherwise change the structure).
+// Punction is important! Don't remove quotes, colons, commas or square brackets 
+// (or otherwise change the structure). Back slashes in directory paths must be 
+// quoted like this: "C:\\System\\Apps\\Ghostscript\\gswin64c.exe"
 {
+  // CbzMage pdf conversion requires Ghostscript version 10 or later (if you use an 
+  // earlier version pdf conversion will likely fail). If you don't specify the path 
+  // to the Ghostscript excutable, CbzMage will try to find a valid Ghostsscript 
+  // installation on Windows. On Linux/macOS it will simply try to use "gs".
   "GhostscriptPath": "",
 
   // Number of Ghostscript reader threads. Set this to 0 to have CbzMage try to
