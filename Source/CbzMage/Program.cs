@@ -8,10 +8,10 @@ namespace CbzMage
     {
         public static string _usage = @"
 AzwConvert [or Azw Convert]
-    Scans awz directory and converts all unconverted books to cbz files.
+    Scans awz directory and converts all unconverted comic books to cbz files.
 
 AzwScan [or Azw Scan]
-    Scans azw directory and creates a .NEW title file for each unconverted book. 
+    Scans azw directory and creates a .NEW title file for each unconverted comic book. 
 
 PdfConvert [or Pdf Convert] <pdf file> or <directory with pdf files>
     Converts one or more pdf comic books to cbz files.
