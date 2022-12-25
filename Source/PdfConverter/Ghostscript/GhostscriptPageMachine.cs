@@ -30,7 +30,7 @@ namespace PdfConverter.Ghostscript
                 numRenderingThreads,
                 $"-sPageList={pageList}",
                 $"-r{dpi}",
-                $"-o -", // write image output to stdout
+                $"-o-", // write image output to stdout
                 "-q", // Don't write text output to stdout (and set -dQUIET)
                 $"-f\"{pdfFile}\"", // -f skips a few filename checks
                 //pdfFile

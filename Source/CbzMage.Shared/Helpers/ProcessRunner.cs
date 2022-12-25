@@ -24,7 +24,7 @@ namespace CbzMage.Shared.Helpers
                     CreateNoWindow = true,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
-        }
+                }
             };
 
             if (outputReceived != null)
@@ -60,9 +60,10 @@ namespace CbzMage.Shared.Helpers
         /// Get the underlying output stream. Do not touch Process.StandardOutput after doing this.
         /// </summary>
         /// <returns></returns>
-        public Stream GetOutputStream()
+        public FileStream GetOutputStream()
         {
-            return _process.StandardOutput.BaseStream;
+            var stream = (FileStream)_process.StandardOutput.BaseStream;
+            return stream;
         }
 
         public int RunAndWaitForExit()

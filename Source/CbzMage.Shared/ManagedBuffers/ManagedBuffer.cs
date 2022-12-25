@@ -24,10 +24,15 @@
             Count = length;
         }
 
-        public int ReadFrom(Stream stream)
+        public int ReadFrom(FileStream stream)
+        {
+            return ReadFrom(stream, useSpan: true);
+        }
+
+        public int ReadFrom(Stream stream, bool useSpan = false)
         {
             var remaining = Buffer.Length - Count;
-            var readCount = stream.Read(Buffer.AsSpan(Count, remaining));
+            var readCount = useSpan ? stream.Read(Buffer.AsSpan(Count, remaining)) : stream.Read(Buffer, Count, remaining);
 
             if (readCount > 0)
             {

@@ -55,6 +55,7 @@ namespace PdfConverter
         {
             var stopwatch = Stopwatch.StartNew();
 
+            // Throws if pdf is encrypted
             using var pdfParser = new PdfImageParser(pdf);
 
             Console.WriteLine(pdf.Path);
