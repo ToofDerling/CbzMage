@@ -7,24 +7,21 @@ namespace CbzMage
     internal class Program
     {
         public static string _usage = @"
-Commands are case insensitive. 
-
 AzwConvert [or Azw Convert]
     Scans awz directory and converts all unconverted books to cbz files.
 
 AzwScan [or Azw Scan]
     Scans azw directory and creates a .NEW title file for each unconverted book. 
 
-In both cases CbzMage will scan for updated books and create an .UPDATED title 
-file for each updated book. 
-
 PdfConvert [or Pdf Convert] <pdf file> or <directory with pdf files>
     Converts one or more pdf comic books to cbz files (DOES NOT WORK YET).
+
+Commands are case insensitive. 
 ";
         static async Task Main(string[] args)
         {
             var validAction = false;
-            CbzMageAction action = default;
+            CbzMageAction action;
 
             var actionStr = string.Empty;
             var next = 0;
@@ -54,7 +51,7 @@ PdfConvert [or Pdf Convert] <pdf file> or <directory with pdf files>
                                 break;
                             case CbzMageAction.PdfConvert:
                                 var pdfConverter = new PdfConverter.PdfConverter();
-                                pdfConverter.ConvertFileOrDirectory(path);
+                                pdfConverter.ConvertFileOrDirectory(path!);
                                 break;
                         }
                     }
