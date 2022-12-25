@@ -14,7 +14,7 @@ AzwScan [or Azw Scan]
     Scans azw directory and creates a .NEW title file for each unconverted book. 
 
 PdfConvert [or Pdf Convert] <pdf file> or <directory with pdf files>
-    Converts one or more pdf comic books to cbz files (DOES NOT WORK YET).
+    Converts one or more pdf comic books to cbz files.
 
 Commands are case insensitive. 
 ";
