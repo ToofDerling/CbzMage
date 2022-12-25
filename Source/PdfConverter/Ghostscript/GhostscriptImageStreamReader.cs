@@ -9,9 +9,9 @@ namespace PdfConverter.Ghostscript
 
         private readonly IImageDataHandler _imageDatahandler;
 
-        private readonly FileStream _stream;
+        private readonly Stream _stream;
 
-        public GhostscriptImageStreamReader(FileStream stream, IImageDataHandler imageDatahandler)
+        public GhostscriptImageStreamReader(Stream stream, IImageDataHandler imageDatahandler)
         {
             _stream = stream;
             _imageDatahandler = imageDatahandler;

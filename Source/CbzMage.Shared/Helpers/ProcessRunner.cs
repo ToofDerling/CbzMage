@@ -60,9 +60,9 @@ namespace CbzMage.Shared.Helpers
         /// Get the underlying output stream. Do not touch Process.StandardOutput after doing this.
         /// </summary>
         /// <returns></returns>
-        public FileStream GetOutputStream()
+        public Stream GetOutputStream()
         {
-            var stream = (FileStream)_process.StandardOutput.BaseStream;
+            var stream = _process.StandardOutput.BaseStream;
             return stream;
         }
 
