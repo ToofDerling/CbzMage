@@ -38,6 +38,7 @@
                     var newBuffer = Cache.Get(Buffer.Length + _originalLength);
 
                     System.Buffer.BlockCopy(Buffer, 0, newBuffer, 0, Count);
+                    Release();
 
                     Buffer = newBuffer;
                 }
