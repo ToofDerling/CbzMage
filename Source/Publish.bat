@@ -11,8 +11,6 @@ set oldversion=%major%.%oldminor%
 set newversion=%major%.%newminor%
 echo Version: %newversion%
 for %%t in (%targets%) do if exist %%t rmdir /s /q %%t
-for %%t in (%targets%) do if exist %%t%oldversion% rmdir /s /q %%t%oldversion%
-for %%t in (%targets%) do if exist %%t%newversion% rmdir /s /q %%t%newversion%
 cd ..\source\cbzmage
 for %%t in (%targets%) do (
 	echo Publish %%t
@@ -29,8 +27,11 @@ setlocal enabledelayedexpansion
 set base=%1
 del %base%\*.pdb
 del %base%\*.development.json
-set full=!base:_=%newversion%_!
-move %base% %full% >nul:
-echo Create %full%.zip
-if exist %full%.zip del %full%.zip
-%zip% %full%.zip %full% >nul:
+set old=!base:_=%oldversion%_! 
+if exist %old% rmdir /s /q %old%
+set new=!base:_=%newversion%_!
+if exist %new% rmdir /s /q %new%
+move %base% %new% >nul:
+echo Create %new%.zip
+if exist %new%.zip del %new%.zip
+%zip% %new%.zip %new% >nul:
