@@ -32,7 +32,5 @@ namespace PdfConverter
         }
 
         public static int BufferRemainingThreshold => 262144;
-
-        public static int PipeBufferSize => 262144;
     }
 }

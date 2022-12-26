@@ -46,12 +46,12 @@ namespace PdfConverter
 
         private ZipArchive CreateCompressor()
         {
-            var _cbzFile = Path.ChangeExtension(_pdf.Path, ".cbz");
-            File.Delete(_cbzFile);
+            var cbzFile = Path.ChangeExtension(_pdf.Path, ".cbz");
+            File.Delete(cbzFile);
 
-            ProgressReporter.Done(_cbzFile);
+            ProgressReporter.Done(cbzFile);
 
-            return ZipFile.Open(_cbzFile, ZipArchiveMode.Create);
+            return ZipFile.Open(cbzFile, ZipArchiveMode.Create);
         }
 
         public void WaitForPagesCompressed()
