@@ -22,8 +22,6 @@ namespace CbzMage.Shared.Buffers
         private T[] _buffer;
         private int _index;
 
-        private readonly unsafe int tSize = sizeof(T);
-
         /// <summary>
         /// Creates an instance of an <see cref="ArrayPoolBufferWriter{T}"/>, in which data can be written to,
         /// with the default initial capacity.
@@ -272,10 +270,11 @@ namespace CbzMage.Shared.Buffers
                 if (_buffer.Length > 0)
                 {
                     Array.Copy(_buffer, 0, newBuffer, 0, _index);
-
+                    
+                    #region copy test
                     //var testIte = 5;
                     //var copyIte = 100000;
-                    
+
                     //var sw = new Stopwatch();
                     //long elapsed = 0;
 
@@ -296,9 +295,10 @@ namespace CbzMage.Shared.Buffers
                     //for (int j = 0; j < testIte; j++)
                     //{
                     //    sw.Restart();
-                    //    for (int i = 0; i < copyIte; i++)
+                    //    unsafe
                     //    {
-                    //        unsafe
+                    //        var tSize = sizeof(T);
+                    //        for (int i = 0; i < copyIte; i++)
                     //        {
                     //            fixed (T* pinnedDestination = newBuffer)
                     //            fixed (T* pinnedSource = _buffer)
@@ -327,6 +327,7 @@ namespace CbzMage.Shared.Buffers
                     //    Console.WriteLine(sw.ElapsedMilliseconds);
                     //}
                     //Console.WriteLine($"Buffer.BlockCopy: {elapsed / testIte}");
+                    #endregion
 
                     ArrayPool<T>.Shared.Return(_buffer);
                 }
