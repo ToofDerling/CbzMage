@@ -9,11 +9,11 @@ namespace PdfConverter.Jobs
     {
         private readonly ZipArchive _compressor;
 
-        private readonly List<(string page, ByteArrayBufferWriter image)> _imageList;
+        private readonly List<(string page, ArrayPoolBufferWriter<byte> image)> _imageList;
 
         private readonly ProgressReporter _progressReporter;
 
-        public ImageCompressorJob(ZipArchive compressor, List<(string, ByteArrayBufferWriter)> imageList,
+        public ImageCompressorJob(ZipArchive compressor, List<(string, ArrayPoolBufferWriter<byte>)> imageList,
             ProgressReporter progressReporter)
         {
             _compressor = compressor;
@@ -32,7 +32,7 @@ namespace PdfConverter.Jobs
 
                 cbzStream.Write(bufferWriter.WrittenSpan);
 
-                bufferWriter.ReturnBuffer();
+                bufferWriter.Close();
 
                 _progressReporter.ShowProgress($"Converted {page}");
             }

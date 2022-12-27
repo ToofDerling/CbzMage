@@ -4,6 +4,6 @@ namespace PdfConverter.Ghostscript
 {
     public interface IImageDataHandler
     {
-        void HandleImageData(ByteArrayBufferWriter image);
+        void HandleImageData(ArrayPoolBufferWriter<byte> image);
     }
 }

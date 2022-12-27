@@ -170,7 +170,7 @@ namespace PdfConverter
             // and writes them to the cbz file.
 
             // Key is page name (page-001.jpg etc)
-            var convertedPages = new ConcurrentDictionary<string, ByteArrayBufferWriter>(pageLists.Length, pdf.PageCount);
+            var convertedPages = new ConcurrentDictionary<string, ArrayPoolBufferWriter<byte>>(pageLists.Length, pdf.PageCount);
 
             var progressReporter = new ProgressReporter(pdf.PageCount);
 

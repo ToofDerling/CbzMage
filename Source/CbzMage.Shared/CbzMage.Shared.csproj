@@ -4,10 +4,12 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Remove="Buffers\BufferCache.cs" />
+    <Compile Remove="Buffers\ByteArrayBufferWriter.cs" />
     <Compile Remove="Buffers\Cache.cs" />
     <Compile Remove="Buffers\ManagedBuffer.cs" />
     <Compile Remove="Buffers\ManagedMemoryStream.cs" />

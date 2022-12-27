@@ -139,7 +139,7 @@ namespace PdfConverter
             width = image.Width;
             var dpiHeight = image.Height;
 
-            bufferWriter.ReturnBuffer();
+            bufferWriter.Close();
 
             DpiCalculated?.Invoke(this, new DpiCalculatedEventArgs(dpi, width, dpiHeight));
 

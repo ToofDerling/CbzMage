@@ -13,12 +13,12 @@ namespace PdfConverter
 
         private readonly Pdf _pdf;
         private readonly Queue<int> _pageQueue;
-        private readonly ConcurrentDictionary<string, ByteArrayBufferWriter> _convertedPages;
+        private readonly ConcurrentDictionary<string, ArrayPoolBufferWriter<byte>> _convertedPages;
 
         private readonly int? _resizeHeight;
 
         public PageConverter(Pdf pdf, Queue<int> pageQueue, 
-            ConcurrentDictionary<string, ByteArrayBufferWriter> convertedPages, int? resizeHeight)
+            ConcurrentDictionary<string, ArrayPoolBufferWriter<byte>> convertedPages, int? resizeHeight)
         {
             _pdf = pdf;
             _pageQueue = pageQueue;
@@ -38,7 +38,7 @@ namespace PdfConverter
             _jobWaiter.WaitForJobsToFinish();
         }
 
-        public void HandleImageData(ByteArrayBufferWriter bufferWriter)
+        public void HandleImageData(ArrayPoolBufferWriter<byte> bufferWriter)
         {
             if (bufferWriter == null)
             {

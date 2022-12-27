@@ -5,9 +5,9 @@ namespace PdfConverter.Ghostscript
 {
     public class SingleImageDataHandler : IImageDataHandler
     {
-        private readonly BlockingCollection<ByteArrayBufferWriter> _queue = new();
+        private readonly BlockingCollection<ArrayPoolBufferWriter<byte>> _queue = new();
 
-        public ByteArrayBufferWriter WaitForImageDate()
+        public ArrayPoolBufferWriter<byte> WaitForImageDate()
         {
             var buffer = _queue.Take();
 
@@ -16,7 +16,7 @@ namespace PdfConverter.Ghostscript
             return buffer;
         }
 
-        public void HandleImageData(ByteArrayBufferWriter image)
+        public void HandleImageData(ArrayPoolBufferWriter<byte> image)
         {
             if (image == null)
             {

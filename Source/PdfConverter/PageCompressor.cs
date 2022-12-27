@@ -13,7 +13,7 @@ namespace PdfConverter
 
         private readonly ConcurrentQueue<int> _pageNumbers;
 
-        private readonly ConcurrentDictionary<string, ByteArrayBufferWriter> _convertedPages;
+        private readonly ConcurrentDictionary<string, ArrayPoolBufferWriter<byte>> _convertedPages;
 
         private readonly JobExecutor<IEnumerable<string>> _compressorExecutor;
 
@@ -27,7 +27,7 @@ namespace PdfConverter
 
         private readonly ProgressReporter _progressReporter;
 
-        public PageCompressor(Pdf pdf, ConcurrentDictionary<string, ByteArrayBufferWriter> convertedPages)
+        public PageCompressor(Pdf pdf, ConcurrentDictionary<string, ArrayPoolBufferWriter<byte>> convertedPages)
         {
             _pdf = pdf;
             _convertedPages = convertedPages;
@@ -88,7 +88,7 @@ namespace PdfConverter
         {
             var key = _pdf.GetPageString(_nextPageNumber);
 
-            var imageList = new List<(string page, ByteArrayBufferWriter imageData)>();
+            var imageList = new List<(string page, ArrayPoolBufferWriter<byte> imageData)>();
 
             while (_convertedPages.TryRemove(key, out var imageData))
             {

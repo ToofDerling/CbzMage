@@ -22,6 +22,8 @@ namespace CbzMage.Shared.Buffers
         private T[] _buffer;
         private int _index;
 
+        private readonly unsafe int tSize = sizeof(T);
+
         /// <summary>
         /// Creates an instance of an <see cref="ArrayPoolBufferWriter{T}"/>, in which data can be written to,
         /// with the default initial capacity.
@@ -57,11 +59,11 @@ namespace CbzMage.Shared.Buffers
             _index = 0;
         }
 
-        public ArrayPoolBufferWriter(T[] arrayPoolBuffer)
+        public ArrayPoolBufferWriter(T[] sharedArrayPoolBuffer)
         {
-            ArgumentNullException.ThrowIfNull(arrayPoolBuffer);
+            ArgumentNullException.ThrowIfNull(sharedArrayPoolBuffer);
 
-            _buffer = arrayPoolBuffer;
+            _buffer = sharedArrayPoolBuffer;
             _index = 0;
         }
 
@@ -96,34 +98,45 @@ namespace CbzMage.Shared.Buffers
         public int FreeCapacity => _buffer.Length - _index;
 
         /// <summary>
-        /// Returns the underlying buffer to the shared <see cref="ArrayPool{T}"/>. Do not use
-        /// the <see cref="ArrayPoolBufferWriter{T}"/> after returning its buffer.
+        /// Clears the data written to the underlying buffer and resets the 
+        /// <see cref="ArrayPoolBufferWriter{T}"/> so it can be re-used.
         /// </summary>
-        /// <param name="clearData">Clear the data before returning the buffer to the pool.</param>
-        public void ReturnBuffer(bool clearData = false)
+        /// <remarks>
+        /// Use <see cref="Reset"/> if you don't need to clear the data before re-using.
+        /// </remarks>
+        public void Clear()
         {
-            if (_buffer.Length > 0)
-            {
-                ArrayPool<T>.Shared.Return(_buffer, clearData);
-            }
-
+            Debug.Assert(_buffer.Length >= _index);
+            _buffer.AsSpan(0, _index).Clear();
             _index = 0;
         }
 
         /// <summary>
         /// Reset the <see cref="ArrayPoolBufferWriter{T}"/> so it can be reused.
         /// </summary>
-        /// <param name="clearData">Clear the data before reuse.</param>
-        public void Reset(bool clearData = false)
+        /// <remarks>
+        /// Use <see cref="Clear"/> if you need to clear the data before re-using.
+        /// </remarks>
+        public void Reset()
         {
-            Debug.Assert(_buffer.Length >= _index);
+            _index = 0;
+        }
 
-            if (clearData)
+        /// <summary>
+        /// Closes the <see cref="ArrayPoolBufferWriter{T}"/> by returning the underlying buffer 
+        /// to the shared <see cref="ArrayPool{T}"/>. After returning the buffer is set to null,  
+        /// and any attempt to use the <see cref="ArrayPoolBufferWriter{T}"/> will throw an exception.
+        /// </summary>
+        /// <param name="clearData">Clear the data before returning the buffer to the pool.</param>
+        public void Close(bool clearData = false)
+        {
+            if (_buffer.Length > 0)
             {
-                _buffer.AsSpan(0, _index).Clear();
+                ArrayPool<T>.Shared.Return(_buffer, clearData);
             }
 
-            _index = 0;
+            _buffer = null!;
+            _index = -1;
         }
 
         /// <summary>
@@ -150,7 +163,8 @@ namespace CbzMage.Shared.Buffers
         }
 
         /// <summary>
-        /// Notifies <see cref="ByteArrayBufferWriter"/> that the last <paramref name="count"/> amount of data is no longer considered written.
+        /// Notifies <see cref="ArrayPoolBufferWriter{T}"/> that the last <paramref name="count"/> amount 
+        /// of data is no longer considered written.
         /// </summary>
         /// <exception cref="ArgumentException">
         /// Thrown when <paramref name="count"/> is negative.
@@ -259,8 +273,60 @@ namespace CbzMage.Shared.Buffers
                 {
                     Array.Copy(_buffer, 0, newBuffer, 0, _index);
 
-                    //TODO:
-                    //System.Buffer.BlockCopy(_buffer, 0, newBuffer, 0, _index);
+                    //var testIte = 5;
+                    //var copyIte = 100000;
+                    
+                    //var sw = new Stopwatch();
+                    //long elapsed = 0;
+
+                    //for (int j = 0; j < testIte; j++)
+                    //{
+                    //    sw.Restart();
+                    //    for (int i = 0; i < copyIte; i++)
+                    //    {
+                    //        Array.Copy(_buffer, 0, newBuffer, 0, _index);
+                    //    }
+                    //    sw.Stop();
+                    //    elapsed += sw.ElapsedMilliseconds;
+                    //    Console.WriteLine(sw.ElapsedMilliseconds);
+                    //}
+                    //Console.WriteLine($"Array.Copy: {elapsed / testIte}");
+                    //elapsed = 0;
+
+                    //for (int j = 0; j < testIte; j++)
+                    //{
+                    //    sw.Restart();
+                    //    for (int i = 0; i < copyIte; i++)
+                    //    {
+                    //        unsafe
+                    //        {
+                    //            fixed (T* pinnedDestination = newBuffer)
+                    //            fixed (T* pinnedSource = _buffer)
+                    //            {
+                    //                var dataSize = tSize * _buffer.Length;
+                    //                System.Buffer.MemoryCopy(pinnedSource, pinnedDestination, dataSize, dataSize);
+                    //            }
+                    //        }
+                    //    }
+                    //    sw.Stop();
+                    //    elapsed += sw.ElapsedMilliseconds;
+                    //    Console.WriteLine(sw.ElapsedMilliseconds);
+                    //}
+                    //Console.WriteLine($"Buffer.MemoryCopy: {elapsed / testIte}");
+                    //elapsed = 0;
+
+                    //for (int j = 0; j < testIte; j++)
+                    //{
+                    //    sw.Restart();
+                    //    for (int i = 0; i < copyIte; i++)
+                    //    {
+                    //        System.Buffer.BlockCopy(_buffer, 0, newBuffer, 0, _index);
+                    //    }
+                    //    sw.Stop();
+                    //    elapsed += sw.ElapsedMilliseconds;
+                    //    Console.WriteLine(sw.ElapsedMilliseconds);
+                    //}
+                    //Console.WriteLine($"Buffer.BlockCopy: {elapsed / testIte}");
 
                     ArrayPool<T>.Shared.Return(_buffer);
                 }

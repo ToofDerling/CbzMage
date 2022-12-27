@@ -10,16 +10,16 @@ namespace PdfConverter.Jobs
 {
     public class ImageConverterJob : IJob<string>
     {
-        private readonly ConcurrentDictionary<string, ByteArrayBufferWriter> _convertedImages;
+        private readonly ConcurrentDictionary<string, ArrayPoolBufferWriter<byte>> _convertedImages;
 
-        private readonly ByteArrayBufferWriter _bufferWriter;
+        private readonly ArrayPoolBufferWriter<byte> _bufferWriter;
 
         private readonly string _page;
 
         private readonly int? _resizeHeight;
 
-        public ImageConverterJob(ByteArrayBufferWriter bufferWriter, 
-            ConcurrentDictionary<string, ByteArrayBufferWriter> convertedImages,
+        public ImageConverterJob(ArrayPoolBufferWriter<byte> bufferWriter, 
+            ConcurrentDictionary<string, ArrayPoolBufferWriter<byte>> convertedImages,
             string page, int? resizeHeight)
         {
             _bufferWriter = bufferWriter;
@@ -59,7 +59,7 @@ namespace PdfConverter.Jobs
                 });
             }
 
-            // Reuse the png buffer for the jpg stream. 
+            // Reuse the png buffer for the jpg. 
             _bufferWriter.Reset();
             image.Write(_bufferWriter);
 
