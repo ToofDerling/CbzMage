@@ -56,7 +56,13 @@ namespace CbzMage.Shared.Buffers
 
             _index = 0;
         }
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sharedArrayPoolBuffer"></param>
+        /// <exception cref="ArgumentNullException">
+        /// Thrown when <paramref name="sharedArrayPoolBuffer"/> is null.
+        /// </exception>
         public ArrayPoolBufferWriter(T[] sharedArrayPoolBuffer)
         {
             ArgumentNullException.ThrowIfNull(sharedArrayPoolBuffer);
@@ -110,7 +116,7 @@ namespace CbzMage.Shared.Buffers
         }
 
         /// <summary>
-        /// Reset the <see cref="ArrayPoolBufferWriter{T}"/> so it can be reused.
+        /// Reset the <see cref="ArrayPoolBufferWriter{T}"/> so it can be re-used.
         /// </summary>
         /// <remarks>
         /// Use <see cref="Clear"/> if you need to clear the data before re-using.
