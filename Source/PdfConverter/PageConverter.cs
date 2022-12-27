@@ -1,5 +1,5 @@
-﻿using CbzMage.Shared.Jobs;
-using CbzMage.Shared.ManagedBuffers;
+﻿using CbzMage.Shared.Buffers;
+using CbzMage.Shared.Jobs;
 using PdfConverter.Ghostscript;
 using PdfConverter.Jobs;
 using System.Collections.Concurrent;
@@ -13,12 +13,12 @@ namespace PdfConverter
 
         private readonly Pdf _pdf;
         private readonly Queue<int> _pageQueue;
-        private readonly ConcurrentDictionary<string, ManagedMemoryStream> _convertedPages;
+        private readonly ConcurrentDictionary<string, ByteArrayBufferWriter> _convertedPages;
 
         private readonly int? _resizeHeight;
 
         public PageConverter(Pdf pdf, Queue<int> pageQueue, 
-            ConcurrentDictionary<string, ManagedMemoryStream> convertedPages, int? resizeHeight)
+            ConcurrentDictionary<string, ByteArrayBufferWriter> convertedPages, int? resizeHeight)
         {
             _pdf = pdf;
             _pageQueue = pageQueue;
@@ -38,18 +38,17 @@ namespace PdfConverter
             _jobWaiter.WaitForJobsToFinish();
         }
 
-        public void HandleImageData(ManagedBuffer buffer)
+        public void HandleImageData(ByteArrayBufferWriter bufferWriter)
         {
-            if (buffer == null)
+            if (bufferWriter == null)
             {
                 _converterExecutor.Stop();
                 return;
             }
-
             var pageNumber = _pageQueue.Dequeue();
             var page = _pdf.GetPageString(pageNumber);
 
-            var job = new ImageConverterJob(buffer, _convertedPages, page, _resizeHeight);
+            var job = new ImageConverterJob(bufferWriter , _convertedPages, page, _resizeHeight);
             _converterExecutor.AddJob(job);
         }
 
@@ -57,7 +56,7 @@ namespace PdfConverter
         {
             PageConverted?.Invoke(this, new PageConvertedEventArgs(eventArgs.Result));
         }
-
+              
         public event EventHandler<PageConvertedEventArgs> PageConverted;
     }
 }

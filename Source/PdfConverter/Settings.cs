@@ -31,6 +31,6 @@ namespace PdfConverter
             GhostscriptVersion = version;
         }
 
-        public static int BufferRemainingThreshold => 262144;
+        public static int BufferWriteSize => 262144;
     }
 }

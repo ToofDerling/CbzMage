@@ -1,13 +1,13 @@
-﻿using CbzMage.Shared.ManagedBuffers;
+﻿using CbzMage.Shared.Buffers;
 using System.Collections.Concurrent;
 
 namespace PdfConverter.Ghostscript
 {
     public class SingleImageDataHandler : IImageDataHandler
     {
-        private readonly BlockingCollection<ManagedBuffer> _queue = new();
+        private readonly BlockingCollection<ByteArrayBufferWriter> _queue = new();
 
-        public ManagedBuffer WaitForImageDate()
+        public ByteArrayBufferWriter WaitForImageDate()
         {
             var buffer = _queue.Take();
 
@@ -16,7 +16,7 @@ namespace PdfConverter.Ghostscript
             return buffer;
         }
 
-        public void HandleImageData(ManagedBuffer image)
+        public void HandleImageData(ByteArrayBufferWriter image)
         {
             if (image == null)
             {

@@ -1,6 +1,5 @@
 using CbzMage.Shared.Extensions;
 using PdfConverter.Helpers;
-using CbzMage.Shared.ManagedBuffers;
 using System.Diagnostics;
 
 namespace PdfConverter
@@ -32,8 +31,6 @@ namespace PdfConverter
             Console.WriteLine();
 
             var stopwatch = Stopwatch.StartNew();
-
-            var bufferCache = new BufferCache(Settings.BufferSize, Settings.BufferRemainingThreshold);
 
             var converter = new ConverterEngine();
             pdfList.ForEach(pdf => ConvertPdf(pdf, converter));

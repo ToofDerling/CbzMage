@@ -1,9 +1,9 @@
-﻿using CbzMage.Shared.ManagedBuffers;
+﻿using CbzMage.Shared.Buffers;
 
 namespace PdfConverter.Ghostscript
 {
     public interface IImageDataHandler
     {
-        void HandleImageData(ManagedBuffer image);
+        void HandleImageData(ByteArrayBufferWriter image);
     }
 }

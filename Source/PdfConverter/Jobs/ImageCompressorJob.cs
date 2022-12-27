@@ -1,6 +1,6 @@
-﻿using CbzMage.Shared.Helpers;
+﻿using CbzMage.Shared.Buffers;
+using CbzMage.Shared.Helpers;
 using CbzMage.Shared.Jobs;
-using CbzMage.Shared.ManagedBuffers;
 using System.IO.Compression;
 
 namespace PdfConverter.Jobs
@@ -9,11 +9,11 @@ namespace PdfConverter.Jobs
     {
         private readonly ZipArchive _compressor;
 
-        private readonly List<(string page, ManagedMemoryStream image)> _imageList;
+        private readonly List<(string page, ByteArrayBufferWriter image)> _imageList;
 
         private readonly ProgressReporter _progressReporter;
 
-        public ImageCompressorJob(ZipArchive compressor, List<(string, ManagedMemoryStream)> imageList,
+        public ImageCompressorJob(ZipArchive compressor, List<(string, ByteArrayBufferWriter)> imageList,
             ProgressReporter progressReporter)
         {
             _compressor = compressor;
@@ -25,17 +25,14 @@ namespace PdfConverter.Jobs
 
         public IEnumerable<string> Execute()
         {
-            foreach (var (page, jpgStream) in _imageList)
+            foreach (var (page, bufferWriter) in _imageList)
             {
                 var entry = _compressor.CreateEntry(page);
                 using var cbzStream = entry.Open();
 
-                var buffer = jpgStream.GetBuffer();
+                cbzStream.Write(bufferWriter.WrittenSpan);
 
-                int written = (int)jpgStream.Length;
-                cbzStream.Write(buffer, 0, written);
-
-                jpgStream.Release();
+                bufferWriter.ReturnBuffer();
 
                 _progressReporter.ShowProgress($"Converted {page}");
             }
