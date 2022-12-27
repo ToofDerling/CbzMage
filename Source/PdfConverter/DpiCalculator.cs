@@ -131,15 +131,15 @@ namespace PdfConverter
 
             using var gsRunner = _ghostScriptPageMachine.StartReadingPages(_pdf, new List<int> { 1 }, dpi, imageHandler);
              
-            var buffer = imageHandler.WaitForImageDate();
+            var bufferWriter = imageHandler.WaitForImageDate();
 
             using var image = new MagickImage();
-            image.Ping(buffer.Buffer, 0, buffer.Count);
+            image.Ping(bufferWriter.WrittenSpan);
 
             width = image.Width;
             var dpiHeight = image.Height;
 
-            buffer.Release();
+            bufferWriter.ReturnBuffer();
 
             DpiCalculated?.Invoke(this, new DpiCalculatedEventArgs(dpi, width, dpiHeight));
 

@@ -1,5 +1,5 @@
 ﻿using PdfConverter.Helpers;
-using CbzMage.Shared.ManagedBuffers;
+using CbzMage.Shared.Buffers;
 
 namespace PdfConverter.Ghostscript
 {
@@ -27,28 +27,47 @@ namespace PdfConverter.Ghostscript
         {
             try
             {
-                var currentBuffer = new ManagedBuffer();
+                var currentBufferWriter = new ByteArrayBufferWriter(Settings.BufferSize);
                 var firstImage = true;
 
                 var offset = 0;
                 int readCount;
 
-                while ((readCount = currentBuffer.ReadFrom(_stream)) > 0)
+                var pngHeaderSpan = pngHeader.AsSpan();
+
+                while (true)
                 {
-                    LogPipeRead(readCount);
+                    var span = currentBufferWriter.GetSpan(Settings.BufferWriteSize);
+                    readCount = _stream.Read(span);
+                    if (readCount == 0)
+                    {
+                        break;
+                    }
+
+                    LogRead(readCount);
+                    currentBufferWriter.Advance(readCount);
 
                     //Image header is found at the start position of a read
-                    if (currentBuffer.StartsWith(offset, readCount, pngHeader))
+                    if (span.StartsWith(pngHeaderSpan))
                     {
                         //Buffer contains a full image plus the first read of the next
                         if (!firstImage)
                         {
                             //Create next buffer and copy next image bytes into it
-                            var nextBuffer = new ManagedBuffer(currentBuffer, offset, readCount);
-                            _imageDatahandler.HandleImageData(currentBuffer);
+                            var nextBufferWriter = new ByteArrayBufferWriter(Settings.BufferSize);
 
-                            currentBuffer = nextBuffer;
-                            offset = readCount; //We already have readCount bytes in new buffer
+                            var data = currentBufferWriter.WrittenSpan.Slice(offset, readCount);
+                            var nextSpan = nextBufferWriter.GetSpan(data.Length);
+                            data.CopyTo(nextSpan);
+
+                            nextBufferWriter.Advance(data.Length); //next buffer has first part of next image 
+                            currentBufferWriter.Withdraw(data.Length); //current buffer has current image
+
+                            _imageDatahandler.HandleImageData(currentBufferWriter);
+
+                            currentBufferWriter = nextBufferWriter;
+
+                            offset = readCount; //We already have readCount bytes in next buffer
                         }
                         else
                         {
@@ -65,11 +84,11 @@ namespace PdfConverter.Ghostscript
 
                 if (offset > 0)
                 {
-                    _imageDatahandler.HandleImageData(currentBuffer);
+                    _imageDatahandler.HandleImageData(currentBufferWriter);
                 }
 
                 // Signal we're done.
-                _imageDatahandler.HandleImageData(null!);
+                _imageDatahandler.HandleImageData((ByteArrayBufferWriter)null!);
             }
             finally
             {
@@ -79,7 +98,7 @@ namespace PdfConverter.Ghostscript
             }
         }
 
-        private static void LogPipeRead(int readCount)
+        private static void LogRead(int readCount)
         {
 #if DEBUG
             StatsCount.AddPipeRead(readCount);

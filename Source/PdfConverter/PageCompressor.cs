@@ -1,6 +1,6 @@
-﻿using CbzMage.Shared.Helpers;
+﻿using CbzMage.Shared.Buffers;
+using CbzMage.Shared.Helpers;
 using CbzMage.Shared.Jobs;
-using CbzMage.Shared.ManagedBuffers;
 using PdfConverter.Jobs;
 using System.Collections.Concurrent;
 using System.IO.Compression;
@@ -13,7 +13,7 @@ namespace PdfConverter
 
         private readonly ConcurrentQueue<int> _pageNumbers;
 
-        private readonly ConcurrentDictionary<string, ManagedMemoryStream> _convertedPages;
+        private readonly ConcurrentDictionary<string, ByteArrayBufferWriter> _convertedPages;
 
         private readonly JobExecutor<IEnumerable<string>> _compressorExecutor;
 
@@ -27,7 +27,7 @@ namespace PdfConverter
 
         private readonly ProgressReporter _progressReporter;
 
-        public PageCompressor(Pdf pdf, ConcurrentDictionary<string, ManagedMemoryStream> convertedPages)
+        public PageCompressor(Pdf pdf, ConcurrentDictionary<string, ByteArrayBufferWriter> convertedPages)
         {
             _pdf = pdf;
             _convertedPages = convertedPages;
@@ -88,7 +88,7 @@ namespace PdfConverter
         {
             var key = _pdf.GetPageString(_nextPageNumber);
 
-            var imageList = new List<(string page, ManagedMemoryStream imageData)>();
+            var imageList = new List<(string page, ByteArrayBufferWriter imageData)>();
 
             while (_convertedPages.TryRemove(key, out var imageData))
             {

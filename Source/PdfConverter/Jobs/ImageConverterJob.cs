@@ -1,5 +1,5 @@
-﻿using CbzMage.Shared.Jobs;
-using CbzMage.Shared.ManagedBuffers;
+﻿using CbzMage.Shared.Buffers;
+using CbzMage.Shared.Jobs;
 using ImageMagick;
 using PdfConverter.Exceptions;
 using PdfConverter.Helpers;
@@ -10,18 +10,19 @@ namespace PdfConverter.Jobs
 {
     public class ImageConverterJob : IJob<string>
     {
-        private readonly ConcurrentDictionary<string, ManagedMemoryStream> _convertedImages;
+        private readonly ConcurrentDictionary<string, ByteArrayBufferWriter> _convertedImages;
 
-        private readonly ManagedBuffer _buffer;
+        private readonly ByteArrayBufferWriter _bufferWriter;
 
         private readonly string _page;
 
         private readonly int? _resizeHeight;
 
-        public ImageConverterJob(ManagedBuffer buffer, ConcurrentDictionary<string, ManagedMemoryStream> convertedImages,
+        public ImageConverterJob(ByteArrayBufferWriter bufferWriter, 
+            ConcurrentDictionary<string, ByteArrayBufferWriter> convertedImages,
             string page, int? resizeHeight)
         {
-            _buffer = buffer;
+            _bufferWriter = bufferWriter;
 
             _convertedImages = convertedImages;
 
@@ -38,8 +39,8 @@ namespace PdfConverter.Jobs
             stopwatch.Start();
 #endif
 
-            var pngSize = _buffer.Count;
-            using var image = new MagickImage(_buffer.Buffer, 0, _buffer.Count);
+            var pngSize = _bufferWriter.WrittenCount;
+            using var image = new MagickImage(_bufferWriter.WrittenSpan);
 
             // Produce baseline jpgs with no subsampling.
             image.Format = MagickFormat.Jpg;
@@ -59,33 +60,17 @@ namespace PdfConverter.Jobs
             }
 
             // Reuse the png buffer for the jpg stream. 
-            var stream = new ManagedMemoryStream(_buffer.Buffer);
+            _bufferWriter.Reset();
+            image.Write(_bufferWriter);
 
-            bool largerBufferNeeded = false;
-            try
-            {
-                image.Write(stream);
-            }
-            catch (MagickErrorException)
-            {
-                // This can happen when the conversion ends up with a jpg larger than the png.
-                // So try with a regular resizable memorystream before giving up
-                stream.Release();
-                stream = new ManagedMemoryStream(pngSize * 2);
-
-                image.Write(stream);
-                largerBufferNeeded = true;
-            }
-
-            var jpgSize = (int)stream.Length;
+            var jpgSize = _bufferWriter.WrittenCount;
 
 #if DEBUG 
             stopwatch.Stop();
-            StatsCount.AddImageConversion((int)stopwatch.ElapsedMilliseconds, 
-                resized, pngSize, jpgSize, largerBufferNeeded);
+            StatsCount.AddImageConversion((int)stopwatch.ElapsedMilliseconds, resized, pngSize, jpgSize);
 #endif
 
-            if (!_convertedImages.TryAdd(_page, stream))
+            if (!_convertedImages.TryAdd(_page, _bufferWriter))
             {
                 throw new SomethingWentWrongSorryException($"{_page} already converted?");
             }

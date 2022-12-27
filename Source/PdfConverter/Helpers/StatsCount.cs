@@ -24,10 +24,8 @@
         private static volatile int totalConversionTime = 0;
         private static volatile int imageConversionCount = 0;
         private static volatile int imageResizeCount = 0;
-        private static volatile int jpgLargerThanPngCount = 0;
-        private static volatile int largerBuffersNeededCount = 0;
 
-        public static void AddImageConversion(int ms, bool resize, int png, int jpg, bool largerBufferNeeded)
+        public static void AddImageConversion(int ms, bool resize, int png, int jpg)
         {
             imageConversionCount++;
 
@@ -51,16 +49,6 @@
             { 
                 largestJpg = jpg;
             }
-
-            if (jpg > png)
-            {
-                jpgLargerThanPngCount++;
-            }
-
-            if (largerBufferNeeded)
-            {
-                largerBuffersNeededCount++;
-            }
         }
 
         public static void ShowStats()
@@ -75,7 +63,6 @@
                 Console.WriteLine($"Image conversions: {imageConversionCount} (resizes: {imageResizeCount}) Average ms: {totalConversionTime / imageConversionCount}");
                 Console.WriteLine($"Largest Png: {largestPng} Average: {totalPngSize / imageConversionCount}");
                 Console.WriteLine($"Largest Jpg: {largestJpg} Average: {totalJpgSize / imageConversionCount} (BufferSize: {Settings.BufferSize})");
-                Console.WriteLine($"Jpg > Png: {jpgLargerThanPngCount} Emergency buffers needed: {largerBuffersNeededCount})"); ;
             }
         }
     }
