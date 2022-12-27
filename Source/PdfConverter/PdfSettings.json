@@ -8,6 +8,10 @@
   // installation on Windows. On Linux/macOS it will simply try to use "gs".
   "GhostscriptPath": "",
 
+  // Normally each cbz file will be created beside the original pdf. If you specify 
+  // a CbzDir directory they will createdd in that directory instead.
+  "CbzDir": "",
+
   // Number of Ghostscript reader threads. Set this to 0 to have CbzMage try to
   // figure out a good value. If memory usage is too high try setting this to a 
   // lower value than the calculated.

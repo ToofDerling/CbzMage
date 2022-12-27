@@ -8,16 +8,16 @@
         private static volatile int largestJpg = 0;
         private static long totalJpgSize = 0;
 
-        private static volatile int largestPipeRead = 0;
-        private static volatile int pipeReadCount = 0;
+        private static volatile int largestStreamRead = 0;
+        private static volatile int streamReadCount = 0;
 
-        public static void AddPipeRead(int read)
+        public static void AddStreamRead(int read)
         {
-            pipeReadCount++;
+            streamReadCount++;
 
-            if (read > largestPipeRead)
+            if (read > largestStreamRead)
             {
-                largestPipeRead = read;
+                largestStreamRead = read;
             }
         }
 
@@ -53,9 +53,9 @@
 
         public static void ShowStats()
         {
-            if (pipeReadCount > 0)
+            if (streamReadCount > 0)
             {
-                Console.WriteLine($"Pipe reads: {pipeReadCount} Largest read: {largestPipeRead}");
+                Console.WriteLine($"Stream reads: {streamReadCount} Largest read: {largestStreamRead}");
             }
 
             if (imageConversionCount > 0)

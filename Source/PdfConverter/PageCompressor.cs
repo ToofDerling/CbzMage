@@ -47,6 +47,12 @@ namespace PdfConverter
         private ZipArchive CreateCompressor()
         {
             var cbzFile = Path.ChangeExtension(_pdf.Path, ".cbz");
+
+            if (!string.IsNullOrEmpty(Settings.CbzDir))
+            { 
+                cbzFile = Path.Combine(Settings.CbzDir, Path.GetFileName(cbzFile));            
+            }
+
             File.Delete(cbzFile);
 
             ProgressReporter.Done(cbzFile);

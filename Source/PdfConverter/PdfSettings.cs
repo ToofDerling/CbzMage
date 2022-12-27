@@ -1,4 +1,5 @@
 ﻿using CbzMage.Shared.AppVersions;
+using CbzMage.Shared.Extensions;
 using CbzMage.Shared.Helpers;
 using System.Diagnostics;
 
@@ -50,6 +51,12 @@ namespace PdfConverter
             else
             {
                 Settings.GhostscriptPath = "gs";
+            }
+
+            //CbzDir
+            if (!string.IsNullOrWhiteSpace(Settings.CbzDir))
+            {
+                Settings.CbzDir.CreateDirIfNotExists();
             }
 
             //MinimumDpi

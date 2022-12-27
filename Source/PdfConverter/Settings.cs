@@ -6,6 +6,8 @@ namespace PdfConverter
     {
         // All properties with a public setter are read from settings file
 
+        public static string CbzDir { get; set; }
+
         public static int MinimumDpi { get; set; }
 
         public static int MinimumHeight { get; set; }

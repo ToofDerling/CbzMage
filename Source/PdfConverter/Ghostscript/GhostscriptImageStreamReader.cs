@@ -101,7 +101,7 @@ namespace PdfConverter.Ghostscript
         private static void LogRead(int readCount)
         {
 #if DEBUG
-            StatsCount.AddPipeRead(readCount);
+            StatsCount.AddStreamRead(readCount);
 #endif
         }
     }
