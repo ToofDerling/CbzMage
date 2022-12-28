@@ -28,6 +28,11 @@ namespace PdfConverter
             Console.WriteLine($"Jpq quality: {Settings.JpgQuality}");
             Console.WriteLine($"Cbz compression: {Settings.CompressionLevel}");
 
+#if DEBUG
+            Console.WriteLine($"{nameof(Settings.WriteBufferSize)}: {Settings.WriteBufferSize}");
+            Console.WriteLine($"{nameof(Settings.ImageBufferSize)}: {Settings.ImageBufferSize}");
+#endif
+
             Console.WriteLine();
 
             var stopwatch = Stopwatch.StartNew();

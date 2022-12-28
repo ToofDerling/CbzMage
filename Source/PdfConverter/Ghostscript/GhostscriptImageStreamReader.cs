@@ -27,7 +27,7 @@ namespace PdfConverter.Ghostscript
         {
             try
             {
-                var currentBufferWriter = new ArrayPoolBufferWriter<byte>(Settings.BufferSize);
+                var currentBufferWriter = new ArrayPoolBufferWriter<byte>(Settings.ImageBufferSize);
                 var firstImage = true;
 
                 var offset = 0;
@@ -37,7 +37,7 @@ namespace PdfConverter.Ghostscript
 
                 while (true)
                 {
-                    var span = currentBufferWriter.GetSpan(Settings.BufferWriteSize);
+                    var span = currentBufferWriter.GetSpan(Settings.WriteBufferSize);
 
                     readCount = _stream.Read(span);
                     if (readCount == 0)
@@ -55,7 +55,7 @@ namespace PdfConverter.Ghostscript
                         if (!firstImage)
                         {
                             //Create next buffer and copy next image bytes into it
-                            var nextBufferWriter = new ArrayPoolBufferWriter<byte>(Settings.BufferSize);
+                            var nextBufferWriter = new ArrayPoolBufferWriter<byte>(Settings.ImageBufferSize);
 
                             var data = currentBufferWriter.WrittenSpan.Slice(offset, readCount);
                             var nextSpan = nextBufferWriter.GetSpan(data.Length);

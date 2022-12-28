@@ -55,14 +55,14 @@
         {
             if (streamReadCount > 0)
             {
-                Console.WriteLine($"Stream reads: {streamReadCount} Largest read: {largestStreamRead}");
+                Console.WriteLine($"Stream reads: {streamReadCount} Largest read: {largestStreamRead} ({nameof(Settings.WriteBufferSize)}: {Settings.WriteBufferSize})");
             }
 
             if (imageConversionCount > 0)
             {
                 Console.WriteLine($"Image conversions: {imageConversionCount} (resizes: {imageResizeCount}) Average ms: {totalConversionTime / imageConversionCount}");
                 Console.WriteLine($"Largest Png: {largestPng} Average: {totalPngSize / imageConversionCount}");
-                Console.WriteLine($"Largest Jpg: {largestJpg} Average: {totalJpgSize / imageConversionCount} (BufferSize: {Settings.BufferSize})");
+                Console.WriteLine($"Largest Jpg: {largestJpg} Average: {totalJpgSize / imageConversionCount} ({nameof(Settings.ImageBufferSize)}: {Settings.ImageBufferSize})");
             }
         }
     }

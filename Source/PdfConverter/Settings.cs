@@ -27,7 +27,7 @@ namespace PdfConverter
 
         public static CompressionLevel CompressionLevel { get; set; }
 
-        public static int BufferSize => 4194304 * 2;
+        public static int ImageBufferSize => 4194304 * 2;
 
         public static Version GhostscriptMinVersion => new(10, 0);
 
@@ -40,6 +40,6 @@ namespace PdfConverter
             GhostscriptVersion = version;
         }
 
-        public static int BufferWriteSize => 262144;
+        public static int WriteBufferSize => 262144;
     }
 }
