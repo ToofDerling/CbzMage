@@ -19,7 +19,11 @@ namespace PdfConverter
 
         private readonly JobWaiter _jobWaiter;
 
-        private readonly ZipArchive _compressor;
+        private readonly string _cbzFile;
+
+        private readonly ZipArchive? _compressor;
+
+        private readonly string? _coverFile;
 
         private bool _addedJob = false;
 
@@ -40,30 +44,65 @@ namespace PdfConverter
 
             _jobWaiter = _compressorExecutor.Start(withWaiter: true);
 
+            _cbzFile = CreateCbzFile();
             _compressor = CreateCompressor();
+            _coverFile = CreateCoverFile();
+
             _progressReporter = new ProgressReporter(pdf.PageCount);
         }
 
-        private ZipArchive CreateCompressor()
+        private string CreateCbzFile()
         {
             var cbzFile = Path.ChangeExtension(_pdf.Path, ".cbz");
 
             if (!string.IsNullOrEmpty(Settings.CbzDir))
-            { 
-                cbzFile = Path.Combine(Settings.CbzDir, Path.GetFileName(cbzFile));            
+            {
+                cbzFile = Path.Combine(Settings.CbzDir, Path.GetFileName(cbzFile));
             }
 
-            File.Delete(cbzFile);
+            return cbzFile;
+        }
 
-            ProgressReporter.Done(cbzFile);
+        private ZipArchive? CreateCompressor()
+        {
+            if (Settings.SaveCoverOnly)
+            {
+                return null;
+            }
 
-            return ZipFile.Open(cbzFile, ZipArchiveMode.Create);
+            File.Delete(_cbzFile);
+
+            ProgressReporter.Done(_cbzFile);
+
+            return ZipFile.Open(_cbzFile, ZipArchiveMode.Create);
+        }
+
+        private string? CreateCoverFile()
+        {
+            if (!Settings.SaveCover)
+            {
+                return null;
+            }
+
+            var coverFile = Path.ChangeExtension(_cbzFile, ".jpg");
+
+            if (!string.IsNullOrEmpty(Settings.SaveCoverDir))
+            {
+                coverFile = Path.Combine(Settings.SaveCoverDir, Path.GetFileName(coverFile));
+            }
+
+            if (Settings.SaveCoverOnly)
+            {
+                ProgressReporter.Done(coverFile);
+            }
+
+            return coverFile;
         }
 
         public void WaitForPagesCompressed()
         {
             _jobWaiter.WaitForJobsToFinish();
-            _compressor.Dispose();
+            _compressor?.Dispose();
         }
 
         public void OnPageConverted(PageConvertedEventArgs _)
@@ -94,6 +133,8 @@ namespace PdfConverter
         {
             var key = _pdf.GetPageString(_nextPageNumber);
 
+            var firstPage = _nextPageNumber == 1;
+
             var imageList = new List<(string page, ArrayPoolBufferWriter<byte> imageData)>();
 
             while (_convertedPages.TryRemove(key, out var imageData))
@@ -107,7 +148,9 @@ namespace PdfConverter
 
             if (imageList.Count > 0)
             {
-                var job = new ImageCompressorJob(_compressor, imageList, _progressReporter);
+                var coverFile = firstPage ? _coverFile : null;
+
+                var job = new ImageCompressorJob(_compressor, imageList, _progressReporter, coverFile);
                 _compressorExecutor.AddJob(job);
 
                 return true;

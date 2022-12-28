@@ -28,6 +28,9 @@ namespace AzwConverter
         public static bool ConvertAllBookTypes { get; set; }
 
         public static bool SaveCover { get; set; }
+        /// <summary>
+        /// If this is true SaveCover is also true
+        /// </summary>
         public static bool SaveCoverOnly { get; set; }
         public static string? SaveCoverDir { get; set; }
 

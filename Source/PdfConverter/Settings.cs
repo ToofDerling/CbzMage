@@ -8,6 +8,13 @@ namespace PdfConverter
 
         public static string CbzDir { get; set; }
 
+        public static bool SaveCover { get; set; }
+        /// <summary>
+        /// If this is true SaveCover is also true
+        /// </summary>
+        public static bool SaveCoverOnly { get; set; }
+        public static string? SaveCoverDir { get; set; }
+
         public static int MinimumDpi { get; set; }
 
         public static int MinimumHeight { get; set; }

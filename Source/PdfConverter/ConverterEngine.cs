@@ -4,6 +4,7 @@ using CbzMage.Shared.Helpers;
 using PdfConverter.Exceptions;
 using PdfConverter.Ghostscript;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 
 namespace PdfConverter
 {
@@ -20,7 +21,7 @@ namespace PdfConverter
             var pageLists = CreatePageLists(pdf);
             var fileCount = ConvertPages(pdf, pageLists, dpi, adjustedHeight);
 
-            if (fileCount != pdf.PageCount)
+            if (!Settings.SaveCoverOnly && (fileCount != pdf.PageCount))
             {
                 throw new SomethingWentWrongSorryException($"{fileCount} files generated for {pdf.PageCount} pages");
             }
@@ -133,6 +134,12 @@ namespace PdfConverter
 
         private List<int>[] CreatePageLists(Pdf pdf)
         {
+            // If we're only saving the cover this is all we need.
+            if (Settings.SaveCoverOnly)
+            {
+                return new[] { new List<int> { 1 } };
+            }
+
             var pageCount = pdf.PageCount;
             var maxThreads = Settings.GhostscriptReaderThreads;
 
@@ -159,10 +166,7 @@ namespace PdfConverter
             var pagesCompressed = 0;
 
             var pageSum = pageLists.Sum(p => p.Count);
-            if (pageSum != pdf.PageCount)
-            {
-                throw new ApplicationException($"{nameof(pageLists)} pageSum {pageSum} should be {pdf.PageCount}");
-            }
+            Debug.Assert(Settings.SaveCoverOnly || (pageSum != pdf.PageCount));
 
             // Each page machine reads a range of pages continously and saves them as png images in memory.
             // Each machine has a dedicated converter thread that converts images to jpg, also in memory 

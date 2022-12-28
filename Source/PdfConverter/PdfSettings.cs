@@ -59,6 +59,19 @@ namespace PdfConverter
                 Settings.CbzDir.CreateDirIfNotExists();
             }
 
+            //SaveCover/SaveCoverOnly
+            Settings.SaveCoverOnly = Settings.SaveCoverOnly && Settings.SaveCover;
+
+            //SaveCoverDir
+            if (Settings.SaveCover && !string.IsNullOrWhiteSpace(Settings.SaveCoverDir))
+            {
+                Settings.SaveCoverDir.CreateDirIfNotExists();
+            }
+            else
+            {
+                Settings.SaveCoverDir = null;
+            }
+
             //MinimumDpi
             if (Settings.MinimumDpi <= 0)
             {

@@ -38,6 +38,7 @@ namespace PdfConverter.Ghostscript
                 while (true)
                 {
                     var span = currentBufferWriter.GetSpan(Settings.BufferWriteSize);
+
                     readCount = _stream.Read(span);
                     if (readCount == 0)
                     {
@@ -93,7 +94,7 @@ namespace PdfConverter.Ghostscript
             finally
             {
                 // Relying on the IDisposable pattern can cause a nullpointerexception
-                // because the pipe is ripped out right under the last read.
+                // because the stream is ripped out right under the last read.
                 _stream.Dispose();
             }
         }

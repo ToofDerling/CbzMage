@@ -8,9 +8,21 @@
   // installation on Windows. On Linux/macOS it will simply try to use "gs".
   "GhostscriptPath": "",
 
-  // Normally each cbz file will be created beside the original pdf. If you specify 
-  // a CbzDir directory they will createdd in that directory instead.
+  // Normally each cbz file will be created alongside the original pdf. If you specify 
+  // a CbzDir directory they will created in that directory instead.
   "CbzDir": "",
+
+  // SaveCover true or false. Save a copy of the coverimage alongside the cbz file 
+  // when converting a pdf. The default value is false, don't save the cover.
+  "SaveCover": false,
+
+  // If you would like to save the coverimages in their own directory instead of
+  // alongside the cbz file you can specify the directory here.
+  "SaveCoverDir": "",
+
+  // SaveCoverOnly true or false. Use this if you just want to save coverimages, 
+  // no cbz files. Note: SaveCover must also be true for SaveCoverOnly to work. 
+  "SaveCoverOnly": false,
 
   // Number of Ghostscript reader threads. Set this to 0 to have CbzMage try to
   // figure out a good value. If memory usage is too high try setting this to a 
