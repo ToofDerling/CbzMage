@@ -12,13 +12,13 @@ namespace AzwConverter
     public class AzwConverter
     {
         // For testing. If >0 overrules the result of GetUnconvertedBooks
-        private const int maxBooks = 0;
+        private const int _maxBooks = 0;
 
-        private int totalBooks;
+        private int _totalBooks;
 
         // Global veriables updated by processing threads
-        private volatile int bookCount;
-        private volatile int pagesCount;
+        private volatile int _bookCount;
+        private volatile int _pagesCount;
 
         // Try to be as lenient as possible (and Trim the results).
         private readonly Regex _publisherTitleRegex = new(@"(\[)(?<publisher>.*?)(\])(?<title>.*)");
@@ -117,18 +117,18 @@ namespace AzwConverter
             stopWatch.Stop();
             Console.WriteLine();
 
-            if (_action == CbzMageAction.AzwConvert && pagesCount > 0)
+            if (_action == CbzMageAction.AzwConvert && _pagesCount > 0)
             {
                 var elapsed = stopWatch.Elapsed;
-                var secsPerPage = elapsed.TotalSeconds / pagesCount;
+                var secsPerPage = elapsed.TotalSeconds / _pagesCount;
 
                 if (Settings.SaveCoverOnly)
                 {
-                    Console.WriteLine($"{bookCount} covers saved in {elapsed.Hhmmss()}");
+                    Console.WriteLine($"{_bookCount} covers saved in {elapsed.Hhmmss()}");
                 }
                 else if (unconvertedBooks.Count > 0)
                 {
-                    Console.WriteLine($"{pagesCount} pages converted in {elapsed.Hhmmss()} ({secsPerPage:F2} sec/page)");
+                    Console.WriteLine($"{_pagesCount} pages converted in {elapsed.Hhmmss()} ({secsPerPage:F2} sec/page)");
                 }
                 else
                 {
@@ -153,8 +153,8 @@ namespace AzwConverter
         {
             if (updatedBooks.Count > 0)
             {
-                totalBooks = updatedBooks.Count;
-                bookCount = 0;
+                _totalBooks = updatedBooks.Count;
+                _bookCount = 0;
 
                 Console.WriteLine();
                 ProgressReporter.Info($"Checking {updatedBooks.Count} updated book{updatedBooks.SIf1()}:");
@@ -169,14 +169,14 @@ namespace AzwConverter
                 return;
             }
 
-            bookCount = 0;
+            _bookCount = 0;
 
             Console.WriteLine();
 
             if (_action == CbzMageAction.AzwConvert)
             {
                 ProgressReporter.Info($"Converting {unconvertedBooks.Count} book{unconvertedBooks.SIf1()}:");
-                totalBooks = unconvertedBooks.Count;
+                _totalBooks = unconvertedBooks.Count;
 
                 await Parallel.ForEachAsync(unconvertedBooks, Settings.ParallelOptions,
                     async (book, _) =>
@@ -187,7 +187,7 @@ namespace AzwConverter
             else if (_action == CbzMageAction.AzwScan)
             {
                 ProgressReporter.Info($"Listing {unconvertedBooks.Count} unconverted book{unconvertedBooks.SIf1()}:");
-                totalBooks = unconvertedBooks.Count;
+                _totalBooks = unconvertedBooks.Count;
 
                 Parallel.ForEach(unconvertedBooks, Settings.ParallelOptions, book =>
                     SyncNewBook(book.Key, titles[book.Key], archive));
@@ -195,7 +195,7 @@ namespace AzwConverter
             else if (_action == CbzMageAction.AzwAnalyze)
             {
                 ProgressReporter.Info($"Analyzing {books.Count} book{books.SIf1()}:");
-                totalBooks = books.Count;
+                _totalBooks = books.Count;
 
                 await Parallel.ForEachAsync(books, Settings.ParallelOptions,
                     async (book, _) =>
@@ -232,7 +232,7 @@ namespace AzwConverter
             }
             else
             {
-                Interlocked.Increment(ref bookCount);
+                Interlocked.Increment(ref _bookCount);
             }
         }
 
@@ -327,8 +327,8 @@ namespace AzwConverter
             sb = new StringBuilder();
             sb.AppendLine();
 
-            var count = Interlocked.Increment(ref bookCount);
-            var str = $"{count}/{totalBooks} - ";
+            var count = Interlocked.Increment(ref _bookCount);
+            var str = $"{count}/{_totalBooks} - ";
 
             var insert = " ".PadLeft(str.Length);
 
@@ -476,9 +476,9 @@ namespace AzwConverter
             IDictionary<string, FileInfo> convertedTitles)
         {
             var unConvertedBooks = books.AsParallel().Where(b => !convertedTitles.ContainsKey(b.Key)).ToList();
-            if (maxBooks > 0)
+            if (_maxBooks > 0)
             {
-                unConvertedBooks = unConvertedBooks.Take(maxBooks).ToList();
+                unConvertedBooks = unConvertedBooks.Take(_maxBooks).ToList();
             }
             return unConvertedBooks;
         }
@@ -487,7 +487,7 @@ namespace AzwConverter
             bool showPagesAndCover = true, bool showAllCovers = false,
             string doneMsg = null, string errorMsg = null)
         {
-            Interlocked.Add(ref pagesCount, state.Pages);
+            Interlocked.Add(ref _pagesCount, state.Pages);
 
             var insert = BookCountOutputHelper(cbzFile, out var sb);
             sb.AppendLine();
@@ -553,7 +553,7 @@ namespace AzwConverter
 
             if (doneMsg != null || errorMsg != null)
             {
-                lock (msgLock)
+                lock (_msgLock)
                 {
                     Console.WriteLine(sb.ToString());
 
@@ -573,6 +573,6 @@ namespace AzwConverter
             }
         }
 
-        private static readonly object msgLock = new();
+        private static readonly object _msgLock = new();
     }
 }

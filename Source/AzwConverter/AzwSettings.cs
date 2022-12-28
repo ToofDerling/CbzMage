@@ -17,12 +17,12 @@ namespace AzwConverter
         }
 
         // Defaults
-        private const string defaultTitlesDir = "Titles";
-        private const string defaultCbzDir = "Cbz Backups";
+        private const string _defaultTitlesDir = "Titles";
+        private const string _defaultCbzDir = "Cbz Backups";
 
-        private const string defaultConvertedTitlesDirName = "Converted Titles";
-        private const string defaultNewTitleMarker = ".NEW";
-        private const string defaultUpdateTitleMarker = ".UPDATED";
+        private const string _defaultConvertedTitlesDirName = "Converted Titles";
+        private const string _defaultNewTitleMarker = ".NEW";
+        private const string _defaultUpdateTitleMarker = ".UPDATED";
 
         private void ConfigureSettings()
         {
@@ -40,7 +40,7 @@ namespace AzwConverter
             if (string.IsNullOrWhiteSpace(Settings.TitlesDir))
             {
                 var dir = new DirectoryInfo(Settings.AzwDir).Parent;
-                Settings.TitlesDir = Path.Combine(dir.FullName, defaultTitlesDir);
+                Settings.TitlesDir = Path.Combine(dir.FullName, _defaultTitlesDir);
                 Settings.TitlesDir.CreateDirIfNotExists();
             }
 
@@ -60,7 +60,7 @@ namespace AzwConverter
             //ConvertedTitlesDirName
             if (string.IsNullOrWhiteSpace(Settings.ConvertedTitlesDirName))
             {
-                Settings.ConvertedTitlesDirName = defaultConvertedTitlesDirName;
+                Settings.ConvertedTitlesDirName = _defaultConvertedTitlesDirName;
             }
             Settings.SetConvertedTitlesDir(Path.Combine(Settings.TitlesDir, Settings.ConvertedTitlesDirName));
             Settings.ConvertedTitlesDir.CreateDirIfNotExists();
@@ -69,7 +69,7 @@ namespace AzwConverter
             if (string.IsNullOrWhiteSpace(Settings.CbzDir))
             {
                 var dir = new DirectoryInfo(Settings.AzwDir).Parent;
-                Settings.CbzDir = Path.Combine(dir.FullName, defaultCbzDir);
+                Settings.CbzDir = Path.Combine(dir.FullName, _defaultCbzDir);
                 Settings.CbzDir.CreateDirIfNotExists();
             }
 
@@ -81,11 +81,11 @@ namespace AzwConverter
 
             //NewTitleMarker/UpdatedTitleMarker
             Settings.NewTitleMarker = string.IsNullOrWhiteSpace(Settings.NewTitleMarker)
-                ? defaultNewTitleMarker
+                ? _defaultNewTitleMarker
                 : Settings.NewTitleMarker;
 
             Settings.UpdatedTitleMarker = string.IsNullOrWhiteSpace(Settings.UpdatedTitleMarker)
-                ? defaultUpdateTitleMarker
+                ? _defaultUpdateTitleMarker
                 : Settings.UpdatedTitleMarker;
 
             Settings.SetAllMarkers();

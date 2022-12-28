@@ -33,14 +33,14 @@ namespace PdfConverter.Jobs
 
             foreach (var (page, bufferWriter) in _imageList)
             {
-                var span = bufferWriter.WrittenSpan;
+                var imageData = bufferWriter.WrittenSpan;
 
                 if (firstPage)
                 {
                     if (_coverFile != null)
                     {
                         using var coverStream = new FileStream(_coverFile, FileMode.Create);
-                        coverStream.Write(span);
+                        coverStream.Write(imageData);
 
                         if (_compressor == null)
                         {
@@ -55,7 +55,7 @@ namespace PdfConverter.Jobs
                     var entry = _compressor.CreateEntry(page);
 
                     using var cbzStream = entry.Open();
-                    cbzStream.Write(span);
+                    cbzStream.Write(imageData);
 
                     _progressReporter.ShowProgress($"Converted {page}");
                 }
