@@ -163,11 +163,6 @@ namespace PdfConverter
 
         private int ConvertPages(Pdf pdf, List<int>[] pageLists, int dpi, int? resizeHeight)
         {
-            var pagesCompressed = 0;
-
-            var pageSum = pageLists.Sum(p => p.Count);
-            Debug.Assert(Settings.SaveCoverOnly || (pageSum != pdf.PageCount));
-
             // Each page machine reads a range of pages continously and saves them as png images in memory.
             // Each machine has a dedicated converter thread that converts images to jpg, also in memory 
             // The page compressor job thread picks up converted images as they are saved (in page order)
@@ -179,6 +174,8 @@ namespace PdfConverter
             var progressReporter = new ProgressReporter(pdf.PageCount);
 
             var pageCompressor = new PageCompressor(pdf, convertedPages);
+
+            var pagesCompressed = 0;
             pageCompressor.PagesCompressed += (s, e) => OnPagesCompressed(e);
 
             var gsRunners = new ConcurrentBag<ProcessRunner>();
