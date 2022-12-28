@@ -141,7 +141,7 @@ namespace PdfConverter
             }
 
             var pageCount = pdf.PageCount;
-            var maxThreads = Settings.GhostscriptReaderThreads;
+            var maxThreads = Settings.NumberOfThreads;
 
             // The goal is to have no pagelist with only one page (unless pageCount is 1) 
             var parallelThreads = 1;

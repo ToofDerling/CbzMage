@@ -3,7 +3,7 @@
 // quoted like this: "C:\\System\\Apps\\Ghostscript\\gswin64c.exe"
 {
   // CbzMage pdf conversion requires Ghostscript version 10 or later (if you use an 
-  // earlier version pdf conversion will likely fail). If you don't specify the path 
+  // earlier version the conversion will likely fail). If you don't specify the path 
   // to the Ghostscript excutable, CbzMage will try to find a valid Ghostsscript 
   // installation on Windows. On Linux/macOS it will simply try to use "gs".
   "GhostscriptPath": "",
@@ -23,11 +23,6 @@
   // SaveCoverOnly true or false. Use this if you just want to save coverimages, 
   // no cbz files. Note: SaveCover must also be true for SaveCoverOnly to work. 
   "SaveCoverOnly": false,
-
-  // Number of Ghostscript reader threads. Set this to 0 to have CbzMage try to
-  // figure out a good value. If memory usage is too high try setting this to a 
-  // lower value than the calculated.
-  "GhostscriptReaderThreads": 0,
 
   // This determines the quality of jpg images in the cbz file. You want this as high
   // as possible (90+). The default quality quality 93 (95 create images that are 15% 
@@ -51,6 +46,11 @@
   // MaximumHeight is a hard cap at imagezize, again to prevent cbz files from 
   // growing impossibly large. The default is 3840 (Ultra HD).
   "MaximumHeight": 3840,
+
+  // Number of Ghostscript reader threads. Set this to 0 to have CbzMage try to
+  // figure out a good value. If memory usage is too high try setting this to a 
+  // lower value than the calculated.
+  "NumberOfThreads": 0,
 
   // Compression level for the cbz file. Valid options are "Fastest", "Optimal" or
   // "NoCompression". The default is "Fastest" because jpg files in the cbz file are 

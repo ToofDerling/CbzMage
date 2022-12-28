@@ -24,7 +24,7 @@ namespace PdfConverter
             {
                 Console.WriteLine($"Ghostscript version: {Settings.GhostscriptVersion}");
             }
-            Console.WriteLine($"Ghostscript reader threads: {Settings.GhostscriptReaderThreads}");
+            Console.WriteLine($"Ghostscript reader threads: {Settings.NumberOfThreads}");
             Console.WriteLine($"Jpq quality: {Settings.JpgQuality}");
             Console.WriteLine($"Cbz compression: {Settings.CompressionLevel}");
 

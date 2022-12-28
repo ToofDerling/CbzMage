@@ -8,7 +8,7 @@ namespace PdfConverter.Ghostscript
         private static string[] GetSwitches(string pdfFile, string pageList, int dpi, string output)
         {
             var numRenderingThreads = string.Empty;
-            if (Settings.GhostscriptReaderThreads == 1)
+            if (Settings.NumberOfThreads == 1)
             {
                 numRenderingThreads = $"-dNumRenderingThreads={Environment.ProcessorCount / 2}";
             }

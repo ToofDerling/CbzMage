@@ -33,7 +33,7 @@ namespace PdfConverter
                     {
                         var appVersion = new AppVersion(Settings.GhostscriptPath, new Version(version));
 
-                        // Throws is version is not valid
+                        // Throws if version is not valid
                         appVersion = GetValidGhostscriptVersion(new List<AppVersion> { appVersion });
 
                         Settings.SetGhostscriptVersion(appVersion.Version);
@@ -97,7 +97,7 @@ namespace PdfConverter
             }
 
             //NumberOfThreads
-            Settings.GhostscriptReaderThreads = _settingsHelper.GetThreadCount(Settings.GhostscriptReaderThreads);
+            Settings.NumberOfThreads = _settingsHelper.GetThreadCount(Settings.NumberOfThreads);
         }
 
         public static AppVersion GetValidGhostscriptVersion(List<AppVersion> gsVersions)

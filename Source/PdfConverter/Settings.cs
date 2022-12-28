@@ -23,7 +23,7 @@ namespace PdfConverter
 
         public static int JpgQuality { get; set; }
 
-        public static int GhostscriptReaderThreads { get; set; }
+        public static int NumberOfThreads { get; set; }
 
         public static CompressionLevel CompressionLevel { get; set; }
 
