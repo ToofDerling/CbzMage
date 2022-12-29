@@ -3,15 +3,15 @@ CzbMage is a comic book converter. It aims to do exactly two things:
 1. **Convert azw files to nice cbz files**, ready to read in your favorite cbz reader. Azw files entirely like the ones found in Kdl for PC or Mac. 
 Additionally, if CbzMage finds a matching azw.res file it will **merge in any HD images found for the highest possible quality**. 
 Comic title and publisher will be read from the azw file, and running CbzMage in scan mode will allow you to edit the values before the conversion. 
-2. **Convert pdf files to nice cbz files**. Point CbzMage at single pdf comic book or a directory of pdf comic books and it will convert them to cbz files in the highest possible quality (note that the pdf conversion requires that Ghostscript 10 is installed).
+2. **Convert pdf files to nice cbz files**. Point CbzMage at single pdf comic book or a directory of pdf comic books and it will convert them to cbz files in the highest possible quality (note that the **pdf conversion requires that Ghostscript 10 is installed**).
 
 **All of this works fully in [CbzMage Version 0.21](https://github.com/ToofDerling/CbzMage/releases/tag/v0.21).**
 
 CbzMage is a commandline tool written in c#. It requires no installation, very little configuration and no drm plugin/tool (the last part may change in the future). It does require that **[.NET 6](https://dotnet.microsoft.com/en-us/download)** is installed on your computer. The pdf conversion requires that **[Ghostscript version 10+](https://ghostscript.com/releases/gsdnld.html)** is installed on your computer.
 
-CbzMage is released for Windows, Linux, and macOS (but support for the macOS version will be limited because I don't own a Mac). Since the Kdl app only works on PC and Mac the azw conversion is probably not relevant for Linux users, but the pdf conversion works as advertised.
+CbzMage is released for Windows, Linux, and macOS (but support for the macOS version will be limited as I don't own a Mac). Since the Kdl app only works on PC and Mac the azw conversion is probably not relevant for Linux users, but the pdf conversion works as advertised.
 
-Download CbzMage to your hard drive and unpack it anywhere. Have a look at options in the two settings files, they are all thoroughly documented there (I hope). Open a command shell and run CbzMage right away, or check out some more information: 
+Download CbzMage to your hard drive and unpack it anywhere. Have a look at the options in the two settings files, they are all thoroughly documented there (I hope). Open a command shell and run CbzMage right away, or check out some more information: 
 
 ## Azw conversion.
 
@@ -43,7 +43,9 @@ Open the azw settings file in a text editor and **configure AzwDir**. Please not
 
 **Pdf conversion notes.**
 
-* **Ghostscript 10 on Linux.** The only distro I know of that has upgraded to Ghostscript version 10 is [Arch Linux](https://archlinux.org/). I tried a handful of the popular ones and they were all at version 9, which doesn't work with CbzMage. On other distros than Arch you can use the [snap build of Ghostscript 10](https://ghostscript.com/releases/gsdnld.html) which worked fine when I tested it on openSUSE Tumbleweed (the regular build found on the same page was a bit flaky during tests).
+* **Ghostscript 10 on Linux.** The only distro I know of that has upgraded to Ghostscript version 10 is [Arch Linux](https://archlinux.org/). I tried a handful of the popular ones and they were all at version 9, which doesn't work with CbzMage. On other distros than Arch you can use the [snap build of Ghostscript 10](https://ghostscript.com/releases/gsdnld.html) which worked fine when I tested it on openSUSE Tumbleweed (the regular Ghostscript build found on the same page was a bit flaky during tests).
+
+More to come...
 
 ##
 
