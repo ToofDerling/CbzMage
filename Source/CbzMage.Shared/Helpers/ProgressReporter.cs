@@ -5,7 +5,7 @@ namespace CbzMage.Shared.Helpers
 {
     public class ProgressReporter
     {
-        private readonly object lockObject = new();
+        private readonly object _progressLock = new();
 
         private readonly int _total;
 
@@ -27,7 +27,7 @@ namespace CbzMage.Shared.Helpers
 
             var progress = $">> {message} {convertedProgress}%";
 
-            lock (lockObject)
+            lock (_progressLock)
             {
                 Console.SetCursorPosition(0, Console.CursorTop);
                 Console.Write(progress);
@@ -105,11 +105,11 @@ namespace CbzMage.Shared.Helpers
             Show(message, ConsoleColor.DarkRed);
         }
 
-        private static readonly object showLock = new();
+        private static readonly object _showLock = new();
 
         private static void Show(string message, ConsoleColor color)
         {
-            lock (showLock)
+            lock (_showLock)
             {
                 ConsoleColor? previousColor = null;
 
