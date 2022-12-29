@@ -3,7 +3,7 @@
 // quoted like this: "C:\\System\\Apps\\CbzMage\\Titles".
 
 // This is the main configuration file. To override a setting for AzwConvert use 
-// AzwSettings.json, for PdfConvert use PdfSettings.json 
+// AzwSettings.json, for PdfConvert use PdfSettings.json
 {
   ////
   //// AzwConvert specific settings:
@@ -84,10 +84,9 @@
   //// PdfConvert specific settings:
   ////
 
-  // PdfConvert requires Ghostscript version 10 or later (if you use an earlier 
-  // version the conversion will likely fail). If you don't specify the path to the 
-  // Ghostscript excutable, CbzMage will try to find a valid Ghostscript 
-  // installation on Windows. On Linux/macOS it will simply try to use "gs".
+  // PdfConvert requires Ghostscript version 10 or later. If you don't specify the
+  // path to the Ghostscript excutable, CbzMage will try to detect a valid 
+  // installation on Windows. On Linux/macOS it will simply try to use "gs" .
   "GhostscriptPath": "",
 
   // This determines the quality of jpg images in the cbz file. You want this as 
@@ -118,7 +117,7 @@
   // CbzDir is where your cbz backups are created. This can be placed anywhere
   // you want. If you specify nothing the default for AzwConvert is to use "Cbz 
   // Backups" in the parent directory of AzwDir, or for PdfConvert to create the
-  // cbz files alongside the original pdf. 
+  // cbz file alongside the original pdf. 
   "CbzDir": "",
 
   // SaveCover true or false. Save a copy of the coverimage alongside the cbz file 
