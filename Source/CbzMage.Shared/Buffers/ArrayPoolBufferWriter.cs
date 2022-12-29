@@ -11,7 +11,7 @@ namespace CbzMage.Shared.Buffers
     /// Adapted from ArrayBufferWriter: 
     /// https://github.com/dotnet/runtime/blob/bd6709248295deefa1956da3aeb9b0e086fbaca5/src/libraries/Common/src/System/Buffers/ArrayBufferWriter.cs
     /// </summary>
-    public class ArrayPoolBufferWriter<T> : IBufferWriter<T>
+    public sealed class ArrayPoolBufferWriter<T> : IBufferWriter<T>
     {
         // Copy of Array.MaxLength.
         // Used by projects targeting .NET Framework.
