@@ -86,12 +86,12 @@
 
   // PdfConvert requires Ghostscript version 10 or later. If you don't specify the
   // path to the Ghostscript excutable, CbzMage will try to detect a valid 
-  // installation on Windows. On Linux/macOS it will simply try to use "gs" .
+  // installation on Windows. On Linux/macOS it will simply try to use "gs".
   "GhostscriptPath": "",
 
   // This determines the quality of jpg images in the cbz file. You want this as 
-  // high as possible (90+). The default quality quality 93 (95 create images that
-  // are 15% larger. 98 create images that are 50% larger).
+  // high as possible (90+). The default quality quality 93 (95 creates images that
+  // are 15% larger. 98 creates images that are 50% larger).
   "JpgQuality": 93,
 
   // MinimumDpi determines the minimum quality of the pages Ghostscript reads from 
@@ -107,7 +107,7 @@
   "MinimumHeight": 1920,
 
   // MaximumHeight is a hard cap at imagezize, again to prevent cbz files from 
-  // growing impossibly large. The efault is 3840 (Ultra HD).
+  // growing impossibly large. The default is 3840 (Ultra HD).
   "MaximumHeight": 3840,
 
   ////
@@ -116,7 +116,7 @@
 
   // CbzDir is where your cbz backups are created. This can be placed anywhere
   // you want. If you specify nothing the default for AzwConvert is to use "Cbz 
-  // Backups" in the parent directory of AzwDir, or for PdfConvert to create the
+  // Backups" in the parent directory of AzwDir, and for PdfConvert to create the
   // cbz file alongside the original pdf. 
   "CbzDir": "",
 

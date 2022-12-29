@@ -1,6 +1,6 @@
 echo off
 set targets=CbzMage_Win CbzMage_Linux CbzMage_macOS
-set publish=dotnet publish -p:publishprofile=
+set publish=dotnet publish -c Release -p:PublishProfile=
 set zip="C:\Program Files\7-Zip\7z.exe" a -tzip
 cd ..\publish
 for %%v in (*.minor) do set oldminor=%%~nv
