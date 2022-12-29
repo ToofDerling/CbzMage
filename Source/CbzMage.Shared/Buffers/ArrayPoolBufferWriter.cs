@@ -45,15 +45,7 @@ namespace CbzMage.Shared.Buffers
             if (initialCapacity <= 0)
                 throw new ArgumentException(null, nameof(initialCapacity));
 
-            if (initialCapacity == 0)
-            {
-                _buffer = Array.Empty<T>();
-            }
-            else
-            {
-                _buffer = ArrayPool<T>.Shared.Rent(initialCapacity);
-            }
-
+            _buffer = ArrayPool<T>.Shared.Rent(initialCapacity);
             _index = 0;
         }
         /// <summary>
@@ -276,7 +268,7 @@ namespace CbzMage.Shared.Buffers
                 if (_buffer.Length > 0)
                 {
                     Array.Copy(_buffer, 0, newBuffer, 0, _index);
-                    
+
                     #region copy test
                     //var testIte = 5;
                     //var copyIte = 100000;
