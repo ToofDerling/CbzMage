@@ -45,7 +45,7 @@ You can have a look at the other options in the settings file, they are all thor
 
 **Notes.**
 
-* **The "GUI" mode.** (Windows only). This simply means that if you run CbzMage by doubleclicking the exe it will detect that and make the window hang around until you press enter. You can also create a shortcut for each of the modes (open Properties for the shortcut and add the parameter in Target) and have one file to doubleclick for scan and one for convert.      
+* **The "GUI" mode.** (Windows only). This simply means that if you run CbzMage by doubleclicking the exe it will detect that and make the window hang around until you press enter. You can also create a shortcut for each of the modes (open Properties for the shortcut and add the parameter in Target) and have one file to doubleclick for azw conversion and one for converting pdfs in a specific directory.      
 
 **Credits.**
 
