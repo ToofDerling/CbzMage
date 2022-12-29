@@ -12,14 +12,7 @@ namespace PdfConverter
         {
             var config = new PdfSettings();
             config.CreateSettings();
-
-            var pdfList = InitializePdfPath(path);
-            if (!pdfList.Any())
-            {
-                Console.WriteLine("No pdf files found");
-                return;
-            }
-
+    
             if (Settings.GhostscriptVersion != null)
             {
                 Console.WriteLine($"Ghostscript version: {Settings.GhostscriptVersion}");
@@ -34,6 +27,13 @@ namespace PdfConverter
 #endif
 
             Console.WriteLine();
+
+            var pdfList = InitializePdfPath(path);
+            if (!pdfList.Any())
+            {
+                Console.WriteLine("No pdf files found");
+                return;
+            }
 
             var stopwatch = Stopwatch.StartNew();
 
