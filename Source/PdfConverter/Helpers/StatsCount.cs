@@ -2,67 +2,67 @@
 {
     public sealed class StatsCount
     {
-        private static volatile int largestPng = 0;
-        private static long totalPngSize = 0;
+        private static volatile int _largestPng = 0;
+        private static long _totalPngSize = 0;
 
-        private static volatile int largestJpg = 0;
-        private static long totalJpgSize = 0;
+        private static volatile int _largestJpg = 0;
+        private static long _totalJpgSize = 0;
 
-        private static volatile int largestStreamRead = 0;
-        private static volatile int streamReadCount = 0;
+        private static volatile int _largestStreamRead = 0;
+        private static volatile int _streamReadCount = 0;
 
         public static void AddStreamRead(int read)
         {
-            streamReadCount++;
+            _streamReadCount++;
 
-            if (read > largestStreamRead)
+            if (read > _largestStreamRead)
             {
-                largestStreamRead = read;
+                _largestStreamRead = read;
             }
         }
 
-        private static volatile int totalConversionTime = 0;
-        private static volatile int imageConversionCount = 0;
-        private static volatile int imageResizeCount = 0;
+        private static volatile int _totalConversionTime = 0;
+        private static volatile int _imageConversionCount = 0;
+        private static volatile int _imageResizeCount = 0;
 
         public static void AddImageConversion(int ms, bool resize, int png, int jpg)
         {
-            imageConversionCount++;
+            _imageConversionCount++;
 
             if (resize)
             {
-                imageResizeCount++;
+                _imageResizeCount++;
             }
 
-            totalConversionTime += ms;
+            _totalConversionTime += ms;
 
-            totalPngSize += png;
+            _totalPngSize += png;
 
-            if (png > largestPng)
+            if (png > _largestPng)
             {
-                largestPng = png;
+                _largestPng = png;
             }
 
-            totalJpgSize += jpg;
+            _totalJpgSize += jpg;
 
-            if (jpg > largestJpg)
+            if (jpg > _largestJpg)
             { 
-                largestJpg = jpg;
+                _largestJpg = jpg;
             }
         }
 
         public static void ShowStats()
         {
-            if (streamReadCount > 0)
+            if (_streamReadCount > 0)
             {
-                Console.WriteLine($"Stream reads: {streamReadCount} Largest read: {largestStreamRead} ({nameof(Settings.WriteBufferSize)}: {Settings.WriteBufferSize})");
+                Console.WriteLine($"Stream reads: {_streamReadCount} Largest read: {_largestStreamRead} ({nameof(Settings.WriteBufferSize)}: {Settings.WriteBufferSize})");
             }
 
-            if (imageConversionCount > 0)
+            if (_imageConversionCount > 0)
             {
-                Console.WriteLine($"Image conversions: {imageConversionCount} (resizes: {imageResizeCount}) Average ms: {totalConversionTime / imageConversionCount}");
-                Console.WriteLine($"Largest Png: {largestPng} Average: {totalPngSize / imageConversionCount}");
-                Console.WriteLine($"Largest Jpg: {largestJpg} Average: {totalJpgSize / imageConversionCount} ({nameof(Settings.ImageBufferSize)}: {Settings.ImageBufferSize})");
+                Console.WriteLine($"Image conversions: {_imageConversionCount} (resizes: {_imageResizeCount}) Average ms: {_totalConversionTime / _imageConversionCount}");
+                Console.WriteLine($"Largest Png: {_largestPng} Average: {_totalPngSize / _imageConversionCount}");
+                Console.WriteLine($"Largest Jpg: {_largestJpg} Average: {_totalJpgSize / _imageConversionCount} ({nameof(Settings.ImageBufferSize)}: {Settings.ImageBufferSize})");
             }
         }
     }

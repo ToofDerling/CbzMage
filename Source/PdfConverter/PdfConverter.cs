@@ -6,7 +6,7 @@ namespace PdfConverter
 {
     public class PdfConverter
     {
-        private int pagesCount = 0;
+        private int _pagesCount = 0;
 
         public void ConvertFileOrDirectory(string path)
         {
@@ -48,9 +48,9 @@ namespace PdfConverter
             stopwatch.Stop();
 
             var elapsed = stopwatch.Elapsed;
-            var secsPerPage = elapsed.TotalSeconds / pagesCount;
+            var secsPerPage = elapsed.TotalSeconds / _pagesCount;
 
-            Console.WriteLine($"{pagesCount} pages converted in {elapsed.Hhmmss()} ({secsPerPage:F2} sec/page)");
+            Console.WriteLine($"{_pagesCount} pages converted in {elapsed.Hhmmss()} ({secsPerPage:F2} sec/page)");
         }
 
         private void ConvertPdf(Pdf pdf, ConverterEngine converter)
@@ -63,7 +63,7 @@ namespace PdfConverter
             Console.WriteLine(pdf.Path);
             Console.WriteLine($"{pdf.PageCount} pages");
 
-            pagesCount += pdf.PageCount;
+            _pagesCount += pdf.PageCount;
 
             converter.ConvertToCbz(pdf, pdfParser);
 

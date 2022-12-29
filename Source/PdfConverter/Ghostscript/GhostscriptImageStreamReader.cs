@@ -5,7 +5,7 @@ namespace PdfConverter.Ghostscript
 {
     public class GhostscriptImageStreamReader
     {
-        private static readonly byte[] pngHeader = new byte[] { 0x89, 0x50, 0x4e, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }; // PNG "\x89PNG\x0D\0xA\0x1A\0x0A"
+        private static readonly byte[] _pngHeader = new byte[] { 0x89, 0x50, 0x4e, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }; // PNG "\x89PNG\x0D\0xA\0x1A\0x0A"
 
         private readonly IImageDataHandler _imageDatahandler;
 
@@ -33,7 +33,7 @@ namespace PdfConverter.Ghostscript
                 var offset = 0;
                 int readCount;
 
-                var pngHeaderSpan = pngHeader.AsSpan();
+                var pngHeaderSpan = _pngHeader.AsSpan();
 
                 while (true)
                 {
