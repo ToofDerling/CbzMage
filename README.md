@@ -32,12 +32,19 @@ You can have a look at the other options in the settings file, they are all thor
 * Unlike the conversion, each new title will have a ".NEW" marker (and each upgraded title will have an ".UPDATED" marker). 
 * You can now edit the publishers and titles as you like and the values will be used when you run AzwConvert. You don't have to remove the markers, the conversion will handle it automatically.
 
-**Notes.**
+**Azw conversion notes.**
 
 * **Updated title.** This means a title that has been upgraded, ie it now has a HD cover or more HD images than before. CbzMage will scan the azw files and add the ".UPDATED" marker to any upgraded title. It will also detect if a title has been downgraded, this is of course not supposed to happen. Upgrades happen seldom and I have never seen a title being downgraded. 
 * **The titles directory** will always reflect the comic books currently in Kdl and is updated each time you run CbzMage. If you edit publisher or name of a title the values will be used when the title is converted 
 * **The converted titles directory** contains every converted title ever. To reconvert a title you must delete the file in that directory. 
 * **The database.** In the titles directory there's a database file with the state of every title that has passed through CbzMage. It's used when checking if a title has been updated and to store the new name and publisher of the title if you edit these values.
+
+## Pdf conversion.
+
+##
+
+**Notes.**
+
 * **The "GUI" mode.** (Windows only). This simply means that if you run CbzMage by doubleclicking the exe it will detect that and make the window hang around until you press enter. You can also create a shortcut for each of the modes (open Properties for the shortcut and add the parameter in Target) and have one file to doubleclick for scan and one for convert.      
 
 **Credits.**
