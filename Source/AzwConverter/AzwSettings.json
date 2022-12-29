@@ -2,7 +2,7 @@
 // (or otherwise change the structure). Back slashes in directory paths must be 
 // quoted like this: "C:\\System\\Apps\\CbzMage\\Titles"
 
-// Settings recognized by PdfConvert. See CbzMageSettings.json for documentation.
+// Settings recognized by AzwConvert. See CbzMageSettings.json for documentation.
 // AzwDir is the only required setting.
 {
   "AzwDir": "",
