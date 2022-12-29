@@ -11,7 +11,7 @@ CbzMage is a commandline tool written in c#. It requires no installation, very l
 
 CbzMage is released for Windows, Linux, and macOS (but support for the macOS version will be limited as I don't own a Mac). Since the Kdl app only works on PC and Mac the azw conversion is probably not relevant for Linux users, but the pdf conversion works as advertised (but see the note about Ghostscript 10 on Linux below).
 
-Download CbzMage to your hard drive and unpack it anywhere. Have a look at the options in the CbzMageSettings.json file, they are all thoroughly documented there (I hope). Open a command shell and run CbzMage right away, or check out some more information: 
+Download CbzMage to your hard drive and unpack it anywhere. Have a look at the settings in the CbzMageSettings.json file, they are all thoroughly documented there (I hope). Open a command shell and run CbzMage right away, or check out some more information: 
 
 ## Azw conversion.
 
@@ -50,8 +50,8 @@ It's been mentioned before, but let me say it again: pdf conversion requires tha
 **Pdf conversion notes.**
 
 * **Ghostscript 10 on Linux.** The only distro I know of that has upgraded to Ghostscript version 10 is [Arch Linux](https://archlinux.org/). I tried a handful of the popular ones and they were all at version 9, which doesn't work with CbzMage. On distros other than Arch you can use the [snap build of Ghostscript 10](https://ghostscript.com/releases/gsdnld.html) which worked fine when I tested it on openSUSE Tumbleweed (the regular Ghostscript build found on the same page was a bit flaky during tests).
-* **Cbz filesize.** Cbz files created by PdfConvert will typically be 50 - 100 % larger than the original pdf file. Now and then they're smaller and sometimes much larger - though CbzMage tries to handle the most extreme cases without sacrificing any of the conversion quality (see the MinimumHeight and MaximumHeight options in CbzMageSettings.json).
-* **SaveCover and CbzDir** both works the same as for AzwConvert. And the same goes for the rest of the options that are shared between the two conversion modes.
+* **Cbz filesize.** Cbz files created by PdfConvert will typically be 50 - 100 % larger than the original pdf file. Now and then they're smaller and sometimes much larger - though CbzMage tries to handle the most extreme cases without sacrificing any of the conversion quality (see the MinimumHeight and MaximumHeight settings in CbzMageSettings.json).
+* **SaveCover and CbzDir** both works the same as for AzwConvert. And the same goes for the rest of the settings that are shared between the two conversion modes.
 
 ##
 
