@@ -9,7 +9,7 @@ Comic title and publisher will be read from the azw file, and running CbzMage in
 
 CbzMage is a commandline tool written in c#. It requires no installation, very little configuration and no drm plugin/tool (the last part may change in the future). It does require that **[.NET 6](https://dotnet.microsoft.com/en-us/download)** is installed on your computer. The pdf conversion requires that **[Ghostscript version 10+](https://ghostscript.com/releases/gsdnld.html)** is installed on your computer.
 
-CbzMage is released for Windows, Linux, and macOS (but support for the macOS version will be limited because I don't own a Mac). Since the Kdl app is PC or Mac only the azw conversion is not relevant for Linux users, but the pdf coversion works as advertised.
+CbzMage is released for Windows, Linux, and macOS (but support for the macOS version will be limited because I don't own a Mac). Since the Kdl app only works on PC and Mac the azw conversion is not relevant for Linux users, but the pdf coversion works as advertised.
 
 ## Azw conversion.
 
