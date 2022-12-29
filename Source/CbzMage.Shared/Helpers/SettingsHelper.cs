@@ -5,7 +5,7 @@ namespace CbzMage.Shared.Helpers
 {
     public class SettingsHelper
     {
-        private const string _masterSettings = "CbzMageSettings";
+        private const string _mainSettings = "CbzMageSettings";
 
         public void CreateSettings(string className, object settingsClass)
         {
@@ -15,7 +15,7 @@ namespace CbzMage.Shared.Helpers
 
                 var env = hostingContext.HostingEnvironment;
 
-                config.AddJsonFile($"{_masterSettings}.json", optional: false, reloadOnChange: false)
+                config.AddJsonFile($"{_mainSettings}.json", optional: false, reloadOnChange: false)
                     .AddJsonFile($"{className}.json", optional: false, reloadOnChange: false)
                     .AddJsonFile($"{className}.{env.EnvironmentName}.json", true, false);
 
