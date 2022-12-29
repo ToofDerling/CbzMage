@@ -11,11 +11,11 @@ CbzMage is a commandline tool written in c#. It requires no installation, very l
 
 CbzMage is released for Windows, Linux, and macOS (but support for the macOS version will be limited because I don't own a Mac). Since the Kdl app only works on PC and Mac the azw conversion is not relevant for Linux users, but the pdf conversion works as advertised.
 
+Download CbzMage to your hard drive and unpack it anywhere. Have a look at options in the two settings files, they are all thoroughly documented there (I hope). Open a command shell and run CbzMage right away, or check out some more information: 
+
 ## Azw conversion.
 
-Download CbzMage to your hard drive and unpack it anywhere. Open the settings file in a text editor and **configure AzwDir**. Please note the comment about [moving the azw directory](https://github.com/ToofDerling/CbzMage/wiki/How-to-move-Kdl-content-folder.) as **running CbzMage for the first time may double the size of your azw directory.**
-
-You can have a look at the other options in the settings file, they are all thoroughly documented there (I hope). Or you can open a command shell and run CbzMage right away: 
+Open the azw settings file in a text editor and **configure AzwDir**. Please note the comment about [moving the azw directory](https://github.com/ToofDerling/CbzMage/wiki/How-to-move-Kdl-content-folder.) as **running CbzMage for the first time may double the size of your azw directory.**
 
 **Important:** Close Kdl before running CbzMage. Kdl locks some of the azw files when it's running, so there's a high chance that CbzMage will crash because it can't read a locked azw file.
 
