@@ -13,4 +13,10 @@
     <ProjectReference Include="..\PdfConverter\PdfConverter.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="CbzMageSettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

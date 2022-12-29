@@ -5,7 +5,9 @@ namespace CbzMage.Shared.Helpers
 {
     public class SettingsHelper
     {
-        public void CreateSettings(string baseName, object settingsClass)
+        private const string _masterSettings = "CbzMageSettings";
+
+        public void CreateSettings(string className, object settingsClass)
         {
             using IHost host = Host.CreateDefaultBuilder().ConfigureAppConfiguration((hostingContext, config) =>
             {
@@ -13,9 +15,9 @@ namespace CbzMage.Shared.Helpers
 
                 var env = hostingContext.HostingEnvironment;
 
-                config.AddJsonFile($"{baseName}.json", optional: false, reloadOnChange: false)
-                    .AddJsonFile($"{baseName}.User.json", true, false)
-                    .AddJsonFile($"{baseName}.{env.EnvironmentName}.json", true, false);
+                config.AddJsonFile($"{_masterSettings}.json", optional: false, reloadOnChange: false)
+                    .AddJsonFile($"{className}.json", optional: false, reloadOnChange: false)
+                    .AddJsonFile($"{className}.{env.EnvironmentName}.json", true, false);
 
                 var configRoot = config.Build();
                 configRoot.Bind(settingsClass);
