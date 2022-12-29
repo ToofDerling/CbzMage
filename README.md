@@ -41,11 +41,20 @@ Open the AzwSettings.json file in a text editor and **configure AzwDir**. Please
 
 ## Pdf conversion.
 
+It's been mentioned before, but let me say it again: pdf conversion requires that that **[Ghostscript version 10+](https://ghostscript.com/releases/gsdnld.html)** is installed on your computer. Once you have that part working there's no need to configure anything, simply try
+
+**Running CbzMage with the "PdfConvert" parameter:**
+
+* Open a command shell and point CbzMage at a single pdf file or a directory with pdf files and it will happily create a cbz file alongside each pdf (unless you have configured CbzDir in PdfSettings.json, then they will created in that directory). That's all there is to it, really.
+
 **Pdf conversion notes.**
 
 * **Ghostscript 10 on Linux.** The only distro I know of that has upgraded to Ghostscript version 10 is [Arch Linux](https://archlinux.org/). I tried a handful of the popular ones and they were all at version 9, which doesn't work with CbzMage. On other distros than Arch you can use the [snap build of Ghostscript 10](https://ghostscript.com/releases/gsdnld.html) which worked fine when I tested it on openSUSE Tumbleweed (the regular Ghostscript build found on the same page was a bit flaky during tests).
+* **Cbz filesize.** Cbz files created by PdfConvert will typically be 50 - 100 % larger than the original pdf file. Now and then they're smaller and sometimes much larger, though CbzMage tries to handle the most extreme cases without sacrificing any of the conversion quality (see MinimumHeight and MaximumHeight option in CbzMageSettings.json).
 
-More to come...
+
+
+
 
 ##
 
