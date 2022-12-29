@@ -11,20 +11,20 @@ CbzMage is a commandline tool written in c#. It requires no installation, very l
 
 CbzMage is released for Windows, Linux, and macOS (but support for the macOS version will be limited as I don't own a Mac). Since the Kdl app only works on PC and Mac the azw conversion is probably not relevant for Linux users, but the pdf conversion works as advertised.
 
-Download CbzMage to your hard drive and unpack it anywhere. Have a look at the options in the two settings files, they are all thoroughly documented there (I hope). Open a command shell and run CbzMage right away, or check out some more information: 
+Download CbzMage to your hard drive and unpack it anywhere. Have a look at the options in the CbzMageSettings.json file, they are all thoroughly documented there (I hope). Open a command shell and run CbzMage right away, or check out some more information: 
 
 ## Azw conversion.
 
-Open the azw settings file in a text editor and **configure AzwDir**. Please note the comment about [moving the azw directory](https://github.com/ToofDerling/CbzMage/wiki/How-to-move-Kdl-content-folder.) as **running CbzMage for the first time may double the size of your azw directory.**
+Open the AzwSettings.json file in a text editor and **configure AzwDir**. Please note the comment about [moving the azw directory](https://github.com/ToofDerling/CbzMage/wiki/How-to-move-Kdl-content-folder.) as **running CbzMage for the first time may double the size of your azw directory.**
 
 **Important:** Close Kdl before running CbzMage. Kdl locks some of the azw files when it's running, so there's a high chance that CbzMage will crash because it can't read a locked azw file.
 
 **Running CbzMage with the "AzwConvert" parameter:**
 
-* In the titles directory (TitlesDir in the settings file) you will find a small file with the title and publisher of each comic book currently in the azw directory.  
+* In the titles directory (TitlesDir in AzwSettings.json) you will find a small file with the title and publisher of each comic book currently in the azw directory.  
 * In a subdirectory of the titles directory you will find a similar file for each converted title. If you ever want **to reconvert a title simply delete the title file from the converted titles directory.**
-* In the cbz directory (CbzDir in the settings file) you will find the converted comic books sorted by publisher. 
-* If you set SaveCover to true in the settings file CbzMage will save a copy of the cover image together with the cbz file. If you specify SaveCoverDir the cover image will be saved there instead. There's even a SaveCoverOnly option if you just want the covers.
+* In the cbz directory (CbzDir in AzwSettings.json) you will find the converted comic books sorted by publisher. 
+* If you set SaveCover to true in the AzwSettings.json CbzMage will save a copy of the cover image together with the cbz file. If you specify SaveCoverDir the cover image will be saved there instead. There's even a SaveCoverOnly option if you just want the covers.
 
 **Running CbzMage with the "AzwScan" parameter:**
 
