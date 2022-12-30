@@ -93,7 +93,7 @@ namespace PdfConverter
             //JpgQuality
             if (Settings.JpgQuality <= 0)
             {
-                Settings.JpgQuality = 95;
+                Settings.JpgQuality = 93;
             }
 
             //NumberOfThreads
@@ -110,7 +110,7 @@ namespace PdfConverter
                     ? $". (found version {gsVersion.Version})"
                     : string.Empty;
 
-                throw new Exception($"CbzMage requires Ghostscript version {Settings.GhostscriptMinVersion}+ is installed{foundVersion}");
+                throw new Exception($"PdfConvert requires Ghostscript version {Settings.GhostscriptMinVersion}+ is installed{foundVersion}");
 
             }
             return gsVersion!;
