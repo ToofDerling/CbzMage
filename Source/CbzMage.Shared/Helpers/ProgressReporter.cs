@@ -1,5 +1,4 @@
 ﻿using CbzMage.Shared.Extensions;
-using System.Text;
 
 namespace CbzMage.Shared.Helpers
 {
