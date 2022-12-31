@@ -50,7 +50,7 @@ It's been mentioned before, but let me say it again: pdf conversion requires tha
 **Pdf conversion notes.**
 
 * **Ghostscript 10 on Linux.** The only distro I know of that has upgraded to Ghostscript version 10 is [Arch Linux](https://archlinux.org/). I tried a handful of the popular ones and they were all at version 9, which doesn't work with CbzMage. On distros other than Arch you can use the [snap build of Ghostscript 10](https://ghostscript.com/releases/gsdnld.html) which worked fine when I tested it on openSUSE Tumbleweed (the regular Ghostscript build found on the same page was a bit flaky during tests).
-* **Search subdirectories for pdf files**. To do this add two asterisks after the directory. On Windows: [directory]\\** On Linux and macOs "[directory]/\**" (the quotes are needed).
+* **Search subdirectories for pdf files**. To do this add two asterisks after the directory. On Windows: [directory]\\** On Linux and macOs it must be included in quotes "[directory]/\**".
 * **Cbz filesize.** Cbz files created by PdfConvert will typically be 50 - 100 % larger than the original pdf file. Now and then they're smaller and sometimes much larger - though CbzMage tries to handle the most extreme cases without sacrificing any of the conversion quality (see the MinimumHeight and MaximumHeight settings in CbzMageSettings.json).
 * **SaveCover and CbzDir** both works the same as for AzwConvert. And the same goes for the rest of the settings that are shared between the two conversion modes.
 
