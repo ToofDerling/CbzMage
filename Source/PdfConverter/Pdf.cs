@@ -9,24 +9,13 @@
 
         public string Path { get; private set; }
 
-        public int PageCount
-        {
-            get => _pageCount;
-            set
-            {
-                _pageCount = value;
-                _pageCountLength = _pageCount.ToString().Length;
-            }
-        }
-
-        private int _pageCount;
-        private int _pageCountLength;
+        public int PageCount { get; set; }
 
         public int ImageCount { get; set; }
 
         public string GetPageString(int pageNumber)
         {
-            var page = pageNumber.ToString().PadLeft(_pageCountLength, '0');
+            var page = pageNumber.ToString().PadLeft(4, '0');
             return $"page-{page}.jpg";
         }
 
