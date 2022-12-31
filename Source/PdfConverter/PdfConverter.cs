@@ -12,7 +12,7 @@ namespace PdfConverter
         {
             var config = new PdfSettings();
             config.CreateSettings();
-    
+
             if (Settings.GhostscriptVersion != null)
             {
                 Console.WriteLine($"Ghostscript version: {Settings.GhostscriptVersion}");
@@ -75,11 +75,22 @@ namespace PdfConverter
 
         private List<Pdf> InitializePdfPath(string path)
         {
-            path ??= Environment.CurrentDirectory;
+            var scanAllDirectories = false;
+            if (path.EndsWith(Settings.ScanAllDirectoriesPattern))
+            {
+                scanAllDirectories = true;
+                path = path.Replace(Settings.ScanAllDirectoriesPattern, null);
+            }
+
+            if (string.IsNullOrEmpty(path))
+            {
+                path = Environment.CurrentDirectory;
+            }
 
             if (Directory.Exists(path))
             {
-                var files = Directory.GetFiles(path, "*.pdf");
+                var files = Directory.GetFiles(path, "*.pdf",
+                    scanAllDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
                 if (files.Length > 0)
                 {
                     return Pdf.List(files.ToArray());

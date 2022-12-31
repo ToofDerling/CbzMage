@@ -41,5 +41,7 @@ namespace PdfConverter
         }
 
         public static int WriteBufferSize => 262144;
+
+        public static string ScanAllDirectoriesPattern => $"{Path.DirectorySeparatorChar}**";
     }
 }

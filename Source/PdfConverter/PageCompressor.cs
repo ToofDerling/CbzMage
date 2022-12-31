@@ -1,4 +1,5 @@
-﻿using CbzMage.Shared.Buffers;
+﻿using CbzMage.Shared;
+using CbzMage.Shared.Buffers;
 using CbzMage.Shared.Helpers;
 using CbzMage.Shared.Jobs;
 using PdfConverter.Jobs;
@@ -131,7 +132,7 @@ namespace PdfConverter
 
         private bool AddCompressorJob()
         {
-            var key = _pdf.GetPageString(_nextPageNumber);
+            var key = SharedSettings.GetPageString(_nextPageNumber);
 
             var firstPage = _nextPageNumber == 1;
 
@@ -143,7 +144,7 @@ namespace PdfConverter
 
                 _pageNumbers.TryDequeue(out _nextPageNumber);
 
-                key = _pdf.GetPageString(_nextPageNumber);
+                key = SharedSettings.GetPageString(_nextPageNumber);
             }
 
             if (imageList.Count > 0)

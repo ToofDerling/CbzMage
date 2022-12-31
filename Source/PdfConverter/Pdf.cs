@@ -13,12 +13,6 @@
 
         public int ImageCount { get; set; }
 
-        public string GetPageString(int pageNumber)
-        {
-            var page = pageNumber.ToString().PadLeft(4, '0');
-            return $"page-{page}.jpg";
-        }
-
         public static List<Pdf> List(params string[] paths)
         {
             return new List<Pdf>(paths.Select(x => new Pdf(x)));

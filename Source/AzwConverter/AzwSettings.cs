@@ -1,5 +1,5 @@
 ﻿using CbzMage.Shared.Extensions;
-using CbzMage.Shared.Helpers;
+using CbzMage.Shared;
 
 namespace AzwConverter
 {
@@ -7,7 +7,7 @@ namespace AzwConverter
     {
         public static Settings Settings => new();
 
-        private readonly SettingsHelper _settingsHelper = new();
+        private readonly SharedSettings _settingsHelper = new();
 
         public void CreateSettings()
         {

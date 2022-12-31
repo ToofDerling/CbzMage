@@ -1,4 +1,5 @@
-﻿using CbzMage.Shared.Buffers;
+﻿using CbzMage.Shared;
+using CbzMage.Shared.Buffers;
 using CbzMage.Shared.Jobs;
 using PdfConverter.Ghostscript;
 using PdfConverter.Jobs;
@@ -46,7 +47,7 @@ namespace PdfConverter
                 return;
             }
             var pageNumber = _pageQueue.Dequeue();
-            var page = _pdf.GetPageString(pageNumber);
+            var page = SharedSettings.GetPageString(pageNumber);
 
             var job = new ImageConverterJob(bufferWriter , _convertedPages, page, _resizeHeight);
             _converterExecutor.AddJob(job);

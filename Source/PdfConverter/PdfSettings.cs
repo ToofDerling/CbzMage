@@ -1,4 +1,5 @@
-﻿using CbzMage.Shared.AppVersions;
+﻿using CbzMage.Shared;
+using CbzMage.Shared.AppVersions;
 using CbzMage.Shared.Extensions;
 using CbzMage.Shared.Helpers;
 using System.Diagnostics;
@@ -9,7 +10,7 @@ namespace PdfConverter
     {
         public static Settings Settings => new();
 
-        private readonly SettingsHelper _settingsHelper = new();
+        private readonly SharedSettings _settingsHelper = new();
 
         public void CreateSettings()
         {

@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 
-namespace CbzMage.Shared.Helpers
+namespace CbzMage.Shared
 {
-    public class SettingsHelper
+    public class SharedSettings
     {
         private const string _mainSettings = "CbzMageSettings";
 
@@ -34,7 +34,7 @@ namespace CbzMage.Shared.Helpers
             if (settingsThreadCount <= 0)
             {
                 var threadCountFraction = Environment.ProcessorCount * fraction;
-                
+
                 var calculatedThreadCount = Convert.ToInt32(threadCountFraction);
 
                 calculatedThreadCount = Math.Min(calculatedThreadCount, maxThreads);
@@ -44,6 +44,12 @@ namespace CbzMage.Shared.Helpers
             }
 
             return settingsThreadCount;
+        }
+
+        public static string GetPageString(int pageNumber)
+        {
+            var page = pageNumber.ToString().PadLeft(4, '0');
+            return $"page-{page}.jpg";
         }
     }
 }

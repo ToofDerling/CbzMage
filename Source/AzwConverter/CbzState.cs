@@ -15,10 +15,5 @@
         public DateTime? Checked { get; set; }
 
         public CbzState? Changed { get; set; }
-
-        public string PageName()
-        {
-            return $"page-{Pages.ToString().PadLeft(4, '0')}.jpg";
-        }
     }
 }

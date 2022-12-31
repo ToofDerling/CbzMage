@@ -1,4 +1,5 @@
-﻿using MobiMetadata;
+﻿using CbzMage.Shared;
+using MobiMetadata;
 using System.IO.Compression;
 using System.IO.MemoryMappedFiles;
 
@@ -98,7 +99,7 @@ namespace AzwConverter.Engine
             for (int i = 0, sz = sdImageRecords.ContentRecords.Count; i < sz; i++)
             {
                 state.Pages++;
-                var pageName = state.PageName();
+                var pageName = SharedSettings.GetPageString(state.Pages);
 
                 if (hdImageRecords != null)
                 {
