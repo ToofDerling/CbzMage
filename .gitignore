@@ -267,3 +267,4 @@ __pycache__/
 /Source/CbzMage/Properties/launchSettings.json
 /Source/PdfConverter/PdfSettings.Development.json
 
+/Source/BlackSteedConverter/BlackSteedSettings.Development.json
