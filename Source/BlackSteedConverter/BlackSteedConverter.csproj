@@ -1,21 +1,21 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AzwConverter\AzwConverter.csproj" />
-    <ProjectReference Include="..\BlackSteedConverter\BlackSteedConverter.csproj" />
     <ProjectReference Include="..\CbzMage.Shared\CbzMage.Shared.csproj" />
-    <ProjectReference Include="..\PdfConverter\PdfConverter.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="CbzMageSettings.json">
+    <None Update="BlackSteedSettings.Development.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="BlackSteedSettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

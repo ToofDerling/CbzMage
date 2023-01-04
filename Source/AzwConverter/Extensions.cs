@@ -41,10 +41,6 @@ namespace AzwConverter
 
         public static string AddMarker(this string name, string marker) => !name.StartsWith(marker) ? $"{marker} {name}" : name;
 
-        public static string SIf1(this int count) => count != 1 ? "s" : string.Empty;
-
-        public static string SIf1<T>(this IEnumerable<T> enu) => enu.Count().SIf1();
-
         public static bool IsAzwFile(this FileInfo fileInfo) => fileInfo.FullName.IsAzwFile();
         
         public static bool IsAzwFile(this string file) => file.EndsWith(Settings.AzwExt);

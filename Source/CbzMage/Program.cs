@@ -16,6 +16,9 @@ AzwScan [or Azw Scan]
 PdfConvert [or Pdf Convert] <pdf file> or <directory with pdf files>
     Converts one or more pdf comic books to cbz files.
 
+BlackSteedConvert [BlackSteed Convert] <directory>
+    Convert one or more Black Steed comic books copied from a mobile device.
+
 Commands are case insensitive. 
 ";
         static async Task Main(string[] args)
@@ -52,6 +55,10 @@ Commands are case insensitive.
                             case CbzMageAction.PdfConvert:
                                 var pdfConverter = new PdfConverter.PdfConverter();
                                 pdfConverter.ConvertFileOrDirectory(path!);
+                                break;
+                            case CbzMageAction.BlackSteedConvert:
+                                var blackSteedConverter = new BlackSteedConverter.BlackSteedConverter();
+                                blackSteedConverter.ConvertDirectory(path);
                                 break;
                         }
                     }

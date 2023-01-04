@@ -1,0 +1,8 @@
+// Punction is important! Don't remove quotes, colons, commas or square brackets 
+// (or otherwise change the structure). Back slashes in directory paths must be 
+// quoted like this: "C:\\System\\Apps\\CbzMage\\CbzDir"
+{
+  "CbzDir": "",
+  "SaveCover": false,
+  "CompressionLevel": "Fastest"
+}
