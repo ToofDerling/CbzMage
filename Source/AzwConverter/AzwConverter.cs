@@ -106,7 +106,7 @@ namespace AzwConverter
             {
                 if (updatedBooks.Count > 0 || unconvertedBooks.Count > 0 || _action == CbzMageAction.AzwAnalyze)
                 {
-                    await RunActionsInParallelAsync(books, updatedBooks, unconvertedBooks, 
+                    await RunActionsInParallelAsync(books, updatedBooks, unconvertedBooks,
                         titles, convertedTitles, syncer, archive);
                 }
             }
@@ -145,7 +145,7 @@ namespace AzwConverter
 #endif
         }
 
-        private async Task RunActionsInParallelAsync(IDictionary<string, FileInfo[]> books, 
+        private async Task RunActionsInParallelAsync(IDictionary<string, FileInfo[]> books,
             IReadOnlyCollection<KeyValuePair<string, FileInfo[]>> updatedBooks,
             IReadOnlyCollection<KeyValuePair<string, FileInfo[]>> unconvertedBooks,
             IDictionary<string, FileInfo> titles, IDictionary<string, FileInfo> convertedTitles,
@@ -161,7 +161,11 @@ namespace AzwConverter
 
                 await Parallel.ForEachAsync(updatedBooks, Settings.ParallelOptions,
                     async (book, _) =>
-                    await ScanUpdatedBookAsync(book.Key, book.Value, titles[book.Key], archive));
+                    await ScanUpdatedBookAsync(book.Key, book.Value, titles[book.Key],
+                    convertedTitles.TryGetValue(book.Key, out var convertedTitle)
+                        ? convertedTitle
+                        : null,
+                    archive));
             }
 
             if (unconvertedBooks.Count == 0 && _action != CbzMageAction.AzwAnalyze)
@@ -181,7 +185,9 @@ namespace AzwConverter
                 await Parallel.ForEachAsync(unconvertedBooks, Settings.ParallelOptions,
                     async (book, _) =>
                     await ConvertBookAsync(book.Key, book.Value, titles[book.Key],
-                    convertedTitles.ContainsKey(book.Key) ? convertedTitles[book.Key] : null,
+                    convertedTitles.TryGetValue(book.Key, out var convertedTitle)
+                        ? convertedTitle
+                        : null,
                     syncer, archive));
             }
             else if (_action == CbzMageAction.AzwScan)
@@ -330,14 +336,14 @@ namespace AzwConverter
             var count = Interlocked.Increment(ref _bookCount);
             var str = $"{count}/{_totalBooks} - ";
 
-            var insert = " ".PadLeft(str.Length);
-
             sb.Append(str).Append(Path.GetFileName(path));
 
+            var insert = " ".PadLeft(str.Length);
             return insert;
         }
 
-        private async Task ScanUpdatedBookAsync(string bookId, FileInfo[] dataFiles, FileInfo titleFile, ArchiveDb archive)
+        private async Task ScanUpdatedBookAsync(string bookId, FileInfo[] dataFiles, FileInfo titleFile,
+             FileInfo convertedTitleFile, ArchiveDb archive)
         {
             CbzState state;
 
@@ -383,12 +389,14 @@ namespace AzwConverter
                 archive.SetState(bookId, state);
 
                 var newTitleFile = AddMarkerOrRemoveAnyMarker(titleFile, Settings.UpdatedTitleMarker);
-                PrintCbzState(newTitleFile, state, doneMsg: upgradedMessage, errorMsg: downgradedMessage);
-                return;
+                PrintCbzState(newTitleFile, state, convertedDate: convertedTitleFile?.LastWriteTime,
+                    doneMsg: upgradedMessage, errorMsg: downgradedMessage);
             }
-
-            // If there's no changes set the checked date to prevent book being scanned again
-            archive.UpdateCheckedDate(bookId);
+            else
+            {
+                // If there's no changes set the checked date to prevent book being scanned again
+                archive.UpdateCheckedDate(bookId);
+            }
         }
 
         private string GetUpdatedMessage(CbzState state, CbzState oldState,
@@ -421,12 +429,12 @@ namespace AzwConverter
             // Sync title before the .NEW marker is added.
             archive.SetOrCreateName(bookId, titleFile.Name);
 
-            var newTitleFile = AddMarkerOrRemoveAnyMarker(titleFile, Settings.NewTitleMarker);
-            BookCountOutputHelper(newTitleFile, out var sb);
-
             // We're in scan mode so the metadata is not needed anymore.
             MetadataManager.DisposeCachedMetadata(bookId);
 
+            var newTitleFile = AddMarkerOrRemoveAnyMarker(titleFile, Settings.NewTitleMarker);
+
+            BookCountOutputHelper(newTitleFile, out var sb);
             ProgressReporter.Done(sb.ToString());
         }
 
@@ -485,12 +493,18 @@ namespace AzwConverter
 
         private void PrintCbzState(string cbzFile, CbzState state,
             bool showPagesAndCover = true, bool showAllCovers = false,
-            string doneMsg = null, string errorMsg = null)
+            DateTime? convertedDate = null, string doneMsg = null, string errorMsg = null)
         {
             Interlocked.Add(ref _pagesCount, state.Pages);
 
             var insert = BookCountOutputHelper(cbzFile, out var sb);
             sb.AppendLine();
+
+            if (convertedDate.HasValue)
+            {
+                sb.Append(insert).Append("Converted: ").Append(convertedDate.Value.Date);
+                sb.AppendLine();
+            }
 
             sb.Append(insert);
             sb.Append(state.Pages).Append(" pages");

@@ -126,15 +126,24 @@ namespace AzwConverter
                 if (!books.ContainsKey(bookId))
                 {
                     idsToRemove.Add(bookId);
-                    titleFile.Delete();
-                }
 
-                // Sync title -> converted title
-                if (convertedTitles.TryGetValue(bookId, out var convertedTitleFile)
-                    && convertedTitleFile.Name != titleFile.Name)
+                    titleFile.Delete();
+
+                    // Also delete the converted title 
+                    if (convertedTitles.TryGetValue(bookId, out var convertedTitle))
+                    {
+                        convertedTitle.Delete();
+                    }
+                }
+                else
                 {
-                    var newConvertedTitleFile = Path.Combine(convertedTitleFile.DirectoryName!, titleFile.Name);
-                    convertedTitleFile.MoveTo(newConvertedTitleFile);
+                    // Sync title -> converted title
+                    if (convertedTitles.TryGetValue(bookId, out var convertedTitleFile)
+                        && convertedTitleFile.Name != titleFile.Name)
+                    {
+                        var newConvertedTitleFile = Path.Combine(convertedTitleFile.DirectoryName!, titleFile.Name);
+                        convertedTitleFile.MoveTo(newConvertedTitleFile);
+                    }
                 }
             });
 
@@ -142,9 +151,35 @@ namespace AzwConverter
             foreach (var bookId in idsToRemove)
             {
                 titles.Remove(bookId);
+                convertedTitles.Remove(bookId); // This is safe even if title is not converted
             }
 
+            // In version 23 and earlier a converted titlefile did not get archived together with the
+            // main titlefile. So we must trim the converted titles to be consistent with version 24+
+            // The trimming is only expensive first time it's run.
+            TrimConvertedTitles(convertedTitles, titles);
+
             return idsToRemove.Count;
+        }
+
+        private void TrimConvertedTitles(IDictionary<string, FileInfo> convertedTitles,
+            IDictionary<string, FileInfo> titles)
+        {
+            var idsToRemove = new ConcurrentBag<string>();
+
+            convertedTitles.AsParallel().ForAll(convertedTitle =>
+            {
+                if (!titles.TryGetValue(convertedTitle.Key, out var _))
+                { 
+                    idsToRemove.Add(convertedTitle.Key);
+                    convertedTitle.Value.Delete();
+                }
+            });
+
+            foreach (var bookId in idsToRemove)
+            {
+                convertedTitles.Remove(bookId);
+            }
         }
 
         public string SyncConvertedTitle(string titleFile, FileInfo? convertedTitleFile)
