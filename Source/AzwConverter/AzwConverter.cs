@@ -343,7 +343,7 @@ namespace AzwConverter
         }
 
         private async Task ScanUpdatedBookAsync(string bookId, FileInfo[] dataFiles, FileInfo titleFile,
-             FileInfo convertedTitleFile, ArchiveDb archive)
+             FileInfo? convertedTitleFile, ArchiveDb archive)
         {
             CbzState state;
 
