@@ -10,10 +10,14 @@ namespace BlackSteedConverter
     {
         public void ConvertDirectory(string bookDir)
         {
-            bookDir ??= Environment.CurrentDirectory;
+            if (string.IsNullOrEmpty(bookDir)) 
+            {
+                bookDir = Environment.CurrentDirectory;
+            }
 
             if (!Directory.Exists(bookDir))
             {
+                ProgressReporter.Error($"Directory not found: {bookDir}");
                 return;
             }
 
@@ -34,8 +38,6 @@ namespace BlackSteedConverter
                 catch (Exception ex)
                 {
                     ProgressReporter.Error("Error creating Cbz:", ex);
-
-                    Console.WriteLine(ex.Message);
                     Console.WriteLine();
                 }
             }
@@ -151,12 +153,11 @@ namespace BlackSteedConverter
                 var jpg = SharedSettings.GetPageString(pageCount);
                 var to = Path.Combine(bookDir, jpg);
 
-                if (File.Exists(to))
+                if (!File.Exists(to))
                 {
-                    throw new ApplicationException("Book already converted.");
+                    File.Move(from, to);
                 }
 
-                File.Move(from, to);
                 pages.Add(to);
             }
 
