@@ -5,7 +5,7 @@ Additionally, if CbzMage finds a matching azw.res file it will **merge in any HD
 Comic title and publisher will be read from the azw file, and running CbzMage in scan mode will allow you to edit the values before the conversion. 
 2. **Convert pdf files to nice cbz files**. Point CbzMage at a single pdf comic book or a directory of pdf comic books and it will convert them to cbz files in the highest possible quality.
 
-**All of this works fully in [CbzMage Version 0.23](https://github.com/ToofDerling/CbzMage/releases/tag/v0.23).**
+**All of this works fully in [CbzMage Version 0.24](https://github.com/ToofDerling/CbzMage/releases/tag/v0.24).**
 
 CbzMage is a commandline tool written in c#. It requires no installation, very little configuration and no drm plugin/tool (the last part may change in the future). It does require that **[.NET 6](https://dotnet.microsoft.com/en-us/download)** is installed on your computer. The pdf conversion requires that **[Ghostscript version 10+](https://ghostscript.com/releases/gsdnld.html)** is installed on your computer.
 
@@ -36,7 +36,7 @@ Open the AzwSettings.json file in a text editor and **configure AzwDir**. Please
 
 * **Updated title.** This means a title that has been upgraded, ie it now has a HD cover or more HD images than before. CbzMage will scan the azw files and add the ".UPDATED" marker to any upgraded title. It will also detect if a title has been downgraded, this is of course not supposed to happen. Upgrades happen seldom and I have never seen a title being downgraded. 
 * **The titles directory** will always reflect the comic books currently in Kdl and is updated each time you run CbzMage. If you edit publisher or name of a title the values will be used when the title is converted 
-* **The converted titles directory** contains every converted title ever. To reconvert a title you must delete the file in that directory. 
+* **The converted titles directory** contains your converted titles. To reconvert a title you must delete the file in that directory. 
 * **The database.** In the titles directory there's a database file with the state of every title that has passed through CbzMage. It's used when checking if a title has been updated and to store the new name and publisher of the title if you edit these values.
 
 ## Pdf conversion.
