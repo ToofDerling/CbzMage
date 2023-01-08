@@ -8,6 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="AdbClientExtensions.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\CbzMageExternal\AdvancedSharpAdbClient\AdvancedSharpAdbClient\AdvancedSharpAdbClient.csproj" />
     <ProjectReference Include="..\CbzMage.Shared\CbzMage.Shared.csproj" />
   </ItemGroup>
 

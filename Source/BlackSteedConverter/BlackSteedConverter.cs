@@ -10,6 +10,10 @@ namespace BlackSteedConverter
     {
         public void ConvertDirectory(string bookDir)
         {
+            var downloader = new BookDownloader();
+            downloader.StartSyncServer();
+            downloader.GetBooks();
+
             if (string.IsNullOrEmpty(bookDir)) 
             {
                 bookDir = Environment.CurrentDirectory;
