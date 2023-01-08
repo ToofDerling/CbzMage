@@ -1,0 +1,12 @@
+{
+  "AzwDir": "M:\\Media\\Azw\\My Kindle Content",
+  "TitlesDir": "C:\\System\\Apps\\CbzMage\\Titles",
+
+  //"AzwDir": "C:\\System\\Projects\\CbzMageExternal\\TestData\\Azw",
+  
+  "SaveCover": true,
+  //"AnalysisDir": "M:\\Media\\Azw\\Analysis",
+  //"SaveCoverDir": "M:\\Media\\Azw\\Covers",
+  //"SaveCoverOnly": true,
+  "NumberOfThreads": 0
+}

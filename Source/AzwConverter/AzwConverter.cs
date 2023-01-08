@@ -31,7 +31,7 @@ namespace AzwConverter
         {
             _action = action;
 
-            var config = new AzwSettings();
+            var config = new AzwConvertSettings();
             config.CreateSettings();
 
             ProgressReporter.Info($"Azw files: {Settings.AzwDir}");

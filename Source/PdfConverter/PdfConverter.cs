@@ -10,7 +10,7 @@ namespace PdfConverter
 
         public void ConvertFileOrDirectory(string path)
         {
-            var config = new PdfSettings();
+            var config = new PdfConvertSettings();
             config.CreateSettings();
 
             if (Settings.GhostscriptVersion != null)

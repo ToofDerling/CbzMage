@@ -1,22 +1,12 @@
-// Punction is important! Don't remove quotes, colons, commas or square brackets 
-// (or otherwise change the structure). Back slashes in directory paths must be 
-// quoted like this: "C:\\System\\Apps\\CbzMage\\Titles"
-
-// Settings recognized by AzwConvert. See CbzMageSettings.json for documentation.
-// AzwDir is the only required setting.
+// These are the CbzMage default settings. Don't touch anything here, use 
+// AzwConvertSettings.json or PdfConvertSettings.json to change what you need.
 {
   "AzwDir": "",
   "TitlesDir": "",
-  "CbzDir": "",
-  "SaveCover": false,
-  "SaveCoverDir": "",
-  "SaveCoverOnly": false,
   "ConvertAllBookTypes": false,
   "ConvertedTitlesDirName": "",
   "NewTitleMarker": "",
   "UpdatedTitleMarker": "",
-  "NumberOfThreads": 0,
-  "CompressionLevel": "Fastest",
   "TrimPublishers": [
     "Aftershock",
     "Archaia",
@@ -55,5 +45,15 @@
     "Wildstorm",
     "Yen",
     "Z2"
-  ]
+  ],
+  "GhostscriptPath": "",
+  "JpgQuality": 93,
+  "MinimumDpi": 300,
+  "MinimumHeight": 1920,
+  "MaximumHeight": 3840,
+  "CbzDir": "",
+  "SaveCover": false,
+  "SaveCoverDir": "",
+  "SaveCoverOnly": false,
+  "NumberOfThreads": 0,
 }
