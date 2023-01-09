@@ -5,7 +5,7 @@ namespace CbzMage.Shared
 {
     public class SharedSettings
     {
-        private const string _mainSettings = "CbzMageSettings";
+        private const string _defaultSettings = "DefaultSettings";
 
         public void CreateSettings(string className, object settingsClass)
         {
@@ -15,7 +15,7 @@ namespace CbzMage.Shared
 
                 var env = hostingContext.HostingEnvironment;
 
-                config.AddJsonFile($"{_mainSettings}.json", optional: false, reloadOnChange: false)
+                config.AddJsonFile($"{_defaultSettings}.json", optional: false, reloadOnChange: false)
                     .AddJsonFile($"{className}.json", optional: false, reloadOnChange: false)
                     .AddJsonFile($"{className}.{env.EnvironmentName}.json", true, false);
 

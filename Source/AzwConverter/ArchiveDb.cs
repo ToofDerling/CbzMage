@@ -9,6 +9,9 @@ namespace AzwConverter
     {
         public static string DbName => "archive.db";
 
+        // The beginning of the CbzState json
+        private const string _split = "{\"Name\":\"";
+
         private readonly string _dbFile;
 
         private readonly ConcurrentDictionary<string, CbzState> _db;
@@ -38,10 +41,12 @@ namespace AzwConverter
 
                 lines.AsParallel().ForAll(line =>
                 {
-                    var tokens = line.Split(' ', 2);
-                    var bookId = tokens[0];
+                    var tokens = line.Split(_split, 2);
+                    
+                    var bookId = tokens[0].TrimEnd();
+                    var json = $"{_split}{tokens[1]}"; // Finish CbzState json
 
-                    if (!_db.TryAdd(bookId, JsonSerializer.Deserialize<CbzState>(tokens[1])))
+                    if (!_db.TryAdd(bookId, JsonSerializer.Deserialize<CbzState>(json)))
                     {
                         throw new InvalidOperationException($"{bookId} already in archive");
                     }

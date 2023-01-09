@@ -3,7 +3,7 @@ using CbzMage.Shared;
 
 namespace AzwConverter
 {
-    public class AzwSettings
+    public class AzwConvertSettings
     {
         public static Settings Settings => new();
 
@@ -11,7 +11,7 @@ namespace AzwConverter
 
         public void CreateSettings()
         {
-            _settingsHelper.CreateSettings(nameof(AzwSettings), Settings);
+            _settingsHelper.CreateSettings(nameof(AzwConvertSettings), Settings);
 
             ConfigureSettings();
         }
@@ -29,7 +29,7 @@ namespace AzwConverter
             //AzwDir
             if (string.IsNullOrWhiteSpace(Settings.AzwDir))
             {
-                throw new Exception("Must configure AzwDir in AzwSettings.json or AzwSettings.User.json");
+                throw new Exception("Must configure AzwDir in AzwConvertSettings.json");
             }
             if (!Directory.Exists(Settings.AzwDir))
             {

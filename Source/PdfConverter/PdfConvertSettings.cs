@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace PdfConverter
 {
-    public class PdfSettings
+    public class PdfConvertSettings
     {
         public static Settings Settings => new();
 
@@ -14,7 +14,7 @@ namespace PdfConverter
 
         public void CreateSettings()
         {
-            _settingsHelper.CreateSettings(nameof(PdfSettings), Settings);
+            _settingsHelper.CreateSettings(nameof(PdfConvertSettings), Settings);
 
             ConfigureSettings();
         }

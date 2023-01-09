@@ -17,7 +17,7 @@ namespace AzwConverter.Engine
             _cbzFile = cbzFile;
             _coverFile = coverFile;
 
-            var azwFile = dataFiles.First(file => file.IsAzwFile());
+            var azwFile = dataFiles.First(file => file.IsAzwOrAzw3File());
             _mappedArchiveLen = azwFile.Length;
 
             var hdContainer = dataFiles.FirstOrDefault(file => file.IsAzwResFile());

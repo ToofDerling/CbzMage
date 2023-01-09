@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using CbzMage.Shared.Extensions;
+using System.Net;
 using System.Text;
 
 namespace AzwConverter
@@ -16,7 +17,7 @@ namespace AzwConverter
             var sb = new StringBuilder(str);
 
             for (int i = 0, sz = sb.Length; i < sz; i++)
-            {   
+            {
                 var ch = sb[i];
                 if (_invalidChars.Contains(ch) || (ch != _spaceCh && char.IsWhiteSpace(ch)))
                 {
@@ -41,10 +42,13 @@ namespace AzwConverter
 
         public static string AddMarker(this string name, string marker) => !name.StartsWith(marker) ? $"{marker} {name}" : name;
 
-        public static bool IsAzwFile(this FileInfo fileInfo) => fileInfo.FullName.IsAzwFile();
-        
-        public static bool IsAzwFile(this string file) => file.EndsWith(Settings.AzwExt);
+        public static bool IsAzwOrAzw3File(this FileInfo fileInfo)
+        {
+            var name = fileInfo.Name;
+            return name.EndsWithIgnoreCase(".azw") || name.EndsWithIgnoreCase(".azw3");
+        }
 
-        public static bool IsAzwResFile(this FileInfo fileInfo) => fileInfo.FullName.EndsWith(Settings.AzwResExt);
+        public static bool IsAzwResFile(this FileInfo fileInfo)
+            => fileInfo.Name.EndsWithIgnoreCase(".azw.res");
     }
 }

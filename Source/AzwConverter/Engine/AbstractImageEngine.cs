@@ -11,7 +11,7 @@ namespace AzwConverter.Engine
 
         protected async Task<(MobiMetadata.MobiMetadata, IDisposable[])> ReadMetadataAsync(FileInfo[] dataFiles)
         {
-            var azwFile = dataFiles.First(file => file.IsAzwFile());
+            var azwFile = dataFiles.First(file => file.IsAzwOrAzw3File());
 
             //TODO: Handle IOException when Kdle is running.
             var mappedFile = MemoryMappedFile.CreateFromFile(azwFile.FullName);
