@@ -13,7 +13,7 @@ namespace AzwConverter
 
             allFiles.ToLookup(dir => dir.DirectoryName).AsParallel().ForAll(files => 
             {
-                if (files.Any(file => file.IsAzwFile()))
+                if (files.Any(file => file.IsAzwOrAzw3File()))
                 {
                     dict[Path.GetFileName(files.Key)!] = files.ToArray();
                 }

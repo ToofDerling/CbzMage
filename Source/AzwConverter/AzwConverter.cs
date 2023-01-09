@@ -469,7 +469,7 @@ namespace AzwConverter
                         ?? convertedTitle.LastWriteTime;
 
                     // Test if the two datafiles has been updated since last check
-                    if (book.Value.Any(file => (file.IsAzwFile() || file.IsAzwResFile())
+                    if (book.Value.Any(file => (file.IsAzwOrAzw3File() || file.IsAzwResFile())
                         && file.LastWriteTime > checkedDate))
                     {
                         updatedBooks.Add(book);

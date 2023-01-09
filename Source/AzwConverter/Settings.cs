@@ -54,10 +54,5 @@ namespace AzwConverter
         {
             AllMarkers = new string[] { NewTitleMarker, UpdatedTitleMarker };
         }
-
-        private static readonly string[] azwExts = new[] { ".azw", ".mbpV2", ".azw.res" };
-
-        public static string AzwExt => azwExts[0];
-        public static string AzwResExt => azwExts[2];
     }
 }
