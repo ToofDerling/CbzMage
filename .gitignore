@@ -268,3 +268,4 @@ __pycache__/
 /Source/PdfConverter/PdfSettings.Development.json
 
 /Source/BlackSteedConverter/BlackSteedSettings.Development.json
+/Source/AzwConverter/AzwConvertSettings.Development.json
