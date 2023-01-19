@@ -2,6 +2,8 @@
 {
     public sealed class CbzState
     {
+        public string Id { get; set; }
+
         public string Name { get; set; }
 
         public bool HdCover { get; set; }

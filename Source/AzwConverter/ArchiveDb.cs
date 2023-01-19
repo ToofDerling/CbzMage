@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.IO.MemoryMappedFiles;
+using System.Net;
 using System.Text;
 using System.Text.Json;
 
@@ -10,7 +11,7 @@ namespace AzwConverter
         public static string DbName => "archive.db";
 
         // The beginning of the CbzState json
-        private const string _split = "{\"Name\":\"";
+        private const string _split = "{\"Id\":";
 
         private readonly string _dbFile;
 
@@ -37,18 +38,50 @@ namespace AzwConverter
                 await stream.ReadAsync(linesData);
 
                 var linesString = Encoding.UTF8.GetString(linesData.Span);
+                if (string.IsNullOrWhiteSpace(linesString))
+                {
+                    return;
+                }
+
                 var lines = linesString.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
+
+                if (lines.Length == 0)
+                {
+                    return;
+                }
+
+                var splitMode = false;
+                try
+                {
+                    JsonSerializer.Deserialize<CbzState>(lines[0]);
+                }
+                catch
+                {
+                    splitMode = true;
+                }
 
                 lines.AsParallel().ForAll(line =>
                 {
-                    var tokens = line.Split(_split, 2);
-                    
-                    var bookId = tokens[0].TrimEnd();
-                    var json = $"{_split}{tokens[1]}"; // Finish CbzState json
+                    CbzState cbzState;
 
-                    if (!_db.TryAdd(bookId, JsonSerializer.Deserialize<CbzState>(json)))
+                    if (splitMode)
                     {
-                        throw new InvalidOperationException($"{bookId} already in archive");
+                        var tokens = line.Split(_split, 2);
+
+                        var bookId = tokens[0].TrimEnd();
+                        var json = $"{_split}{tokens[1]}"; // Finish CbzState json
+
+                        cbzState = JsonSerializer.Deserialize<CbzState>(json);
+                        cbzState.Id = bookId;
+                    }
+                    else
+                    {
+                        cbzState = JsonSerializer.Deserialize<CbzState>(line);
+                    }
+
+                    if (!_db.TryAdd(cbzState.Id, cbzState))
+                    {
+                        throw new InvalidOperationException($"{cbzState.Id} already in archive");
                     }
                 });
             }
@@ -119,12 +152,13 @@ namespace AzwConverter
 
             var sb = new StringBuilder(32000);
 
-            foreach (var x in _db)
-            {
-                sb.Append(x.Key).Append(' ').AppendLine(JsonSerializer.Serialize(x.Value));
-            }
+            //foreach (var x in _db)
+            //{
+            //    sb.Append(x.Key).Append(' ').AppendLine(JsonSerializer.Serialize(x.Value));
+            //}
+            //await File.WriteAllTextAsync(_dbFile, sb.ToString(), CancellationToken.None);
 
-            await File.WriteAllTextAsync(_dbFile, sb.ToString(), CancellationToken.None);
+            await File.WriteAllLinesAsync(_dbFile, _db.Values.Select(x => JsonSerializer.Serialize(x)));
         }
     }
 }
