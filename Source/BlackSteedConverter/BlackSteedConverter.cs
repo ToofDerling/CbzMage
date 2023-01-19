@@ -8,11 +8,25 @@ namespace BlackSteedConverter
 {
     public class BlackSteedConverter
     {
-        public void ConvertDirectory(string bookDir)
+        public async Task ConvertDirectoryAsync(string bookDir)
         {
+
+            var config = new BlackSteedConvertSettings();
+            config.CreateSettings();
+            
             var downloader = new BookDownloader();
-            downloader.StartSyncServer();
-            downloader.GetBooks();
+
+            if (!await downloader.StartSyncServerAsync())
+            {
+                return;
+            }
+
+            //downloader.UploadFile();
+
+            await downloader.GetBooksAsync();
+
+            return;
+
 
             if (string.IsNullOrEmpty(bookDir)) 
             {
@@ -25,8 +39,6 @@ namespace BlackSteedConverter
                 return;
             }
 
-            var config = new BlackSteedSettings();
-            config.CreateSettings();
 
             var blackSteedBooks = GetBooks(bookDir);
 
