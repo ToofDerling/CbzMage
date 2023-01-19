@@ -502,7 +502,7 @@ namespace AzwConverter
 
             if (convertedDate.HasValue)
             {
-                sb.Append(insert).Append("Converted: ").Append(convertedDate.Value.Date);
+                sb.Append(insert).Append("Converted: ").Append(convertedDate.Value.Date.ToShortDateString());
                 sb.AppendLine();
             }
 
