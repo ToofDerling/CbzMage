@@ -260,11 +260,9 @@ paket-files/
 __pycache__/
 *.pyc
 
-/Source/AzwConverter/appsettings.Development.json
 /Source/CbzMage/Properties/PublishProfiles
-/Source/PdfConverter/Properties/PublishProfiles
-/Source/AzwConverter/AzwSettings.Development.json
 /Source/CbzMage/Properties/launchSettings.json
-/Source/PdfConverter/PdfSettings.Development.json
 
-/Source/BlackSteedConverter/BlackSteedSettings.Development.json
+/Source/AzwConverter/AzwConvertSettings.Development.json
+/Source/BlackSteedConverter/BlackSteedConvertSettings.Development.json
+/Source/PdfConverter/PdfConvertSettings.Development.json

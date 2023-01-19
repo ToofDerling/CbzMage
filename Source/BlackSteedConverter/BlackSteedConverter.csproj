@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="BlackSteedSettings.Development.json">
+    <None Update="BlackSteedConvertSettings.Development.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="BlackSteedConvertSettings.json">
