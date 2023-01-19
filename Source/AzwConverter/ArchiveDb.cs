@@ -11,7 +11,7 @@ namespace AzwConverter
         public static string DbName => "archive.db";
 
         // The beginning of the CbzState json
-        private const string _split = "{\"Id\":";
+        private const string _split = "{\"Name\":";
 
         private readonly string _dbFile;
 
