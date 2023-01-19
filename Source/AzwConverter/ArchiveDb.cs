@@ -105,7 +105,7 @@ namespace AzwConverter
         {
             if (!_db.ContainsKey(bookId))
             {
-                _db[bookId] = new CbzState { Name = name };
+                _db[bookId] = new CbzState { Id = bookId, Name = name };
             }
             else
             {
@@ -122,6 +122,8 @@ namespace AzwConverter
 
         public void SetState(string bookId, CbzState state)
         {
+            state.Id = bookId;  // Ensure id
+
             _db[bookId] = state;
             _isDirty = true;
         }
