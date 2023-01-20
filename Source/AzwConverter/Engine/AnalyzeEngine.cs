@@ -63,20 +63,12 @@ namespace AzwConverter.Engine
             {
                 if (Metadata.Azw6Header.Title != Metadata.MobiHeader.FullName)
                 {
-                    throw new MobiMetadataException("Nuurgh");
+                    throw new MobiMetadataException("Oh no");
                 }
                 else
                 {
                     _analyzeMessageOk = Metadata.Azw6Header.Title;
                 }
-
-
-                //    var str = Encoding.UTF8.GetString(stream.ToArray());
-                //    var fullName = Metadata.MobiHeader.FullName;
-                //    if (!str.Contains(fullName)) 
-                //    {
-                //        throw new ExecutionEngineException("blah");
-                //    }
             }
 
             if (!_analyzeImages)
@@ -147,7 +139,7 @@ namespace AzwConverter.Engine
 
         public async Task<bool> IsUnexpectedHdRecordAsync(PageRecord? hdRecord, string hdDir, string name)
         {
-            // Length of those hd container records not meant to replace sd records is 4 (presumably because of the CRES marker)
+            // Length of those hd container records not meant to replace sd records is 4 (presumably because of the CRES identifier)
             // A non cres record with a length > 4 is an anomaly. So if we find one in the wild, save it and take a look.
             if (hdRecord != null && hdRecord.Length != 4 && !await hdRecord.IsCresRecordAsync())
             {
