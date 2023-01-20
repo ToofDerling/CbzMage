@@ -42,8 +42,6 @@ namespace AzwConverter.Engine
         protected override async Task<CbzState?> ProcessImagesAsync(PageRecords? pageRecordsHd, PageRecords pageRecords)
             => await AnalyzeBookAsync(pageRecordsHd, pageRecords);
 
-        private static volatile int count = 0;
-
         private async Task<CbzState> AnalyzeBookAsync(PageRecords? hdImageRecords, PageRecords sdImageRecords)
         {
             var state = new CbzState();
