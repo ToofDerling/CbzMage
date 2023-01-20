@@ -1,4 +1,5 @@
 using CbzMage.Shared.Extensions;
+using CbzMage.Shared.Helpers;
 using PdfConverter.Helpers;
 using System.Diagnostics;
 
@@ -13,25 +14,29 @@ namespace PdfConverter
             var config = new PdfConvertSettings();
             config.CreateSettings();
 
+            if (!string.IsNullOrWhiteSpace(Settings.CbzDir))
+            {
+                ProgressReporter.Info($"Cbz backups: {Settings.CbzDir}");
+            }
             if (Settings.GhostscriptVersion != null)
             {
-                Console.WriteLine($"Ghostscript version: {Settings.GhostscriptVersion}");
+                ProgressReporter.Info($"Ghostscript version: {Settings.GhostscriptVersion}");
             }
-            Console.WriteLine($"Ghostscript reader threads: {Settings.NumberOfThreads}");
-            Console.WriteLine($"Jpq quality: {Settings.JpgQuality}");
-            Console.WriteLine($"Cbz compression: {Settings.CompressionLevel}");
+            ProgressReporter.Info($"Ghostscript reader threads: {Settings.NumberOfThreads}");
+            ProgressReporter.Info($"Jpq quality: {Settings.JpgQuality}");
+            ProgressReporter.Info($"Cbz compression: {Settings.CompressionLevel}");
 
 #if DEBUG
-            Console.WriteLine($"{nameof(Settings.WriteBufferSize)}: {Settings.WriteBufferSize}");
-            Console.WriteLine($"{nameof(Settings.ImageBufferSize)}: {Settings.ImageBufferSize}");
+            ProgressReporter.Info($"{nameof(Settings.WriteBufferSize)}: {Settings.WriteBufferSize}");
+            ProgressReporter.Info($"{nameof(Settings.ImageBufferSize)}: {Settings.ImageBufferSize}");
 #endif
 
-            Console.WriteLine();
+            ProgressReporter.Line();
 
             var pdfList = InitializePdfPath(path);
             if (!pdfList.Any())
             {
-                Console.WriteLine("No pdf files found");
+                ProgressReporter.Error("No pdf files found");
                 return;
             }
 
@@ -42,7 +47,7 @@ namespace PdfConverter
 
 #if DEBUG
             StatsCount.ShowStats();
-            Console.WriteLine();
+            ProgressReporter.Line();
 #endif
 
             stopwatch.Stop();
@@ -50,7 +55,7 @@ namespace PdfConverter
             var elapsed = stopwatch.Elapsed;
             var secsPerPage = elapsed.TotalSeconds / _pagesCount;
 
-            Console.WriteLine($"{_pagesCount} pages converted in {elapsed.Hhmmss()} ({secsPerPage:F2} sec/page)");
+            ProgressReporter.Info($"{_pagesCount} pages converted in {elapsed.Hhmmss()} ({secsPerPage:F2} sec/page)");
         }
 
         private void ConvertPdf(Pdf pdf, ConverterEngine converter)
@@ -60,8 +65,8 @@ namespace PdfConverter
             // Throws if pdf is encrypted
             using var pdfParser = new PdfImageParser(pdf);
 
-            Console.WriteLine(pdf.Path);
-            Console.WriteLine($"{pdf.PageCount} pages");
+            ProgressReporter.Info(pdf.Path);
+            ProgressReporter.Info($"{pdf.PageCount} pages");
 
             _pagesCount += pdf.PageCount;
 
@@ -69,8 +74,8 @@ namespace PdfConverter
 
             stopwatch.Stop();
 
-            Console.WriteLine($"{stopwatch.Elapsed.Mmss()}");
-            Console.WriteLine();
+            ProgressReporter.Info($"{stopwatch.Elapsed.Mmss()}");
+            ProgressReporter.Line();
         }
 
         private List<Pdf> InitializePdfPath(string path)
