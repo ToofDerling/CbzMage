@@ -13,10 +13,18 @@ namespace AzwConverter.Engine
 
         private bool _analyzeImages;
 
+        private string _bookId;
+
+        private bool _analysisDir;
+
         public async Task<CbzState> AnalyzeBookAsync(string bookId, FileInfo[] dataFiles, bool analyzeImages, string bookDir)
         {
             _analyzeImages = analyzeImages;
             _bookDir = bookDir;
+
+            _bookId = bookId;
+
+            _analysisDir = !string.IsNullOrEmpty(Settings.AnalysisDir);
 
             return await ReadImageDataAsync(bookId, dataFiles);
         }
@@ -34,18 +42,41 @@ namespace AzwConverter.Engine
         protected override async Task<CbzState?> ProcessImagesAsync(PageRecords? pageRecordsHd, PageRecords pageRecords)
             => await AnalyzeBookAsync(pageRecordsHd, pageRecords);
 
+        private static volatile int count = 0;
+
         private async Task<CbzState> AnalyzeBookAsync(PageRecords? hdImageRecords, PageRecords sdImageRecords)
         {
             var state = new CbzState();
 
-            var bookType = Metadata.MobiHeader.ExthHeader.BookType;
-            if (bookType.EqualsIgnoreCase("comic"))
+            //var bookType = Metadata.MobiHeader.ExthHeader.BookType;
+
+            //if (bookType.EqualsIgnoreCase("comic"))
+            //{
+            //    _analyzeMessageOk = bookType;
+            //}
+            //else
+            //{
+            //    _analyzeMessageError = bookType;
+            //}
+
+            if (hdImageRecords != null)
             {
-                _analyzeMessageOk = bookType;
-            }
-            else
-            {
-                _analyzeMessageError = bookType;
+                if (Metadata.Azw6Header.Title != Metadata.MobiHeader.FullName)
+                {
+                    throw new MobiMetadataException("Nuurgh");
+                }
+                else
+                {
+                    _analyzeMessageOk = Metadata.Azw6Header.Title;
+                }
+
+
+                //    var str = Encoding.UTF8.GetString(stream.ToArray());
+                //    var fullName = Metadata.MobiHeader.FullName;
+                //    if (!str.Contains(fullName)) 
+                //    {
+                //        throw new ExecutionEngineException("blah");
+                //    }
             }
 
             if (!_analyzeImages)
