@@ -130,6 +130,8 @@ namespace AzwConverter.Engine
             if (hdRecord != null
                 && await hdRecord.TryWriteHDImageDataAsync(stream, coverStream!))
             {
+                coverStream?.Dispose();
+
                 if (isRealCover)
                 {
                     state.HdCover = true;
@@ -144,6 +146,8 @@ namespace AzwConverter.Engine
             if (record != null)
             {
                 await record.WriteDataAsync(stream, coverStream!);
+                coverStream?.Dispose();
+
                 if (isRealCover)
                 {
                     state.SdCover = true;

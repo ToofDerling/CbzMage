@@ -13,10 +13,18 @@ namespace AzwConverter.Engine
 
         private bool _analyzeImages;
 
+        private string _bookId;
+
+        private bool _analysisDir;
+
         public async Task<CbzState> AnalyzeBookAsync(string bookId, FileInfo[] dataFiles, bool analyzeImages, string bookDir)
         {
             _analyzeImages = analyzeImages;
             _bookDir = bookDir;
+
+            _bookId = bookId;
+
+            _analysisDir = !string.IsNullOrEmpty(Settings.AnalysisDir);
 
             return await ReadImageDataAsync(bookId, dataFiles);
         }
@@ -34,18 +42,33 @@ namespace AzwConverter.Engine
         protected override async Task<CbzState?> ProcessImagesAsync(PageRecords? pageRecordsHd, PageRecords pageRecords)
             => await AnalyzeBookAsync(pageRecordsHd, pageRecords);
 
+        private static volatile int count = 0;
+
         private async Task<CbzState> AnalyzeBookAsync(PageRecords? hdImageRecords, PageRecords sdImageRecords)
         {
             var state = new CbzState();
 
-            var bookType = Metadata.MobiHeader.ExthHeader.BookType;
-            if (bookType.EqualsIgnoreCase("comic"))
+            //var bookType = Metadata.MobiHeader.ExthHeader.BookType;
+
+            //if (bookType.EqualsIgnoreCase("comic"))
+            //{
+            //    _analyzeMessageOk = bookType;
+            //}
+            //else
+            //{
+            //    _analyzeMessageError = bookType;
+            //}
+
+            if (hdImageRecords != null)
             {
-                _analyzeMessageOk = bookType;
-            }
-            else
-            {
-                _analyzeMessageError = bookType;
+                if (Metadata.Azw6Header.Title != Metadata.MobiHeader.FullName)
+                {
+                    throw new MobiMetadataException("Oh no");
+                }
+                else
+                {
+                    _analyzeMessageOk = Metadata.Azw6Header.Title;
+                }
             }
 
             if (!_analyzeImages)
@@ -116,7 +139,7 @@ namespace AzwConverter.Engine
 
         public async Task<bool> IsUnexpectedHdRecordAsync(PageRecord? hdRecord, string hdDir, string name)
         {
-            // Length of those hd container records not meant to replace sd records is 4 (presumably because of the CRES marker)
+            // Length of those hd container records not meant to replace sd records is 4 (presumably because of the CRES identifier)
             // A non cres record with a length > 4 is an anomaly. So if we find one in the wild, save it and take a look.
             if (hdRecord != null && hdRecord.Length != 4 && !await hdRecord.IsCresRecordAsync())
             {
