@@ -1,5 +1,4 @@
 ﻿using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;
 using AzwConverter.Engine;
@@ -7,30 +6,18 @@ using CbzMage.Shared;
 using CbzMage.Shared.Extensions;
 using CbzMage.Shared.Helpers;
 
-namespace AzwConverter
+namespace AzwConverter.Converter
 {
-    public class AzwConverter
+    public class AzwLibraryConverter : BaseAzwConverter
     {
         // For testing. If >0 overrules the result of GetUnconvertedBooks
         private const int _maxBooks = 0;
 
-        private int _totalBooks;
-
-        // Global veriables updated by processing threads
-        private volatile int _bookCount;
-        private volatile int _pagesCount;
-
         // Try to be as lenient as possible (and Trim the results).
         private readonly Regex _publisherTitleRegex = new(@"(\[)(?<publisher>.*?)(\])(?<title>.*)");
 
-        private readonly CbzMageAction _action;
-
-        //TODO private readonly string _fileOrDirectory;
-
-        public AzwConverter(CbzMageAction action/*, string fileOrDirectory*/)
+        public AzwLibraryConverter(CbzMageAction action) : base(action)
         {
-            _action = action;
-
             var config = new AzwConvertSettings();
             config.CreateSettings();
 
@@ -41,14 +28,12 @@ namespace AzwConverter
             {
                 ProgressReporter.Info($"Cover gallery: {Settings.SaveCoverDir}");
             }
-            Console.WriteLine();
+            ProgressReporter.Line();
 
-            Console.WriteLine($"Conversion threads: {Settings.NumberOfThreads}");
-            Console.WriteLine($"Cbz compression: {Settings.CompressionLevel}");
+            ProgressReporter.Info($"Conversion threads: {Settings.NumberOfThreads}");
+            ProgressReporter.Info($"Cbz compression: {Settings.CompressionLevel}");
 
-            Console.WriteLine();
-
-            //TODO _fileOrDirectory = fileOrDirectory; 
+            ProgressReporter.Line();
         }
 
         public async Task ConvertOrScanAsync()
@@ -99,12 +84,11 @@ namespace AzwConverter
 
             var unconvertedBooks = GetUnconvertedBooks(books, convertedTitles);
             ProgressReporter.DoneOrInfo($"Found {unconvertedBooks.Count} unconverted book{unconvertedBooks.SIf1()}", unconvertedBooks.Count);
-
-            var stopWatch = new Stopwatch();
-            stopWatch.Start();
+            
+            ConversionBegin();
             try
             {
-                if (updatedBooks.Count > 0 || unconvertedBooks.Count > 0 || _action == CbzMageAction.AzwAnalyze)
+                if (updatedBooks.Count > 0 || unconvertedBooks.Count > 0 || Action == CbzMageAction.AzwAnalyze)
                 {
                     await RunActionsInParallelAsync(books, updatedBooks, unconvertedBooks,
                         titles, convertedTitles, syncer, archive);
@@ -114,31 +98,7 @@ namespace AzwConverter
             {
                 await archive.SaveArchiveDbAsync();
             }
-            stopWatch.Stop();
-            Console.WriteLine();
-
-            if (_action == CbzMageAction.AzwConvert && _pagesCount > 0)
-            {
-                var elapsed = stopWatch.Elapsed;
-                var secsPerPage = elapsed.TotalSeconds / _pagesCount;
-
-                if (Settings.SaveCoverOnly)
-                {
-                    Console.WriteLine($"{_bookCount} covers saved in {elapsed.Hhmmss()}");
-                }
-                else if (unconvertedBooks.Count > 0)
-                {
-                    Console.WriteLine($"{_pagesCount} pages converted in {elapsed.Hhmmss()} ({secsPerPage:F2} sec/page)");
-                }
-                else
-                {
-                    Console.WriteLine("Done");
-                }
-            }
-            else
-            {
-                Console.WriteLine("Done");
-            }
+            ConversionEnd(unconvertedBooks.Count);
 
 #if DEBUG
             MetadataManager.ThrowIfCacheNotEmpty();
@@ -168,7 +128,7 @@ namespace AzwConverter
                     archive));
             }
 
-            if (unconvertedBooks.Count == 0 && _action != CbzMageAction.AzwAnalyze)
+            if (unconvertedBooks.Count == 0 && Action != CbzMageAction.AzwAnalyze)
             {
                 return;
             }
@@ -177,7 +137,7 @@ namespace AzwConverter
 
             Console.WriteLine();
 
-            if (_action == CbzMageAction.AzwConvert)
+            if (Action == CbzMageAction.AzwConvert)
             {
                 ProgressReporter.Info($"Converting {unconvertedBooks.Count} book{unconvertedBooks.SIf1()}:");
                 _totalBooks = unconvertedBooks.Count;
@@ -190,7 +150,7 @@ namespace AzwConverter
                         : null,
                     syncer, archive));
             }
-            else if (_action == CbzMageAction.AzwScan)
+            else if (Action == CbzMageAction.AzwScan)
             {
                 ProgressReporter.Info($"Listing {unconvertedBooks.Count} unconverted book{unconvertedBooks.SIf1()}:");
                 _totalBooks = unconvertedBooks.Count;
@@ -198,7 +158,7 @@ namespace AzwConverter
                 Parallel.ForEach(unconvertedBooks, Settings.ParallelOptions, book =>
                     SyncNewBook(book.Key, titles[book.Key], archive));
             }
-            else if (_action == CbzMageAction.AzwAnalyze)
+            else if (Action == CbzMageAction.AzwAnalyze)
             {
                 ProgressReporter.Info($"Analyzing {books.Count} book{books.SIf1()}:");
                 _totalBooks = books.Count;
@@ -281,7 +241,7 @@ namespace AzwConverter
             }
 
             // Title may have been renamed between scanning and converting, so update the archive.
-            // This also removes any Changed state. If the book is updated it will be scanned again.  
+            // This also removes any Changed state: if the book is updated it will be scanned again.  
             state.Name = Path.GetFileName(newTitleFile).RemoveAnyMarker();
             archive.SetState(bookId, state);
         }
@@ -316,7 +276,7 @@ namespace AzwConverter
             Console.WriteLine(sb.ToString());
         }
 
-        private string GetCoverFile(FileInfo titleFile, string cbzFile)
+        private static string GetCoverFile(FileInfo titleFile, string cbzFile)
         {
             if (Settings.SaveCover)
             {
@@ -328,20 +288,6 @@ namespace AzwConverter
             return null;
         }
 
-        private string BookCountOutputHelper(string path, out StringBuilder sb)
-        {
-            sb = new StringBuilder();
-            sb.AppendLine();
-
-            var count = Interlocked.Increment(ref _bookCount);
-            var str = $"{count}/{_totalBooks} - ";
-
-            sb.Append(str).Append(Path.GetFileName(path));
-
-            var insert = " ".PadLeft(str.Length);
-            return insert;
-        }
-
         private async Task ScanUpdatedBookAsync(string bookId, FileInfo[] dataFiles, FileInfo titleFile,
              FileInfo? convertedTitleFile, ArchiveDb archive)
         {
@@ -350,8 +296,8 @@ namespace AzwConverter
             var oldState = archive.GetState(bookId);
             if (oldState.Changed != null)
             {
-                // If the Changed state hasn't been removed by converting the book there's no 
-                // need to rescan - we can use the old values to display any up/downgrade.
+                // If the Changed state has not been removed by converting the book there is
+                // no need to rescan - we can use the old values to display any up/downgrade.
                 state = oldState;
                 oldState = oldState.Changed;
             }
@@ -366,8 +312,8 @@ namespace AzwConverter
             var coverUpgraded = state.HdCover && !oldState.HdCover;
             var pagesUpgraded = state.HdImages > oldState.HdImages;
 
-            var coverDowngraded = !coverUpgraded && (!state.HdCover && oldState.HdCover);
-            var pagesDowngraded = !pagesUpgraded && (state.HdImages < oldState.HdImages);
+            var coverDowngraded = !coverUpgraded && !state.HdCover && oldState.HdCover;
+            var pagesDowngraded = !pagesUpgraded && state.HdImages < oldState.HdImages;
 
             string downgradedMessage = null;
             if (coverDowngraded || pagesDowngraded)
@@ -399,7 +345,7 @@ namespace AzwConverter
             }
         }
 
-        private string GetUpdatedMessage(CbzState state, CbzState oldState,
+        private static string GetUpdatedMessage(CbzState state, CbzState oldState,
             bool coverUpdated, bool pagesUpdated, string coverMsg, string pagesMsg)
         {
             var sb = new StringBuilder();
@@ -462,14 +408,14 @@ namespace AzwConverter
 
             books.AsParallel().ForAll(book =>
             {
-                // If the title has been converted
+                // If the title has been converted--
                 if (convertedTitles.TryGetValue(book.Key, out var convertedTitle))
                 {
                     var checkedDate = archive.GetCheckedDate(book.Key)
                         ?? convertedTitle.LastWriteTime;
 
-                    // Test if the two datafiles has been updated since last check
-                    if (book.Value.Any(file => (file.IsAzwOrAzw3File() || file.IsAzwResFile())
+                    // --test if the two datafiles has been updated since last check
+                    if (book.Value.Any(file => (file.IsAzwOrAzw3File() || file.IsAzwResOrAzw6File())
                         && file.LastWriteTime > checkedDate))
                     {
                         updatedBooks.Add(book);
@@ -490,103 +436,5 @@ namespace AzwConverter
             }
             return unConvertedBooks;
         }
-
-        private void PrintCbzState(string cbzFile, CbzState state,
-            bool showPagesAndCover = true, bool showAllCovers = false,
-            DateTime? convertedDate = null, string doneMsg = null, string errorMsg = null)
-        {
-            Interlocked.Add(ref _pagesCount, state.Pages);
-
-            var insert = BookCountOutputHelper(cbzFile, out var sb);
-            sb.AppendLine();
-
-            if (convertedDate.HasValue)
-            {
-                sb.Append(insert).Append("Converted: ").Append(convertedDate.Value.Date.ToShortDateString());
-                sb.AppendLine();
-            }
-
-            sb.Append(insert);
-            sb.Append(state.Pages).Append(" pages");
-
-            if (showPagesAndCover)
-            {
-                sb.Append(" (");
-
-                if (state.HdImages > 0)
-                {
-                    sb.Append(state.HdImages).Append(" HD");
-                    if (state.SdImages > 0)
-                    {
-                        sb.Append('/');
-                    }
-                }
-                if (state.SdImages > 0)
-                {
-                    sb.Append(state.SdImages).Append(" SD");
-                }
-
-                sb.Append(". ");
-                if (showAllCovers)
-                {
-                    if (state.HdCover)
-                    {
-                        sb.Append("HD");
-                        if (state.SdCover)
-                        {
-                            sb.Append('/');
-                        }
-                    }
-                    if (state.SdCover)
-                    {
-                        sb.Append("SD");
-                    }
-                    if (!state.HdCover && !state.SdCover)
-                    {
-                        sb.Append("No");
-                    }
-                    sb.Append(" cover");
-                }
-                else
-                {
-                    if (state.HdCover)
-                    {
-                        sb.Append("HD cover");
-                    }
-                    else if (state.HdCover)
-                    {
-                        sb.Append("SD cover)");
-                    }
-                    else
-                    {
-                        sb.Append("No cover");
-                    }
-                }
-                sb.Append(')');
-            }
-
-            if (doneMsg != null || errorMsg != null)
-            {
-                lock (_msgLock)
-                {
-                    Console.WriteLine(sb.ToString());
-
-                    if (doneMsg != null)
-                    {
-                        ProgressReporter.Done($"{insert}{doneMsg}");
-                    }
-                    if (errorMsg != null)
-                    {
-                        ProgressReporter.Error($"{insert}{errorMsg}");
-                    }
-                }
-            }
-            else
-            {
-                Console.WriteLine(sb.ToString());
-            }
-        }
-
-        private static readonly object _msgLock = new();
     }
 }

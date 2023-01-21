@@ -1,5 +1,8 @@
-﻿using CbzMage.Shared;
+﻿using AzwConverter.Converter;
+using BlackSteedConverter;
+using CbzMage.Shared;
 using CbzMage.Shared.Helpers;
+using PdfConverter;
 using System.Runtime.InteropServices;
 
 namespace CbzMage
@@ -48,17 +51,34 @@ Commands are case insensitive.
                         {
                             case CbzMageAction.AzwScan:
                             case CbzMageAction.AzwConvert:
+                                if (!string.IsNullOrEmpty(path))
+                                {
+                                    var fileOrDirConverter = new AzwFileOrDirectoryConverter(action, path);
+                                    await fileOrDirConverter.ConvertOrScanAsync();
+                                }
+                                else
+                                {
+                                    var azwConverter = new AzwLibraryConverter(action);
+                                    await azwConverter.ConvertOrScanAsync();
+                                }
+                                break;
                             case CbzMageAction.AzwAnalyze:
-                                var azwConverter = new AzwConverter.AzwConverter(action);
-                                await azwConverter.ConvertOrScanAsync();
+                                {
+                                    var azwConverter = new AzwLibraryConverter(action);
+                                    await azwConverter.ConvertOrScanAsync();
+                                }
                                 break;
                             case CbzMageAction.PdfConvert:
-                                var pdfConverter = new PdfConverter.PdfConverter();
-                                pdfConverter.ConvertFileOrDirectory(path!);
+                                {
+                                    var pdfConverter = new PdfFileOrDirectoryConverter();
+                                    pdfConverter.ConvertFileOrDirectory(path!);
+                                }
                                 break;
                             case CbzMageAction.BlackSteedConvert:
-                                var blackSteedConverter = new BlackSteedConverter.BlackSteedConverter();
-                                blackSteedConverter.ConvertDirectory(path);
+                                {
+                                    var blackSteedConverter = new BlackSteedConverter.BlackSteedConverter();
+                                    blackSteedConverter.ConvertDirectory(path);
+                                }
                                 break;
                         }
                     }

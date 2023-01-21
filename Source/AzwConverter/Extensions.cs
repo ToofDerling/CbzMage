@@ -44,11 +44,22 @@ namespace AzwConverter
 
         public static bool IsAzwOrAzw3File(this FileInfo fileInfo)
         {
-            var name = fileInfo.Name;
+            return fileInfo.Name.IsAzwOrAzw3File();
+        }
+
+        public static bool IsAzwOrAzw3File(this string name)
+        {
             return name.EndsWithIgnoreCase(".azw") || name.EndsWithIgnoreCase(".azw3");
         }
 
-        public static bool IsAzwResFile(this FileInfo fileInfo)
-            => fileInfo.Name.EndsWithIgnoreCase(".azw.res");
+        public static bool IsAzwResOrAzw6File(this FileInfo fileInfo)
+        {
+            return fileInfo.Name.IsAzwResOrAzw6File();
+        }
+
+        public static bool IsAzwResOrAzw6File(this string name)
+        {
+            return name.EndsWithIgnoreCase(".azw.res") || name.EndsWithIgnoreCase(".azw6");
+        }
     }
 }

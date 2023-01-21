@@ -25,6 +25,13 @@ namespace AzwConverter
 
         public static string CbzDir { get; set; }
 
+        public static bool CbzDirSetBySystem { get; private set; }
+
+        public static void SetCbzDirSetBySystem()
+        {
+            CbzDirSetBySystem = true;
+        }
+
         public static bool ConvertAllBookTypes { get; set; }
 
         public static bool SaveCover { get; set; }

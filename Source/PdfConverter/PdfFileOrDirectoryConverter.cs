@@ -5,7 +5,7 @@ using System.Diagnostics;
 
 namespace PdfConverter
 {
-    public class PdfConverter
+    public class PdfFileOrDirectoryConverter
     {
         private int _pagesCount = 0;
 

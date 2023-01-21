@@ -10,7 +10,7 @@ namespace AzwConverter.Engine
         protected override async Task<CbzState?> ProcessImagesAsync(PageRecords? pageRecordsHd, PageRecords pageRecords) 
             => await ReadCbzStateAsync(pageRecordsHd, pageRecords);
 
-        private static async Task<CbzState?> ReadCbzStateAsync(PageRecords? hdImageRecords, PageRecords sdImageRecords)
+        public static async Task<CbzState> ReadCbzStateAsync(PageRecords? hdImageRecords, PageRecords sdImageRecords)
         {
             var state = new CbzState
             {

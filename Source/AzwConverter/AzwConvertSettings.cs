@@ -1,5 +1,6 @@
 ﻿using CbzMage.Shared.Extensions;
 using CbzMage.Shared;
+using CbzMage.Shared.Helpers;
 
 namespace AzwConverter
 {
@@ -29,9 +30,9 @@ namespace AzwConverter
             //AzwDir
             if (string.IsNullOrWhiteSpace(Settings.AzwDir))
             {
-                throw new Exception("Must configure AzwDir in AzwConvertSettings.json");
+                ProgressReporter.Warning($"{nameof(Settings.AzwDir)} is not configured in AzwConvertSettings.json");
             }
-            if (!Directory.Exists(Settings.AzwDir))
+            else if (!Directory.Exists(Settings.AzwDir))
             {
                 throw new Exception($"{nameof(Settings.AzwDir)} [{Settings.AzwDir}] does not exist");
             }
@@ -71,6 +72,8 @@ namespace AzwConverter
                 var dir = new DirectoryInfo(Settings.AzwDir).Parent;
                 Settings.CbzDir = Path.Combine(dir.FullName, _defaultCbzDir);
                 Settings.CbzDir.CreateDirIfNotExists();
+
+                Settings.SetCbzDirSetBySystem();
             }
 
             //AnalysisDir
