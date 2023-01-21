@@ -1,4 +1,5 @@
-﻿using MobiMetadata;
+﻿using CbzMage.Shared.Helpers;
+using MobiMetadata;
 
 namespace AzwConverter.Engine
 {
@@ -27,7 +28,7 @@ namespace AzwConverter.Engine
 
         private async Task SaveCoverAsync(PageRecords? hdImageRecords, PageRecords sdImageRecords)
         {
-            using var stream = AsyncFileStream(_coverFile);
+            using var stream = AsyncStreams.AsyncFileWriteStream(_coverFile);
 
             // First try HD cover
             if (hdImageRecords != null && hdImageRecords.CoverRecord != null 

@@ -1,4 +1,5 @@
 ﻿using CbzMage.Shared;
+using CbzMage.Shared.Helpers;
 using MobiMetadata;
 using System.IO.Compression;
 using System.IO.MemoryMappedFiles;
@@ -20,13 +21,26 @@ namespace AzwConverter.Engine
             var azwFile = dataFiles.First(file => file.IsAzwOrAzw3File());
             _mappedArchiveLen = azwFile.Length;
 
-            var hdContainer = dataFiles.FirstOrDefault(file => file.IsAzwResFile());
+            var hdContainer = dataFiles.FirstOrDefault(file => file.IsAzwResOrAzw6File());
             if (hdContainer != null)
             {
                 _mappedArchiveLen += hdContainer.Length;
             }
 
             return await ReadImageDataAsync(bookId, dataFiles);
+        }
+
+        public async Task<CbzState> ConvertMetadataAsync(MobiMetadata.MobiMetadata metadata,
+            string cbzFile, long dataLen, string coverFile)
+        {
+            Metadata = metadata;
+
+            _cbzFile = cbzFile;
+            _mappedArchiveLen = dataLen;
+
+            _coverFile = coverFile;
+
+            return await CreateCbzAsync(metadata.PageRecordsHD, metadata.PageRecords);
         }
 
         protected override async Task<CbzState?> ProcessImagesAsync(PageRecords? pageRecordsHd, PageRecords pageRecords)
@@ -48,7 +62,7 @@ namespace AzwConverter.Engine
             CbzState state;
             long realArchiveLen;
 
-            using (var mappedFileStream = AsyncFileStream(tempFile))
+            using (var mappedFileStream = AsyncStreams.AsyncFileWriteStream(tempFile))
             {
                 using (var mappedArchive = MemoryMappedFile.CreateFromFile(mappedFileStream, null,
                     _mappedArchiveLen, MemoryMappedFileAccess.ReadWrite, HandleInheritability.None, true))
@@ -121,7 +135,7 @@ namespace AzwConverter.Engine
         {
             // Write a cover file?
             Stream? coverStream = (isRealCover || isFakeCover) && _coverFile != null 
-                ? AsyncFileStream(_coverFile) 
+                ? AsyncStreams.AsyncFileWriteStream(_coverFile) 
                 : null;
 
             var entry = zipArchive.CreateEntry(pageName, Settings.CompressionLevel);

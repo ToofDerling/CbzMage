@@ -71,6 +71,11 @@ namespace CbzMage.Shared.Helpers
             Console.WriteLine(message);
         }
 
+        public static void Line()
+        {
+            Console.WriteLine();
+        }
+
         public static void Warning(string message)
         {
             Show(message, ConsoleColor.DarkYellow);

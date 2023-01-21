@@ -62,7 +62,7 @@ It's been mentioned before, but let me say it again: pdf conversion requires tha
 
 **Credits.**
 
-The azw parser is mostly copied from the [Mobi Metadata Reader](https://www.mobileread.com/forums/showthread.php?t=185565) by Limey. I cleaned it up, fixed the FullName parsing, and added support for retrieving SD and HD images, the rest is Limey's work. This [Stack Overflow post](https://stackoverflow.com/questions/24233834/getting-cover-image-from-a-mobi-file) was very helpful when figuring out how to extract cover images.
+The azw parser is mostly copied from the [Mobi Metadata Reader](https://www.mobileread.com/forums/showthread.php?t=185565) by Limey. I cleaned it up, fixed the FullName parsing, and added support for retrieving SD and HD images, the rest is Limey's work. This [Stack Overflow post](https://stackoverflow.com/questions/24233834/getting-cover-image-from-a-mobi-file) was very helpful when figuring out how to extract cover images. Azw6 header structure was gleaned from [UnpackKindleS](https://github.com/Aeroblast/UnpackKindleS)
 
 **That's it.** 
 

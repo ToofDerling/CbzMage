@@ -7,7 +7,7 @@ namespace AzwConverter.Engine
 {
     public abstract class AbstractImageEngine
     {
-        protected MobiMetadata.MobiMetadata Metadata { get; private set; }
+        protected MobiMetadata.MobiMetadata Metadata { get; set; }
 
         protected async Task<(MobiMetadata.MobiMetadata, IDisposable[])> ReadMetadataAsync(FileInfo[] dataFiles)
         {
@@ -18,15 +18,15 @@ namespace AzwConverter.Engine
             var stream = mappedFile.CreateViewStream();
 
             var disposables = new IDisposable[] { stream, mappedFile };
-            var metadata = MetadataManager.ConfigureMetadata();
+            var metadata = MetadataManager.GetConfiguredMetadata();
             try
             {
                 await metadata.ReadMetadataAsync(stream);
             }
-            catch(MobiMetadataException ex) 
+            catch (MobiMetadataException ex)
             {
                 ProgressReporter.Error($"Error reading metadate from {azwFile}.", ex);
-                
+
                 MetadataManager.DisposeDisposables(disposables);
                 throw;
             }
@@ -47,7 +47,7 @@ namespace AzwConverter.Engine
                 Metadata = metadata;
                 await metadata.ReadImageRecordsAsync();
 
-                var hdContainer = dataFiles.FirstOrDefault(file => file.IsAzwResFile());
+                var hdContainer = dataFiles.FirstOrDefault(file => file.IsAzwResOrAzw6File());
                 if (hdContainer != null)
                 {
                     using var hdMappedFile = MemoryMappedFile.CreateFromFile(hdContainer.FullName);
@@ -81,13 +81,7 @@ namespace AzwConverter.Engine
                 }
             }
         }
-
-        protected FileStream AsyncFileStream(string filePath)
-        {
-            return new FileStream(filePath, FileMode.Create, FileAccess.ReadWrite,
-                    FileShare.ReadWrite, 0, FileOptions.Asynchronous | FileOptions.SequentialScan);
-        }
-
+              
         protected abstract Task<CbzState?> ProcessImagesAsync(PageRecords? pageRecordsHd, PageRecords pageRecords);
     }
 }
