@@ -77,7 +77,7 @@ Commands are case insensitive.
                             case CbzMageAction.BlackSteedConvert:
                                 {
                                     var blackSteedConverter = new BlackSteedConverter.BlackSteedConverter();
-                                    blackSteedConverter.ConvertDirectory(path);
+                                    await blackSteedConverter.ConvertDirectoryAsync(path!);
                                 }
                                 break;
                         }
