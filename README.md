@@ -39,6 +39,12 @@ Open the AzwSettings.json file in a text editor and **configure AzwDir**. Please
 * **The converted titles directory** contains your converted titles. To reconvert a title you must delete the file in that directory. 
 * **The database.** In the titles directory there's a database file with the state of every title that has passed through CbzMage. It's used when checking if a title has been updated and to store the new name and publisher of the title if you edit these values.
 
+**Using CbzMage to convert or scan files directly**
+
+* **Specify a file or directory after the AzwConvert or AzwScan command** and CbzMage will process any azw or azw3 files it finds directly. All the TitleDir infrastructure is ignored. 
+* You can still use CbzDir to tell CbzMage where to create the cbz files, else they will be created in the directory with the azw/azw3 files.
+* SaveCover and SaveCoverDir also works (but SaveCoverOnly does not).
+
 ## Pdf conversion.
 
 It's been mentioned before, but let me say it again: pdf conversion requires that that **[Ghostscript version 10+](https://ghostscript.com/releases/gsdnld.html)** is installed on your computer. Once you have that part working there's no need to configure anything, simply try
