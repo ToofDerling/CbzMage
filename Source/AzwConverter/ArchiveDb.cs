@@ -46,7 +46,7 @@ namespace AzwConverter
                     return;
                 }
 
-                // Remove this when 1.0 is released
+                // TODO: remove this when 1.0 is released
                 var splitMode = false;
                 try
                 {
@@ -61,7 +61,7 @@ namespace AzwConverter
                 {
                     CbzState cbzState;
 
-                    // Remove this when 1.0 is released
+                    // TODO: remove this when 1.0 is released
                     if (splitMode)
                     {
                         // The beginning of the CbzState json
