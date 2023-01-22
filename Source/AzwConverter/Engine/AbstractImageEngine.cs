@@ -1,20 +1,28 @@
 ﻿using MobiMetadata;
 using CbzMage.Shared.Helpers;
 using System.IO.MemoryMappedFiles;
-using System.Text;
 
 namespace AzwConverter.Engine
 {
     public abstract class AbstractImageEngine
     {
-        protected MobiMetadata.MobiMetadata Metadata { get; set; }
+        protected MobiMetadata.MobiMetadata? Metadata { get; set; }
 
         protected async Task<(MobiMetadata.MobiMetadata, IDisposable[])> ReadMetadataAsync(FileInfo[] dataFiles)
         {
             var azwFile = dataFiles.First(file => file.IsAzwOrAzw3File());
 
-            //TODO: Handle IOException when Kdle is running.
-            var mappedFile = MemoryMappedFile.CreateFromFile(azwFile.FullName);
+            MemoryMappedFile? mappedFile = null;
+            try
+            {
+                mappedFile = MemoryMappedFile.CreateFromFile(azwFile.FullName);
+            }
+            catch (IOException)
+            {
+                ProgressReporter.Warning($"Error reading [{azwFile.FullName}] is Kdl running?");
+                throw;
+            }
+            
             var stream = mappedFile.CreateViewStream();
 
             var disposables = new IDisposable[] { stream, mappedFile };
@@ -25,7 +33,7 @@ namespace AzwConverter.Engine
             }
             catch (MobiMetadataException ex)
             {
-                ProgressReporter.Error($"Error reading metadate from {azwFile}.", ex);
+                ProgressReporter.Error($"Error reading metadate from [{azwFile}]", ex);
 
                 MetadataManager.DisposeDisposables(disposables);
                 throw;
@@ -34,9 +42,10 @@ namespace AzwConverter.Engine
             return (metadata, disposables);
         }
 
-        protected async Task<CbzState?> ReadImageDataAsync(string bookId, FileInfo[] dataFiles)
+        protected async Task<CbzState> ReadImageDataAsync(string bookId, params FileInfo[] dataFiles)
         {
-            var metadata = MetadataManager.GetCachedMetadata(bookId);
+            var metadata = GetCachedMobiMetadata(bookId);
+
             IDisposable[]? disposables = null;
             try
             {
@@ -47,7 +56,7 @@ namespace AzwConverter.Engine
                 Metadata = metadata;
                 await metadata.ReadImageRecordsAsync();
 
-                var hdContainer = dataFiles.FirstOrDefault(file => file.IsAzwResOrAzw6File());
+                var hdContainer = SelectHDContainer(dataFiles);
                 if (hdContainer != null)
                 {
                     using var hdMappedFile = MemoryMappedFile.CreateFromFile(hdContainer.FullName);
@@ -57,14 +66,9 @@ namespace AzwConverter.Engine
 
                     return await ProcessImagesAsync(metadata.PageRecordsHD, metadata.PageRecords);
                 }
-                else
+                else  
                 {
-                    var sb = new StringBuilder();
-                    sb.AppendLine();
-                    sb.Append(bookId).Append(" / ").Append(metadata.MobiHeader.FullName);
-                    sb.Append(": no HD image container");
-
-                    ProgressReporter.Warning(sb.ToString());
+                    DisplayHDContainerWarning(bookId, metadata.MobiHeader.GetFullTitle());
 
                     return await ProcessImagesAsync(null, metadata.PageRecords);
                 }
@@ -81,7 +85,23 @@ namespace AzwConverter.Engine
                 }
             }
         }
-              
-        protected abstract Task<CbzState?> ProcessImagesAsync(PageRecords? pageRecordsHd, PageRecords pageRecords);
+
+        protected virtual MobiMetadata.MobiMetadata? GetCachedMobiMetadata(string bookId)
+        {
+            return MetadataManager.GetCachedMetadata(bookId);
+        }
+
+        protected virtual FileInfo? SelectHDContainer(FileInfo[] dataFiles)
+        { 
+            return dataFiles.FirstOrDefault(file => file.IsAzwResOrAzw6File());
+        }
+
+        protected virtual void DisplayHDContainerWarning(string fileName, string title)
+        {
+            ProgressReporter.Warning(
+                $"{Environment.NewLine}[{fileName}] / [{title}]: no HD image container");
+        }
+
+        protected abstract Task<CbzState> ProcessImagesAsync(PageRecords? pageRecordsHd, PageRecords pageRecords);
     }
 }

@@ -37,7 +37,7 @@ namespace AzwConverter
                             var bookFiles = book.Value;
 
                             var engine = new MetadataEngine();
-                            (metadata, disposables) = await engine.ReadMetadataAsync(bookFiles);
+                            (metadata, disposables) = await engine.GetMetadataAsync(bookFiles);
 
                             if (!metadata.MobiHeader.ExthHeader.BookType.EqualsIgnoreCase("comic"))
                             {
@@ -53,11 +53,7 @@ namespace AzwConverter
                             return;
                         }
 
-                        var title = metadata.MobiHeader.ExthHeader.UpdatedTitle;
-                        if (string.IsNullOrWhiteSpace(title))
-                        {
-                            title = metadata.MobiHeader.FullName;
-                        }
+                        var title = metadata.MobiHeader.GetFullTitle();
                         title = title.ToFileSystemString();
 
                         var publisher = metadata.MobiHeader.ExthHeader.Publisher.ToFileSystemString();

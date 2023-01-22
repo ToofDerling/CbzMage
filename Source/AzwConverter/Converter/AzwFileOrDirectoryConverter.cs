@@ -1,7 +1,10 @@
 ﻿using AzwConverter.Engine;
 using CbzMage.Shared;
+using CbzMage.Shared.Extensions;
 using CbzMage.Shared.Helpers;
+using CbzMage.Shared.IO;
 using MobiMetadata;
+using System.Collections.Concurrent;
 
 namespace AzwConverter.Converter
 {
@@ -17,7 +20,9 @@ namespace AzwConverter.Converter
             if (!string.IsNullOrEmpty(Settings.CbzDir) && !Settings.CbzDirSetBySystem)
             {
                 ProgressReporter.Info($"Cbz backups: {Settings.CbzDir}");
+                ProgressReporter.Line();
             }
+            ProgressReporter.Info($"Conversion threads: {Settings.NumberOfThreads}");
             ProgressReporter.Info($"Cbz compression: {Settings.CompressionLevel}");
         }
 
@@ -37,13 +42,20 @@ namespace AzwConverter.Converter
 
                 if (!fileInfo.IsAzwOrAzw3File())
                 {
-                    ProgressReporter.Error($"Not an azw or azw3 file: {_fileOrDirectory}");
+                    ProgressReporter.Error($"Not an azw or azw3 file [{_fileOrDirectory}]");
                     return;
                 }
 
                 azwFiles.Add(fileInfo);
 
-                allFiles.AddRange(fileInfo.Directory.GetFiles());
+                var directory = fileInfo.Directory;
+                if (directory == null)
+                {
+                    ProgressReporter.Error($"Error retrieving directory of [{_fileOrDirectory}]");
+                    return;
+                }
+
+                allFiles.AddRange(directory.GetFiles());
             }
             else if (Directory.Exists(_fileOrDirectory))
             {
@@ -53,114 +65,94 @@ namespace AzwConverter.Converter
                 azwFiles = allFiles.Where(file => file.IsAzwOrAzw3File()).ToList();
                 if (azwFiles.Count == 0)
                 {
-                    ProgressReporter.Error($"No azw or azw3 files found in: {_fileOrDirectory}");
+                    ProgressReporter.Error($"No azw or azw3 files found in [{_fileOrDirectory}]");
                     return;
                 }
             }
             else
             {
-                ProgressReporter.Error($"File or directory does not exist: {_fileOrDirectory}");
+                ProgressReporter.Error($"File or directory does not exist [{_fileOrDirectory}]");
                 return;
             }
 
-            // Trim filelist to only include HD container files
-            allFiles = allFiles.Where(file => file.IsAzwResOrAzw6File()).ToList();
+            await DoConvertAzwFilesAndHDContainersAsync(azwFiles, allFiles);
+        }
+
+        private async Task DoConvertAzwFilesAndHDContainersAsync(List<FileInfo> azwFiles,
+            List<FileInfo> allFiles)
+        {
+            var hdContainerFiles = allFiles.Where(file => file.IsAzwResOrAzw6File()).ToList();
+
+            ProgressReporter.Line();
+            ProgressReporter.Info($"Converting {azwFiles.Count} azw/azw3 file{azwFiles.SIf1()}");
+            if (hdContainerFiles.Count > 0)
+            {
+                ProgressReporter.Info($"Found {hdContainerFiles.Count} azw.res/azw6 file{hdContainerFiles.SIf1()} with HD images");
+            }
 
             _totalBooks = azwFiles.Count;
 
             ConversionBegin();
 
-            await ConvertAzwFilesAndHdContainersAsync(azwFiles, allFiles);
+            var hdContainerHeaders = await AnalyzeHdContainersAsync(hdContainerFiles);
+            await ConvertAzwFilesAndHdContainersAsync(azwFiles, hdContainerHeaders);
 
             ConversionEnd(azwFiles.Count);
         }
 
-        private async Task ConvertAzwFilesAndHdContainersAsync(List<FileInfo> azwFiles, List<FileInfo> hdContainerFiles)
+        private async Task ConvertAzwFilesAndHdContainersAsync(List<FileInfo> azwFiles,
+            List<Azw6Head> hdContainerHeaders)
         {
-            var hdStreamMap = await AnalyzeHdContainersAsync(hdContainerFiles);
-
-            foreach (var azwFile in azwFiles)
-            {
-                var metadata = MetadataManager.GetConfiguredMetadata();
-
-                using var stream = AsyncStreams.AsyncFileReadStream(azwFile.FullName);
-
-                await metadata.ReadMetadataAsync(stream);
-                await metadata.ReadImageRecordsAsync();
-
-                var cbzFile = GetCbzFile(azwFile.FullName, metadata.MobiHeader.FullName);
-                var coverFile = GetCoverFile(cbzFile);
-
-                var dataLen = azwFile.Length;
-
-                if (hdStreamMap.TryGetValue(metadata.MobiHeader.FullName, out var hdStream))
+            await Parallel.ForEachAsync(azwFiles, Settings.ParallelOptions,
+                async (azwFile, _) =>
                 {
-                    dataLen += hdStream.Length;
+                    CbzState? state = null;
 
-                    hdStream.Position = 0; // Reset so we can read the full metadata
-                    await metadata.ReadHDImageRecordsAsync(hdStream);
-                }
+                    switch (Action)
+                    {
+                        case CbzMageAction.AzwConvert:
+                            {
+                                var convertEngine = new ConvertFileEngine();
+                                state = await convertEngine.ConvertFileAsync(azwFile, hdContainerHeaders);
+                                break;
+                            }
+                        case CbzMageAction.AzwScan:
+                            {
+                                var scanEngine = new ScanFileEngine();
+                                state = await scanEngine.ScanFileAsync(azwFile, hdContainerHeaders);
+                                break;
+                            }
+                    }
 
-                CbzState state = null!;
+                    PrintCbzState(state!.Name, state);
+                });
+        }
 
-                switch (Action)
+        private static async Task<List<Azw6Head>> AnalyzeHdContainersAsync(List<FileInfo> hdContainerFiles)
+        {
+            if (hdContainerFiles.Count == 0)
+            {
+                return new List<Azw6Head>();
+            }
+
+            var hdContainerMap = new ConcurrentDictionary<string, Azw6Head>();
+
+            await Parallel.ForEachAsync(hdContainerFiles, Settings.ParallelOptions,
+                async (hdContainerFile, _) =>
                 {
-                    case CbzMageAction.AzwConvert:
-                        {
-                            var convertEngine = new ConvertEngine();
-                            state = await convertEngine.ConvertMetadataAsync(metadata, cbzFile, dataLen, coverFile);
-                            break;
-                        }
-                    case CbzMageAction.AzwScan:
-                        {
-                            var scanEngine = new ScanEngine();
-                            state = await ScanEngine.ReadCbzStateAsync(metadata.PageRecordsHD, metadata.PageRecords);
-                            break;
-                        }
-                }
+                    using var hdStream = AsyncStreams.AsyncFileReadStream(hdContainerFile.FullName);
 
-                hdStream?.Dispose();
+                    var pdbHeader = new PDBHead(skipProperties: false, skipRecords: false);
+                    await pdbHeader.ReadHeaderAsync(hdStream).ConfigureAwait(false);
 
-                PrintCbzState(cbzFile, state);
-            }
-        }
+                    var azw6Header = new Azw6Head(skipExthHeader: false);
+                    await azw6Header.ReadHeaderAsync(hdStream).ConfigureAwait(false);
 
-        private static string GetCbzFile(string azwFile, string title)
-        {
-            title = $"{title.ToFileSystemString()}.cbz";
+                    azw6Header.Path = hdContainerFile;
+                    hdContainerMap[hdContainerFile.FullName] = azw6Header;
+                });
 
-            if (!string.IsNullOrEmpty(Settings.CbzDir) && !Settings.CbzDirSetBySystem)
-            {
-                return Path.Combine(Settings.CbzDir, title);
-            }
-
-            var dir = Path.GetDirectoryName(azwFile);
-            return Path.Combine(dir, title);
-        }
-
-        private static string GetCoverFile(string cbzFile)
-        {
-            return Settings.SaveCover ? Path.ChangeExtension(cbzFile, ".jpg") : null;
-        }
-
-        private static async Task<Dictionary<string, FileStream>> AnalyzeHdContainersAsync(List<FileInfo> hdContainerFiles)
-        {
-            var hdStreamMap = new Dictionary<string, FileStream>();
-
-            foreach (var hdContainerFile in hdContainerFiles)
-            {
-                var hdStream = AsyncStreams.AsyncFileReadStream(hdContainerFile.FullName);
-
-                var pdbHeader = new PDBHead(skipProperties: true, skipRecords: true);
-                await pdbHeader.ReadHeaderAsync(hdStream);
-
-                var azw6Header = new Azw6Head(skipExthHeader: true);
-                await azw6Header.ReadHeaderAsync(hdStream);
-
-                hdStreamMap.Add(azw6Header.Title, hdStream);
-            }
-
-            return hdStreamMap;
+            return hdContainerMap.Values.ToList();
         }
     }
 }

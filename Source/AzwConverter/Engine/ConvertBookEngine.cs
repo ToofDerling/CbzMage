@@ -1,19 +1,19 @@
 ﻿using CbzMage.Shared;
-using CbzMage.Shared.Helpers;
+using CbzMage.Shared.IO;
 using MobiMetadata;
 using System.IO.Compression;
 using System.IO.MemoryMappedFiles;
 
 namespace AzwConverter.Engine
 {
-    public class ConvertEngine : AbstractImageEngine
+    public class ConvertBookEngine : AbstractImageEngine
     {
-        private string _cbzFile;
-        private string? _coverFile;
+        protected string? _cbzFile;
+        protected string? _coverFile;
 
-        private long _mappedArchiveLen;
+        protected long _mappedArchiveLen;
 
-        public async Task<CbzState?> ConvertBookAsync(string bookId, FileInfo[] dataFiles, string cbzFile, string? coverFile)
+        public async Task<CbzState> ConvertBookAsync(string bookId, FileInfo[] dataFiles, string cbzFile, string? coverFile)
         {
             _cbzFile = cbzFile;
             _coverFile = coverFile;
@@ -30,29 +30,16 @@ namespace AzwConverter.Engine
             return await ReadImageDataAsync(bookId, dataFiles);
         }
 
-        public async Task<CbzState> ConvertMetadataAsync(MobiMetadata.MobiMetadata metadata,
-            string cbzFile, long dataLen, string coverFile)
-        {
-            Metadata = metadata;
-
-            _cbzFile = cbzFile;
-            _mappedArchiveLen = dataLen;
-
-            _coverFile = coverFile;
-
-            return await CreateCbzAsync(metadata.PageRecordsHD, metadata.PageRecords);
-        }
-
-        protected override async Task<CbzState?> ProcessImagesAsync(PageRecords? pageRecordsHd, PageRecords pageRecords)
+        protected override async Task<CbzState> ProcessImagesAsync(PageRecords? pageRecordsHd, PageRecords pageRecords)
             => await CreateCbzAsync(pageRecordsHd, pageRecords);
 
-        private async Task<CbzState> CreateCbzAsync(PageRecords? hdImageRecords, PageRecords sdImageRecords)
+        protected async Task<CbzState> CreateCbzAsync(PageRecords? hdImageRecords, PageRecords sdImageRecords)
         {
             var tempFile = $"{_cbzFile}.temp";
 
             var state = await ReadAndCompressAsync(tempFile, hdImageRecords, sdImageRecords);
 
-            File.Move(tempFile, _cbzFile, overwrite: true);
+            File.Move(tempFile, _cbzFile!, overwrite: true);
 
             return state;
         }
@@ -65,11 +52,13 @@ namespace AzwConverter.Engine
             using (var mappedFileStream = AsyncStreams.AsyncFileWriteStream(tempFile))
             {
                 using (var mappedArchive = MemoryMappedFile.CreateFromFile(mappedFileStream, null,
-                    _mappedArchiveLen, MemoryMappedFileAccess.ReadWrite, HandleInheritability.None, true))
+                    _mappedArchiveLen, MemoryMappedFileAccess.ReadWrite, HandleInheritability.None,
+                    leaveOpen: true))
                 {
                     using (var archiveStream = mappedArchive.CreateViewStream())
                     {
-                        using (var zipArchive = new ZipArchive(archiveStream, ZipArchiveMode.Create, true))
+                        using (var zipArchive = new ZipArchive(archiveStream, ZipArchiveMode.Create, 
+                            leaveOpen: true))
                         {
                             state = await ReadAndCompressPagesAsync(zipArchive, hdImageRecords, sdImageRecords);
                         }
@@ -110,18 +99,18 @@ namespace AzwConverter.Engine
             PageRecord? pageRecord;
             PageRecord? hdPageRecord = null;
 
-            for (int i = 0, sz = sdImageRecords.ContentRecords.Count; i < sz; i++)
+            for (int pageIndex = 0, sz = sdImageRecords.ContentRecords.Count; pageIndex < sz; pageIndex++)
             {
                 state.Pages++;
                 var pageName = SharedSettings.GetPageString(state.Pages);
 
                 if (hdImageRecords != null)
                 {
-                    hdPageRecord = hdImageRecords.ContentRecords[i];
+                    hdPageRecord = hdImageRecords.ContentRecords[pageIndex];
                 }
-                pageRecord = sdImageRecords.ContentRecords[i];
+                pageRecord = sdImageRecords.ContentRecords[pageIndex];
 
-                var isFakeCover = !foundRealCover && i == 0;
+                var isFakeCover = !foundRealCover && pageIndex == 0;
 
                 await WriteRecordAsync(zipArchive, pageName, state, hdPageRecord, pageRecord,
                     isRealCover: false, isFakeCover: isFakeCover);
@@ -134,8 +123,8 @@ namespace AzwConverter.Engine
             PageRecord? hdRecord, PageRecord record, bool isRealCover, bool isFakeCover)
         {
             // Write a cover file?
-            Stream? coverStream = (isRealCover || isFakeCover) && _coverFile != null 
-                ? AsyncStreams.AsyncFileWriteStream(_coverFile) 
+            Stream? coverStream = (isRealCover || isFakeCover) && _coverFile != null
+                ? AsyncStreams.AsyncFileWriteStream(_coverFile)
                 : null;
 
             var entry = zipArchive.CreateEntry(pageName, Settings.CompressionLevel);

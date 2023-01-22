@@ -39,7 +39,12 @@ namespace AzwConverter.Engine
             return _analyzeMessageError;
         }
 
-        protected override async Task<CbzState?> ProcessImagesAsync(PageRecords? pageRecordsHd, PageRecords pageRecords)
+        protected override void DisplayHDContainerWarning(string fileName, string title)
+        {
+            //NOP
+        }
+
+        protected override async Task<CbzState> ProcessImagesAsync(PageRecords? pageRecordsHd, PageRecords pageRecords)
             => await AnalyzeBookAsync(pageRecordsHd, pageRecords);
 
         private async Task<CbzState> AnalyzeBookAsync(PageRecords? hdImageRecords, PageRecords sdImageRecords)
@@ -57,16 +62,35 @@ namespace AzwConverter.Engine
             //    _analyzeMessageError = bookType;
             //}
 
+            //if (hdImageRecords != null)
+            //{
+            //    //TODO TEST THIS
+            //    if (Metadata.Azw6Header.Title != Metadata.MobiHeader.ExthHeader.UpdatedTitle)
+            //    {
+            //        _analyzeMessageError = $"[{Metadata.Azw6Header.Title}] vs [{Metadata.MobiHeader.ExthHeader.UpdatedTitle}]";
+            //        //throw new MobiMetadataException(_analyzeMessageError);
+            //    }
+            //    else
+            //    {
+            //        _analyzeMessageOk = Metadata.Azw6Header.Title;
+            //    }
+            //}
+
             if (hdImageRecords != null)
             {
-                if (Metadata.Azw6Header.Title != Metadata.MobiHeader.FullName)
+                var rescRecords = sdImageRecords.ContentRecords.Count;
+                if (sdImageRecords.CoverRecord != null)
                 {
-                    throw new MobiMetadataException("Oh no");
+                    rescRecords++;
                 }
-                else
+
+                string msg = $"hd: {Metadata.Azw6Header.RescRecordsCount} sd: {rescRecords}";
+
+                if (Metadata.Azw6Header.RescRecordsCount != rescRecords)
                 {
-                    _analyzeMessageOk = Metadata.Azw6Header.Title;
+                    throw new Exception(msg);
                 }
+                _analyzeMessageOk = msg;
             }
 
             if (!_analyzeImages)

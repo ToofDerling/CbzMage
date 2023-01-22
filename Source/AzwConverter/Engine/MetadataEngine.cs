@@ -4,10 +4,10 @@ namespace AzwConverter.Engine
 {
     public class MetadataEngine : AbstractImageEngine
     {
-        public async Task<(MobiMetadata.MobiMetadata metadata, IDisposable[] disposables)> ReadMetadataAsync(FileInfo[] dataFiles)
-            => await base.ReadMetadataAsync(dataFiles);
+        public async Task<(MobiMetadata.MobiMetadata metadata, IDisposable[] disposables)> GetMetadataAsync(FileInfo[] dataFiles)
+            => await ReadMetadataAsync(dataFiles);
 
-        protected override async Task<CbzState?> ProcessImagesAsync(PageRecords? pageRecordsHd, PageRecords pageRecords)
-            => null;
+        protected override Task<CbzState> ProcessImagesAsync(PageRecords? pageRecordsHd, PageRecords pageRecords)
+            => Task.FromResult(new CbzState());
     }
 }

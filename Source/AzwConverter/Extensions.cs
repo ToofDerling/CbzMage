@@ -1,4 +1,5 @@
 ﻿using CbzMage.Shared.Extensions;
+using MobiMetadata;
 using System.Net;
 using System.Text;
 
@@ -8,7 +9,7 @@ namespace AzwConverter
     {
         private static readonly char[] _invalidChars = Path.GetInvalidFileNameChars();
 
-        private const int _spaceCh = 32;
+        private const int _spaceChar = 32;
 
         public static string ToFileSystemString(this string str)
         {
@@ -19,7 +20,7 @@ namespace AzwConverter
             for (int i = 0, sz = sb.Length; i < sz; i++)
             {
                 var ch = sb[i];
-                if (_invalidChars.Contains(ch) || (ch != _spaceCh && char.IsWhiteSpace(ch)))
+                if (_invalidChars.Contains(ch) || (ch != _spaceChar && char.IsWhiteSpace(ch)))
                 {
                     sb[i] = ' ';
                 }
@@ -60,6 +61,16 @@ namespace AzwConverter
         public static bool IsAzwResOrAzw6File(this string name)
         {
             return name.EndsWithIgnoreCase(".azw.res") || name.EndsWithIgnoreCase(".azw6");
+        }
+
+        public static string GetFullTitle(this MobiHead mobiHeader)
+        {
+            var title = mobiHeader.ExthHeader.UpdatedTitle;
+            if (string.IsNullOrWhiteSpace(title))
+            {
+                title = mobiHeader.FullName;
+            }
+            return title;
         }
     }
 }
