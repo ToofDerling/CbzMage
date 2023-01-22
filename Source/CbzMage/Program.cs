@@ -1,5 +1,4 @@
 ﻿using AzwConverter.Converter;
-using BlackSteedConverter;
 using CbzMage.Shared;
 using CbzMage.Shared.Helpers;
 using PdfConverter;
@@ -10,20 +9,24 @@ namespace CbzMage
     internal class Program
     {
         public static string _usage = @"
-AzwConvert [or Azw Convert]
-    Scans awz directory and converts all unconverted comic books to cbz files.
+AzwConvert [or Azw Convert] <file or directory>
+    Scans AzwDir and converts all unconverted comic books to cbz files.
+    Specify <file or directory> to convert azw/azw3 files directly.  
 
-AzwScan [or Azw Scan]
-    Scans azw directory and creates a .NEW title file for each unconverted comic book. 
+AzwScan [or Azw Scan] <file or directory>
+    Scans AzwDir and creates a .NEW title file for each unconverted comic book. 
+    Specify <file or directory> to scan azw/azw3 files directly.  
 
 PdfConvert [or Pdf Convert] <pdf file> or <directory with pdf files>
     Converts one or more pdf comic books to cbz files.
 
-BlackSteedConvert [BlackSteed Convert] <directory>
-    Convert one or more Black Steed comic books copied from a mobile device.
-
 Commands are case insensitive. 
 ";
+/*
+BlackSteedConvert [BlackSteed Convert] <directory>
+    Convert one or more Black Steed comic books copied from a mobile device.
+*/
+
         static async Task Main(string[] args)
         {
             var validAction = false;
