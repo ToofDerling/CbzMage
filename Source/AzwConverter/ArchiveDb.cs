@@ -1,6 +1,5 @@
 ﻿using System.Collections.Concurrent;
 using System.IO.MemoryMappedFiles;
-using System.Net;
 using System.Text;
 using System.Text.Json;
 
@@ -9,9 +8,6 @@ namespace AzwConverter
     public sealed class ArchiveDb
     {
         public static string DbName => "archive.db";
-
-        // The beginning of the CbzState json
-        private const string _split = "{\"Name\":";
 
         private readonly string _dbFile;
 
@@ -50,6 +46,7 @@ namespace AzwConverter
                     return;
                 }
 
+                // TODO: remove this when 1.0 is released
                 var splitMode = false;
                 try
                 {
@@ -64,12 +61,16 @@ namespace AzwConverter
                 {
                     CbzState cbzState;
 
+                    // TODO: remove this when 1.0 is released
                     if (splitMode)
                     {
-                        var tokens = line.Split(_split, 2);
+                        // The beginning of the CbzState json
+                        const string split = "{\"Name\":";
+
+                        var tokens = line.Split(split, 2);
 
                         var bookId = tokens[0].TrimEnd();
-                        var json = $"{_split}{tokens[1]}"; // Finish CbzState json
+                        var json = $"{split}{tokens[1]}"; // Finish CbzState json
 
                         cbzState = JsonSerializer.Deserialize<CbzState>(json);
                         cbzState.Id = bookId;
@@ -81,7 +82,7 @@ namespace AzwConverter
 
                     if (!_db.TryAdd(cbzState.Id, cbzState))
                     {
-                        throw new InvalidOperationException($"{cbzState.Id} already in archive");
+                        throw new InvalidOperationException($"[{cbzState.Id}] already in archive");
                     }
                 });
             }
@@ -151,14 +152,6 @@ namespace AzwConverter
             {
                 return;
             }
-
-            var sb = new StringBuilder(32000);
-
-            //foreach (var x in _db)
-            //{
-            //    sb.Append(x.Key).Append(' ').AppendLine(JsonSerializer.Serialize(x.Value));
-            //}
-            //await File.WriteAllTextAsync(_dbFile, sb.ToString(), CancellationToken.None);
 
             await File.WriteAllLinesAsync(_dbFile, _db.Values.Select(x => JsonSerializer.Serialize(x)));
         }

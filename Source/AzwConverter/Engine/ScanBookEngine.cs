@@ -2,15 +2,15 @@
 
 namespace AzwConverter.Engine
 {
-    public class ScanEngine : AbstractImageEngine
+    public class ScanBookEngine : AbstractImageEngine
     {
-        public async Task<CbzState?> ScanBookAsync(string bookId, FileInfo[] dataFiles) 
+        public async Task<CbzState> ScanBookAsync(string bookId, FileInfo[] dataFiles) 
             => await ReadImageDataAsync(bookId, dataFiles);
 
-        protected override async Task<CbzState?> ProcessImagesAsync(PageRecords? pageRecordsHd, PageRecords pageRecords) 
+        protected override async Task<CbzState> ProcessImagesAsync(PageRecords? pageRecordsHd, PageRecords pageRecords) 
             => await ReadCbzStateAsync(pageRecordsHd, pageRecords);
 
-        public static async Task<CbzState> ReadCbzStateAsync(PageRecords? hdImageRecords, PageRecords sdImageRecords)
+        private static async Task<CbzState> ReadCbzStateAsync(PageRecords? hdImageRecords, PageRecords sdImageRecords)
         {
             var state = new CbzState
             {

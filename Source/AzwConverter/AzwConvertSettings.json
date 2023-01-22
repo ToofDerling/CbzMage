@@ -6,10 +6,10 @@
   // Settings recognized by the AzwConvert and AzwScan commands.
   //
 
-  // AzwDir is the only required setting. It must point to where your azw files 
-  // are stored - aka the Kdl data directory. If you have a large collection it's 
-  // recommended to move this directory to a hard disk with plenty of space (see 
-  // the CbzMage Wiki for how to move the directory).
+  // AzwDir is a required setting if you use CbzMage to convert your Kdl library. 
+  // It must point to where your azw files are stored - aka the Kdl data directory. 
+  // If you have a large library it's recommended to move this directory to a hard 
+  // disk with plenty of space (see the CbzMage Wiki for how to move the directory).
   "AzwDir": "",
 
   // TitlesDir is where the azw title files are stored. Titles currently in Kdl, 
@@ -20,8 +20,7 @@
 
   // CbzDir is where your cbz backups are created. This can be placed anywhere
   // you want. If you specify nothing the default for AzwConvert is to use "Cbz 
-  // Backups" in the parent directory of AzwDir., and for PdfConvert to create the
-  // cbz file alongside the original pdf. 
+  // Backups" in the parent directory of AzwDir.
   "CbzDir": "",
 
   // SaveCover true or false. Save a copy of the coverimage alongside the cbz file 
@@ -32,10 +31,10 @@
   // alongside the cbz file you can specify the directory here.
   "SaveCoverDir": "",
 
-  // SaveCoverOnly true or false. Use this if you just want to save coverimages, 
-  // no cbz files. To generate a cover gallery of all the books in Kdl simply delete
-  // all files in the Converted Titles directory (they will be regenerated).
-  // Note: SaveCover must also be true for SaveCoverOnly to work. 
+  // SaveCoverOnly true or false. Use this if you just want to save coverimages, no
+  // cbz files. To generate a cover gallery of all the books in Kdl simply delete
+  // all files in the Converted Titles directory (they will be regenerated). Note: 
+  // SaveCover must also be true for SaveCoverOnly to work. 
   "SaveCoverOnly": false,
 
   // Normally CbzMage only scans and converts azw files where the BookType is 

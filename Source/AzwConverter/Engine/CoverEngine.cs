@@ -1,34 +1,34 @@
-﻿using CbzMage.Shared.Helpers;
+﻿using CbzMage.Shared.IO;
 using MobiMetadata;
 
 namespace AzwConverter.Engine
 {
     public class CoverEngine : AbstractImageEngine
     {
-        private string _coverFile;
-        private string _coverString;
+        private string? _coverFile;
+        private string? _coverString;
 
-        public async Task<CbzState?> SaveCoverAsync(string bookId, FileInfo[] dataFiles, string coverFile)
+        public async Task<CbzState> SaveCoverAsync(string bookId, FileInfo[] dataFiles, string coverFile)
         {
             _coverFile = coverFile;
 
             return await ReadImageDataAsync(bookId, dataFiles);
         }
 
-        public string GetCoverString()
+        public string? GetCoverString()
         { 
             return _coverString;
         }
 
-        protected override async Task<CbzState?> ProcessImagesAsync(PageRecords? pageRecordsHd, PageRecords pageRecords)
+        protected override async Task<CbzState> ProcessImagesAsync(PageRecords? pageRecordsHd, PageRecords pageRecords)
         {
             await SaveCoverAsync(pageRecordsHd, pageRecords);
-            return null;
+            return new CbzState();
         }
 
         private async Task SaveCoverAsync(PageRecords? hdImageRecords, PageRecords sdImageRecords)
         {
-            using var stream = AsyncStreams.AsyncFileWriteStream(_coverFile);
+            using var stream = AsyncStreams.AsyncFileWriteStream(_coverFile!);
 
             // First try HD cover
             if (hdImageRecords != null && hdImageRecords.CoverRecord != null 

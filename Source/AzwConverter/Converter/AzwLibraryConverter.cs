@@ -121,11 +121,11 @@ namespace AzwConverter.Converter
 
                 await Parallel.ForEachAsync(updatedBooks, Settings.ParallelOptions,
                     async (book, _) =>
-                    await ScanUpdatedBookAsync(book.Key, book.Value, titles[book.Key],
-                    convertedTitles.TryGetValue(book.Key, out var convertedTitle)
-                        ? convertedTitle
-                        : null,
-                    archive));
+                        await ScanUpdatedBookAsync(book.Key, book.Value, titles[book.Key],
+                        convertedTitles.TryGetValue(book.Key, out var convertedTitle)
+                            ? convertedTitle
+                            : null,
+                        archive));
             }
 
             if (unconvertedBooks.Count == 0 && Action != CbzMageAction.AzwAnalyze)
@@ -144,11 +144,11 @@ namespace AzwConverter.Converter
 
                 await Parallel.ForEachAsync(unconvertedBooks, Settings.ParallelOptions,
                     async (book, _) =>
-                    await ConvertBookAsync(book.Key, book.Value, titles[book.Key],
-                    convertedTitles.TryGetValue(book.Key, out var convertedTitle)
-                        ? convertedTitle
-                        : null,
-                    syncer, archive));
+                        await ConvertBookAsync(book.Key, book.Value, titles[book.Key],
+                        convertedTitles.TryGetValue(book.Key, out var convertedTitle)
+                            ? convertedTitle
+                            : null,
+                        syncer, archive));
             }
             else if (Action == CbzMageAction.AzwScan)
             {
@@ -165,7 +165,7 @@ namespace AzwConverter.Converter
 
                 await Parallel.ForEachAsync(books, Settings.ParallelOptions,
                     async (book, _) =>
-                    await AnalyzeBookAsync(book.Key, book.Value, titles[book.Key]));
+                        await AnalyzeBookAsync(book.Key, book.Value, titles[book.Key]));
             }
         }
 
@@ -194,7 +194,7 @@ namespace AzwConverter.Converter
 
             if (analyzeMessageOk != null || analyzeMessageError != null)
             {
-                PrintCbzState(bookDir, state, showPagesAndCover: false, doneMsg: analyzeMessageOk!, errorMsg: analyzeMessageError);
+                PrintCbzState(bookDir, state, showPagesAndCover: false, doneMsg: analyzeMessageOk, errorMsg: analyzeMessageError);
             }
             else
             {
@@ -224,7 +224,7 @@ namespace AzwConverter.Converter
             }
             else
             {
-                var engine = new ConvertEngine();
+                var engine = new ConvertBookEngine();
                 state = await engine.ConvertBookAsync(bookId, dataFiles, cbzFile, coverFile);
             }
 
@@ -253,7 +253,7 @@ namespace AzwConverter.Converter
             var match = _publisherTitleRegex.Match(titleFile.Name);
             if (!match.Success)
             {
-                ProgressReporter.Error($"Invalid title file: {titleFile.Name}");
+                ProgressReporter.Error($"Invalid title file [{titleFile.Name}]");
                 return false;
             }
 
@@ -276,7 +276,7 @@ namespace AzwConverter.Converter
             Console.WriteLine(sb.ToString());
         }
 
-        private static string GetCoverFile(FileInfo titleFile, string cbzFile)
+        private static string? GetCoverFile(FileInfo titleFile, string cbzFile)
         {
             if (Settings.SaveCover)
             {
@@ -303,7 +303,7 @@ namespace AzwConverter.Converter
             }
             else
             {
-                var engine = new ScanEngine();
+                var engine = new ScanBookEngine();
                 state = await engine.ScanBookAsync(bookId, dataFiles);
 
                 state.Name = titleFile.Name.RemoveAnyMarker();
@@ -315,14 +315,14 @@ namespace AzwConverter.Converter
             var coverDowngraded = !coverUpgraded && !state.HdCover && oldState.HdCover;
             var pagesDowngraded = !pagesUpgraded && state.HdImages < oldState.HdImages;
 
-            string downgradedMessage = null;
+            string? downgradedMessage = null;
             if (coverDowngraded || pagesDowngraded)
             {
                 downgradedMessage = GetUpdatedMessage(state, oldState, coverDowngraded, pagesDowngraded,
                     "HD cover removed", "HD pages removed");
             }
 
-            string upgradedMessage = null;
+            string? upgradedMessage = null;
             if (coverUpgraded || pagesUpgraded)
             {
                 upgradedMessage = GetUpdatedMessage(state, oldState, coverUpgraded, pagesUpgraded,
@@ -335,6 +335,7 @@ namespace AzwConverter.Converter
                 archive.SetState(bookId, state);
 
                 var newTitleFile = AddMarkerOrRemoveAnyMarker(titleFile, Settings.UpdatedTitleMarker);
+                
                 PrintCbzState(newTitleFile, state, convertedDate: convertedTitleFile?.LastWriteTime,
                     doneMsg: upgradedMessage, errorMsg: downgradedMessage);
             }
@@ -384,7 +385,7 @@ namespace AzwConverter.Converter
             ProgressReporter.Done(sb.ToString());
         }
 
-        private static string AddMarkerOrRemoveAnyMarker(FileInfo titleFile, string addMarker = null)
+        private static string AddMarkerOrRemoveAnyMarker(FileInfo titleFile, string? addMarker = null)
         {
             var name = addMarker != null
                 ? titleFile.Name.AddMarker(addMarker)

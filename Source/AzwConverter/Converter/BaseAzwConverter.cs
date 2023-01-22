@@ -76,7 +76,7 @@ namespace AzwConverter.Converter
 
         protected void PrintCbzState(string cbzFile, CbzState state,
             bool showPagesAndCover = true, bool showAllCovers = false,
-            DateTime? convertedDate = null, string doneMsg = null, string errorMsg = null)
+            DateTime? convertedDate = null, string? doneMsg = null, string? errorMsg = null)
         {
             Interlocked.Add(ref _pagesCount, state.Pages);
 
@@ -148,6 +148,11 @@ namespace AzwConverter.Converter
                 sb.Append(')');
             }
 
+            PrintMsg(sb, insert, doneMsg, errorMsg);
+        }
+
+        private static void PrintMsg(StringBuilder sb, string insert, string? doneMsg, string? errorMsg)
+        {
             if (doneMsg != null || errorMsg != null)
             {
                 lock (_msgLock)
