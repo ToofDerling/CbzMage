@@ -29,18 +29,18 @@
   "SaveCoverOnly": false,
 
   // This determines the quality of jpg images in the cbz file. You want this as 
-  // high as possible (90+). The default quality quality 93 (95 creates images that
-  // are 15% larger. 98 creates images that are 50% larger).
+  // high as possible (90+). The default quality quality is 93 (95 creates images 
+  // that are 15% larger. 98 creates images that are 50% larger).
   "JpgQuality": 93,
 
   // MinimumDpi determines the minimum quality of the pages Ghostscript reads from 
-  // the pdf. It's not recommended to set this lower than 300, and setting it 
-  // higher can cause the cbz files to grow very large. In other words, you 
-  // probably shouldn't touch this. 
+  // the pdf. It's not recommended to set this lower than 300, and setting it higher
+  // can cause the cbz files to grow very large. In other words, you probably 
+  // shouldn't touch this.
   "MinimumDpi": 300,
 
   // Sometimes reading pages using the MinimumDpi setting will create images that 
-  // are much larger then the source pdf. CbzMage will detect this and scale the 
+  // are much larger than in the source pdf. CbzMage will detect this and scale the 
   // images down to prevent the cbz file from growing too large - but it will not
   // create images smaller than the MinimumHeight setting. Default is 1920 (HD).
   "MinimumHeight": 1920,
