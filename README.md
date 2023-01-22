@@ -19,14 +19,14 @@ Open the AzwSettings.json file in a text editor and **configure AzwDir**. Please
 
 **Important:** Close Kdl before running CbzMage. Kdl locks some of the azw files when it's running, so there's a high chance that CbzMage will crash because it can't read a locked azw file.
 
-**Running CbzMage with the "AzwConvert" parameter:**
+**Running CbzMage with the "AzwConvert" parameter.**
 
 * In the titles directory (TitlesDir in AzwSettings.json) you will find a small file with the title and publisher of each comic book currently in the azw directory.  
 * In a subdirectory of the titles directory you will find a similar file for each converted title. If you ever want **to reconvert a title simply delete the title file from the converted titles directory.**
 * In the cbz directory (CbzDir in AzwSettings.json) you will find the converted comic books sorted by publisher. 
 * If you set SaveCover to true in AzwSettings.json CbzMage will save a copy of the cover image together with the cbz file. If you specify SaveCoverDir the cover image will be saved there instead. There's even a SaveCoverOnly option if you just want the covers.
 
-**Running CbzMage with the "AzwScan" parameter:**
+**Running CbzMage with the "AzwScan" parameter.**
 
 * Like the conversion, in the titles directory you will find a small file with the title and publisher of each comic book currently in the azw directory.  
 * Unlike the conversion, each new title will have a ".NEW" marker (and each upgraded title will have an ".UPDATED" marker). 
@@ -39,7 +39,7 @@ Open the AzwSettings.json file in a text editor and **configure AzwDir**. Please
 * **The converted titles directory** contains your converted titles. To reconvert a title you must delete the file in that directory. 
 * **The database.** In the titles directory there's a database file with the state of every title that has passed through CbzMage. It's used when checking if a title has been updated and to store the new name and publisher of the title if you edit these values.
 
-**Using CbzMage to convert or scan files directly**
+**Using CbzMage to convert or scan files directly.**
 
 * **Specify a file or directory after the AzwConvert or AzwScan command** and CbzMage will process any azw or azw3 files it finds directly. All the TitleDir infrastructure is ignored. 
 * You can still use CbzDir to tell CbzMage where to create the cbz files, else they will be created in the directory with the azw/azw3 files.
