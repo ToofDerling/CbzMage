@@ -2,7 +2,7 @@
 CzbMage is a comic book converter. It aims to do exactly two things:
 1. **Convert azw files to nice cbz files**, ready to read in your favorite cbz reader. Azw files entirely like the ones found in Kdl for PC or Mac. 
 Additionally, if CbzMage finds a matching azw.res file it will **merge in any HD images found for the highest possible quality**. 
-Comic title and publisher will be read from the azw file, and running CbzMage in scan mode will allow you to edit the values before the conversion. 
+Comic title and publisher will be read from the azw file, and running CbzMage in scan mode will allow you to edit the values before the conversion. You can also point CbzMage at a file or directory and it will process any azw or azw3 files it finds directly.
 2. **Convert pdf files to nice cbz files**. Point CbzMage at a single pdf comic book or a directory of pdf comic books and it will convert them to cbz files in the highest possible quality.
 
 **All of this works fully in [CbzMage Version 0.25](https://github.com/ToofDerling/CbzMage/releases/tag/v0.25).**
@@ -11,7 +11,7 @@ CbzMage is a commandline tool written in c#. It requires no installation, very l
 
 CbzMage is released for Windows, Linux, and macOS (but support for the macOS version will be limited as I don't own a Mac). Since the Kdl app only works on PC and Mac the azw conversion is probably not relevant for Linux users, but the pdf conversion works as advertised (but see the note about Ghostscript 10 on Linux below).
 
-Download CbzMage to your hard drive and unpack it anywhere. Have a look at the settings in the CbzMageSettings.json file, they are all thoroughly documented there (I hope). Open a command shell and run CbzMage right away, or check out some more information: 
+Download CbzMage to your hard drive and unpack it anywhere. Have a look at the settings in AzwConvertSettings.json or PdfConvertSettings.json, they are all thoroughly documented there (I hope). Open a command shell and run CbzMage right away, or check out some more information: 
 
 ## Azw conversion.
 
