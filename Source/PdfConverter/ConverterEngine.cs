@@ -168,10 +168,10 @@ namespace PdfConverter
             // The page compressor job thread picks up converted images as they are saved (in page order)
             // and writes them to the cbz file.
 
+            var progressReporter = new ProgressReporter(pdf.PageCount);
+
             // Key is page name (page-001.jpg etc)
             var convertedPages = new ConcurrentDictionary<string, ArrayPoolBufferWriter<byte>>(pageLists.Length, pdf.PageCount);
-
-            var progressReporter = new ProgressReporter(pdf.PageCount);
 
             var pageCompressor = new PageCompressor(pdf, convertedPages);
 
@@ -185,7 +185,7 @@ namespace PdfConverter
                 var pageList = pageLists[id];
                 var pageQueue = new Queue<int>(pageList);
 
-                var pageConverter = new PageConverter(pdf, pageQueue, convertedPages, resizeHeight);
+                var pageConverter = new PageConverter(pageQueue, convertedPages, resizeHeight);
                 pageConverter.PageConverted += (s, e) => pageCompressor.OnPageConverted(e);
 
                 var pageMachine = new GhostscriptPageMachine();
