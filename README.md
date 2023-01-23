@@ -2,7 +2,7 @@
 CzbMage is a comic book converter. It aims to do exactly two things:
 1. **Convert azw files to nice cbz files**, ready to read in your favorite cbz reader. Azw files entirely like the ones found in Kdl for PC or Mac. 
 Additionally, if CbzMage finds a matching azw.res file it will **merge in any HD images found for the highest possible quality**. 
-Comic title and publisher will be read from the azw file, and running CbzMage in scan mode will allow you to edit the values before the conversion. 
+Comic title and publisher will be read from the azw file, and running CbzMage in scan mode will allow you to edit the values before the conversion. You can also point CbzMage at a file or directory and it will process any azw or azw3 files it finds directly.
 2. **Convert pdf files to nice cbz files**. Point CbzMage at a single pdf comic book or a directory of pdf comic books and it will convert them to cbz files in the highest possible quality.
 
 **All of this works fully in [CbzMage Version 0.25](https://github.com/ToofDerling/CbzMage/releases/tag/v0.25).**
@@ -11,7 +11,7 @@ CbzMage is a commandline tool written in c#. It requires no installation, very l
 
 CbzMage is released for Windows, Linux, and macOS (but support for the macOS version will be limited as I don't own a Mac). Since the Kdl app only works on PC and Mac the azw conversion is probably not relevant for Linux users, but the pdf conversion works as advertised (but see the note about Ghostscript 10 on Linux below).
 
-Download CbzMage to your hard drive and unpack it anywhere. Have a look at the settings in the CbzMageSettings.json file, they are all thoroughly documented there (I hope). Open a command shell and run CbzMage right away, or check out some more information: 
+Download CbzMage to your hard drive and unpack it anywhere. Have a look at the settings in AzwConvertSettings.json or PdfConvertSettings.json, they are all thoroughly documented there (I hope). Open a command shell and run CbzMage right away, or check out some more information: 
 
 ## Azw conversion.
 
@@ -19,14 +19,14 @@ Open the AzwSettings.json file in a text editor and **configure AzwDir**. Please
 
 **Important:** Close Kdl before running CbzMage. Kdl locks some of the azw files when it's running, so there's a high chance that CbzMage will crash because it can't read a locked azw file.
 
-**Running CbzMage with the "AzwConvert" parameter:**
+**Running CbzMage with the "AzwConvert" parameter.**
 
 * In the titles directory (TitlesDir in AzwSettings.json) you will find a small file with the title and publisher of each comic book currently in the azw directory.  
 * In a subdirectory of the titles directory you will find a similar file for each converted title. If you ever want **to reconvert a title simply delete the title file from the converted titles directory.**
 * In the cbz directory (CbzDir in AzwSettings.json) you will find the converted comic books sorted by publisher. 
 * If you set SaveCover to true in AzwSettings.json CbzMage will save a copy of the cover image together with the cbz file. If you specify SaveCoverDir the cover image will be saved there instead. There's even a SaveCoverOnly option if you just want the covers.
 
-**Running CbzMage with the "AzwScan" parameter:**
+**Running CbzMage with the "AzwScan" parameter.**
 
 * Like the conversion, in the titles directory you will find a small file with the title and publisher of each comic book currently in the azw directory.  
 * Unlike the conversion, each new title will have a ".NEW" marker (and each upgraded title will have an ".UPDATED" marker). 
@@ -39,19 +39,25 @@ Open the AzwSettings.json file in a text editor and **configure AzwDir**. Please
 * **The converted titles directory** contains your converted titles. To reconvert a title you must delete the file in that directory. 
 * **The database.** In the titles directory there's a database file with the state of every title that has passed through CbzMage. It's used when checking if a title has been updated and to store the new name and publisher of the title if you edit these values.
 
+**Using CbzMage to convert or scan files directly.**
+
+* **Specify a file or directory after the AzwConvert or AzwScan command** and CbzMage will process any azw or azw3 files it finds directly. All the TitleDir infrastructure is ignored. 
+* You can still use CbzDir to tell CbzMage where to create the cbz files, else they will be created in the directory with the azw/azw3 files.
+* SaveCover and SaveCoverDir also works (but SaveCoverOnly does not).
+
 ## Pdf conversion.
 
 It's been mentioned before, but let me say it again: pdf conversion requires that that **[Ghostscript version 10+](https://ghostscript.com/releases/gsdnld.html)** is installed on your computer. Once you have that part working there's no need to configure anything, simply try
 
 **Running CbzMage with the "PdfConvert" parameter:**
 
-* Open a command shell and point CbzMage at a single pdf file or a directory with pdf files and it will happily create a cbz file alongside each pdf (unless you have configured CbzDir in PdfSettings.json, then they will created in that directory). That's all there is to it, really.
+* Open a command shell and point CbzMage at a single pdf file or a directory with pdf files and it will happily create a cbz file alongside each pdf (unless you have configured CbzDir in PdfConvertSettings.json, then they will created in that directory). That's all there is to it, really.
 
 **Pdf conversion notes.**
 
 * **Ghostscript 10 on Linux.** The only distro I know of that has upgraded to Ghostscript version 10 is [Arch Linux](https://archlinux.org/). I tried a handful of the popular ones and they were all at version 9, which doesn't work with CbzMage. On distros other than Arch you can use the [snap build of Ghostscript 10](https://ghostscript.com/releases/gsdnld.html) which worked fine when I tested it on openSUSE Tumbleweed (the regular Ghostscript build found on the same page was a bit flaky during tests).
 * **Search subdirectories for pdf files**. To do this add two asterisks after the directory. On Windows: [directory]\\** On Linux (and macOs, I think) it must be included in quotes: "[directory]/\**"
-* **Cbz filesize.** Cbz files created by PdfConvert will typically be 50 - 100 % larger than the original pdf file. Now and then they're smaller and sometimes much larger - though CbzMage tries to handle the most extreme cases without sacrificing any of the conversion quality (see the MinimumHeight and MaximumHeight settings in CbzMageSettings.json).
+* **Cbz filesize.** Cbz files created by PdfConvert will typically be 50 - 100 % larger than the original pdf file. Now and then they're smaller and sometimes much larger - though CbzMage tries to handle the most extreme cases without sacrificing any of the conversion quality (see the MinimumHeight and MaximumHeight settings in PdfConvertSettings.json).
 * **SaveCover and CbzDir** both works the same as for AzwConvert. And the same goes for the rest of the settings that are shared between the two conversion modes.
 
 ##

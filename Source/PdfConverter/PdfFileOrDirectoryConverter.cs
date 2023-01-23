@@ -1,3 +1,4 @@
+using CbzMage.Shared;
 using CbzMage.Shared.Extensions;
 using CbzMage.Shared.Helpers;
 using PdfConverter.Helpers;
@@ -80,12 +81,8 @@ namespace PdfConverter
 
         private List<Pdf> InitializePdfPath(string path)
         {
-            var scanAllDirectories = false;
-            if (path.EndsWith(Settings.ScanAllDirectoriesPattern))
-            {
-                scanAllDirectories = true;
-                path = path.Replace(Settings.ScanAllDirectoriesPattern, null);
-            }
+            // Must run before before the checks for file/dir existance
+            path = SharedSettings.GetDirectorySearchOption(path, out var searchOption);
 
             if (string.IsNullOrEmpty(path))
             {
@@ -94,8 +91,8 @@ namespace PdfConverter
 
             if (Directory.Exists(path))
             {
-                var files = Directory.GetFiles(path, "*.pdf",
-                    scanAllDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
+                var files = Directory.GetFiles(path, "*.pdf", searchOption);
+
                 if (files.Length > 0)
                 {
                     return Pdf.List(files.ToArray());
