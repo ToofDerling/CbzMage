@@ -10,7 +10,7 @@ namespace AzwConverter.Converter
 {
     public class AzwFileOrDirectoryConverter : BaseAzwConverter
     {
-        private readonly string _fileOrDirectory;
+        private string _fileOrDirectory;
 
         public AzwFileOrDirectoryConverter(CbzMageAction action, string fileOrDirectory)
             : base(action)
@@ -32,6 +32,9 @@ namespace AzwConverter.Converter
             {
                 throw new ArgumentNullException(nameof(_fileOrDirectory));
             }
+
+            // Must run before before the checks for file/dir existance
+            _fileOrDirectory = SharedSettings.GetDirectorySearchOption(_fileOrDirectory, out var searchOption);
 
             var azwFiles = new List<FileInfo>();
             var allFiles = new List<FileInfo>();
@@ -60,7 +63,7 @@ namespace AzwConverter.Converter
             else if (Directory.Exists(_fileOrDirectory))
             {
                 var directoryInfo = new DirectoryInfo(_fileOrDirectory);
-                allFiles.AddRange(directoryInfo.GetFiles());
+                allFiles.AddRange(directoryInfo.GetFiles("*", searchOption));
 
                 azwFiles = allFiles.Where(file => file.IsAzwOrAzw3File()).ToList();
                 if (azwFiles.Count == 0)

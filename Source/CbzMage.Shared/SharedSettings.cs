@@ -51,5 +51,20 @@ namespace CbzMage.Shared
             var page = pageNumber.ToString().PadLeft(4, '0');
             return $"page-{page}.jpg";
         }
+
+        private static string ScanAllDirectoriesPattern => $"{Path.DirectorySeparatorChar}**";
+
+        public static string GetDirectorySearchOption(string directory, out SearchOption searchOption)
+        {
+            searchOption = SearchOption.TopDirectoryOnly;
+
+            if (directory.EndsWith(ScanAllDirectoriesPattern))
+            {
+                searchOption = SearchOption.AllDirectories;
+                directory = directory.Replace(ScanAllDirectoriesPattern, null);
+            }
+
+            return directory ;
+        }
     }
 }
