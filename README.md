@@ -49,7 +49,7 @@ Open the AzwSettings.json file in a text editor and **configure AzwDir**. Please
 
 It's been mentioned before, but let me say it again: pdf conversion requires that that **[Ghostscript version 10+](https://ghostscript.com/releases/gsdnld.html)** is installed on your computer. Once you have that part working there's no need to configure anything, simply try
 
-**Running CbzMage with the "PdfConvert" parameter:**
+**Running CbzMage with the "PdfConvert" parameter.**
 
 * Open a command shell and point CbzMage at a single pdf file or a directory with pdf files and it will happily create a cbz file alongside each pdf (unless you have configured CbzDir in PdfConvertSettings.json, then they will created in that directory). That's all there is to it, really.
 
