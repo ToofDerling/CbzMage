@@ -265,8 +265,8 @@ namespace AzwConverter.Converter
 
         private async Task SaveCoverAsync(string bookId, FileInfo[] dataFiles, string coverFile)
         {
-            var engine = new CoverEngine();
-            await engine.SaveCoverAsync(bookId, dataFiles, coverFile);
+            var engine = new SaveBookCoverEngine();
+            await engine.SaveBookCoverAsync(bookId, dataFiles, coverFile);
 
             var insert = BookCountOutputHelper(coverFile, out var sb);
 

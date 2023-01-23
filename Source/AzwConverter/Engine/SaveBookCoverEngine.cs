@@ -3,12 +3,12 @@ using MobiMetadata;
 
 namespace AzwConverter.Engine
 {
-    public class CoverEngine : AbstractImageEngine
+    public class SaveBookCoverEngine : AbstractImageEngine
     {
         private string? _coverFile;
         private string? _coverString;
 
-        public async Task<CbzState> SaveCoverAsync(string bookId, FileInfo[] dataFiles, string coverFile)
+        public async Task<CbzState> SaveBookCoverAsync(string bookId, FileInfo[] dataFiles, string coverFile)
         {
             _coverFile = coverFile;
 
