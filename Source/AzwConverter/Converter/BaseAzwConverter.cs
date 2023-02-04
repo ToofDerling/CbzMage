@@ -176,5 +176,15 @@ namespace AzwConverter.Converter
         }
 
         private static readonly object _msgLock = new();
+
+        protected void PrintCoverString(string coverFile, string coverString)
+        {
+            var insert = BookCountOutputHelper(coverFile, out var sb);
+
+            sb.AppendLine();
+            sb.Append(insert).Append(coverString);
+
+            ProgressReporter.Info(sb.ToString());
+        }
     }
 }

@@ -268,12 +268,7 @@ namespace AzwConverter.Converter
             var engine = new SaveBookCoverEngine();
             await engine.SaveBookCoverAsync(bookId, dataFiles, coverFile);
 
-            var insert = BookCountOutputHelper(coverFile, out var sb);
-
-            sb.AppendLine();
-            sb.Append(insert).Append(engine.GetCoverString());
-
-            Console.WriteLine(sb.ToString());
+            PrintCoverString(coverFile, engine.GetCoverString()!);
         }
 
         private static string? GetCoverFile(FileInfo titleFile, string cbzFile)

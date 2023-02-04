@@ -5,7 +5,7 @@ namespace AzwConverter.Engine
 {
     public class SaveBookCoverEngine : AbstractImageEngine
     {
-        private string? _coverFile;
+        protected string? _coverFile;
         private string? _coverString;
 
         public async Task<CbzState> SaveBookCoverAsync(string bookId, FileInfo[] dataFiles, string coverFile)
