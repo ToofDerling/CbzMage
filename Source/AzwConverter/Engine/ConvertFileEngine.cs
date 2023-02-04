@@ -21,13 +21,10 @@ namespace AzwConverter.Engine
             return state;
         }
 
-        protected override MobiMetadata.MobiMetadata? GetCachedMobiMetadata(string bookId)
-        {
-            return null;
-        }
-
         protected override FileInfo? SelectHDContainer(FileInfo[] dataFiles)
         {
+            IgnoreHDContainerWarning = true;
+
             var hdContainer = HDContainerHelper.FindHDContainer(Metadata!, _hdHeaderList);
             
             if (hdContainer != null) 
@@ -36,11 +33,6 @@ namespace AzwConverter.Engine
             }
 
             return hdContainer;
-        }
-
-        protected override void DisplayHDContainerWarning(string fileName, string title)
-        {
-            //NOP 
         }
 
         protected override async Task<CbzState> ProcessImagesAsync(PageRecords? pageRecordsHd, PageRecords pageRecords)
@@ -66,7 +58,19 @@ namespace AzwConverter.Engine
 
         private static string? GetCoverFile(string cbzFile)
         {
-            return Settings.SaveCover ? Path.ChangeExtension(cbzFile, ".jpg") : null;
+            if (!Settings.SaveCover)
+            { 
+                return null;
+            }
+
+            var cover = Path.ChangeExtension(cbzFile, ".jpg");
+
+            if (!string.IsNullOrEmpty(Settings.SaveCoverDir))
+            {
+                return Path.Combine(Settings.SaveCoverDir, Path.GetFileName(cover));
+            }
+
+            return cover;
         }
     }
 }

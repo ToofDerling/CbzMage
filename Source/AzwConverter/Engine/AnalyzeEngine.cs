@@ -26,6 +26,8 @@ namespace AzwConverter.Engine
 
             _analysisDir = !string.IsNullOrEmpty(Settings.AnalysisDir);
 
+            IgnoreHDContainerWarning = true;
+
             return await ReadImageDataAsync(bookId, dataFiles);
         }
 
@@ -37,11 +39,6 @@ namespace AzwConverter.Engine
         public string GetAnalyzeMessageError()
         {
             return _analyzeMessageError;
-        }
-
-        protected override void DisplayHDContainerWarning(string fileName, string title)
-        {
-            //NOP
         }
 
         protected override async Task<CbzState> ProcessImagesAsync(PageRecords? pageRecordsHd, PageRecords pageRecords)

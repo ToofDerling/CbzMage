@@ -12,16 +12,14 @@ namespace PdfConverter
         private readonly JobExecutor<string> _converterExecutor;
         private readonly JobWaiter _jobWaiter;
 
-        private readonly Pdf _pdf;
         private readonly Queue<int> _pageQueue;
         private readonly ConcurrentDictionary<string, ArrayPoolBufferWriter<byte>> _convertedPages;
 
         private readonly int? _resizeHeight;
 
-        public PageConverter(Pdf pdf, Queue<int> pageQueue, 
+        public PageConverter(Queue<int> pageQueue,  
             ConcurrentDictionary<string, ArrayPoolBufferWriter<byte>> convertedPages, int? resizeHeight)
         {
-            _pdf = pdf;
             _pageQueue = pageQueue;
 
             _convertedPages = convertedPages;

@@ -11,25 +11,16 @@ namespace AzwConverter.Engine
             _hdHeaderList = hdHeaderList;
 
             var state = await ReadImageDataAsync(azwFile.Name, azwFile);
-
             state.Name = Metadata!.MobiHeader.GetFullTitle();
 
             return state;
         }
 
-        protected override MobiMetadata.MobiMetadata? GetCachedMobiMetadata(string bookId)
-        {
-            return null;
-        }
-
         protected override FileInfo? SelectHDContainer(FileInfo[] dataFiles)
         {
-            return HDContainerHelper.FindHDContainer(Metadata!, _hdHeaderList);
-        }
+            IgnoreHDContainerWarning = true;
 
-        protected override void DisplayHDContainerWarning(string fileName, string title)
-        {
-            //NOP
+            return HDContainerHelper.FindHDContainer(Metadata!, _hdHeaderList);
         }
     }
 }

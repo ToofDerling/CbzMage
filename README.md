@@ -5,7 +5,7 @@ Additionally, if CbzMage finds a matching azw.res file it will **merge in any HD
 Comic title and publisher will be read from the azw file, and running CbzMage in scan mode will allow you to edit the values before the conversion. You can also point CbzMage at a file or directory and it will process any azw or azw3 files it finds directly.
 2. **Convert pdf files to nice cbz files**. Point CbzMage at a single pdf comic book or a directory of pdf comic books and it will convert them to cbz files in the highest possible quality.
 
-**All of this works fully in [CbzMage Version 0.25](https://github.com/ToofDerling/CbzMage/releases/tag/v0.25).**
+**All of this works fully in [CbzMage Version 0.26](https://github.com/ToofDerling/CbzMage/releases/tag/v0.26).**
 
 CbzMage is a commandline tool written in c#. It requires no installation, very little configuration and no drm plugin/tool (the last part may change in the future). It does require that **[.NET 6](https://dotnet.microsoft.com/en-us/download)** is installed on your computer. The pdf conversion requires that **[Ghostscript version 10+](https://ghostscript.com/releases/gsdnld.html)** is installed on your computer.
 
@@ -42,14 +42,15 @@ Open the AzwSettings.json file in a text editor and **configure AzwDir**. Please
 **Using CbzMage to convert or scan files directly.**
 
 * **Specify a file or directory after the AzwConvert or AzwScan command** and CbzMage will process any azw or azw3 files it finds directly. All the TitleDir infrastructure is ignored. 
+* Add two asterisks after the directory to search subdirectories for files. On Windows: [directory]\\** On Linux (and macOs, I think) it must be included in quotes: "[directory]/\**"
 * You can still use CbzDir to tell CbzMage where to create the cbz files, else they will be created in the directory with the azw/azw3 files.
-* SaveCover and SaveCoverDir also works (but SaveCoverOnly does not).
+* SaveCover, SaveCoverDir, and SaveCoverOnly also works.
 
 ## Pdf conversion.
 
 It's been mentioned before, but let me say it again: pdf conversion requires that that **[Ghostscript version 10+](https://ghostscript.com/releases/gsdnld.html)** is installed on your computer. Once you have that part working there's no need to configure anything, simply try
 
-**Running CbzMage with the "PdfConvert" parameter:**
+**Running CbzMage with the "PdfConvert" parameter.**
 
 * Open a command shell and point CbzMage at a single pdf file or a directory with pdf files and it will happily create a cbz file alongside each pdf (unless you have configured CbzDir in PdfConvertSettings.json, then they will created in that directory). That's all there is to it, really.
 

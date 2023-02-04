@@ -39,7 +39,8 @@ namespace AzwConverter
                             var engine = new MetadataEngine();
                             (metadata, disposables) = await engine.GetMetadataAsync(bookFiles);
 
-                            if (!metadata.MobiHeader.ExthHeader.BookType.EqualsIgnoreCase("comic"))
+                            if (!Settings.ConvertAllBookTypes
+                                && !metadata.MobiHeader.ExthHeader.BookType.EqualsIgnoreCase("comic"))
                             {
                                 skippedBooks.Add(bookId);
                                 return;
@@ -79,7 +80,7 @@ namespace AzwConverter
             }
 
             foreach (var bookId in skippedBooks)
-            { 
+            {
                 books.Remove(bookId);
             }
 
@@ -166,7 +167,7 @@ namespace AzwConverter
             convertedTitles.AsParallel().ForAll(convertedTitle =>
             {
                 if (!titles.TryGetValue(convertedTitle.Key, out var _))
-                { 
+                {
                     idsToRemove.Add(convertedTitle.Key);
                     convertedTitle.Value.Delete();
                 }

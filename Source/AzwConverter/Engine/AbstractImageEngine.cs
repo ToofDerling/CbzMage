@@ -8,6 +8,8 @@ namespace AzwConverter.Engine
     {
         protected MobiMetadata.MobiMetadata? Metadata { get; set; }
 
+        protected bool IgnoreHDContainerWarning { get; set; }
+
         protected async Task<(MobiMetadata.MobiMetadata, IDisposable[])> ReadMetadataAsync(FileInfo[] dataFiles)
         {
             var azwFile = dataFiles.First(file => file.IsAzwOrAzw3File());
@@ -22,7 +24,7 @@ namespace AzwConverter.Engine
                 ProgressReporter.Warning($"Error reading [{azwFile.FullName}] is Kdl running?");
                 throw;
             }
-            
+
             var stream = mappedFile.CreateViewStream();
 
             var disposables = new IDisposable[] { stream, mappedFile };
@@ -44,7 +46,7 @@ namespace AzwConverter.Engine
 
         protected async Task<CbzState> ReadImageDataAsync(string bookId, params FileInfo[] dataFiles)
         {
-            var metadata = GetCachedMobiMetadata(bookId);
+            var metadata = MetadataManager.GetCachedMetadata(bookId);
 
             IDisposable[]? disposables = null;
             try
@@ -66,9 +68,13 @@ namespace AzwConverter.Engine
 
                     return await ProcessImagesAsync(metadata.PageRecordsHD, metadata.PageRecords);
                 }
-                else  
+                else
                 {
-                    DisplayHDContainerWarning(bookId, metadata.MobiHeader.GetFullTitle());
+                    if (!IgnoreHDContainerWarning)
+                    {
+                        ProgressReporter.Warning(
+                            $"{Environment.NewLine}[{bookId}] / [{metadata.MobiHeader.GetFullTitle()}]: no HD image container");
+                    }
 
                     return await ProcessImagesAsync(null, metadata.PageRecords);
                 }
@@ -86,20 +92,9 @@ namespace AzwConverter.Engine
             }
         }
 
-        protected virtual MobiMetadata.MobiMetadata? GetCachedMobiMetadata(string bookId)
-        {
-            return MetadataManager.GetCachedMetadata(bookId);
-        }
-
         protected virtual FileInfo? SelectHDContainer(FileInfo[] dataFiles)
-        { 
-            return dataFiles.FirstOrDefault(file => file.IsAzwResOrAzw6File());
-        }
-
-        protected virtual void DisplayHDContainerWarning(string fileName, string title)
         {
-            ProgressReporter.Warning(
-                $"{Environment.NewLine}[{fileName}] / [{title}]: no HD image container");
+            return dataFiles.FirstOrDefault(file => file.IsAzwResOrAzw6File());
         }
 
         protected abstract Task<CbzState> ProcessImagesAsync(PageRecords? pageRecordsHd, PageRecords pageRecords);
