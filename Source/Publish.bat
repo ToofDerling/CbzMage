@@ -5,6 +5,7 @@ set zip="C:\Program Files\7-Zip\7z.exe" a -tzip
 cd ..\publish
 for %%v in (*.minor) do set oldminor=%%~nv
 set /a newminor=oldminor + 1
+set /a oldestminor=newminor - 5 
 move %oldminor%.minor %newminor%.minor >nul:
 for %%v in (*.major) do set major=%%~nv
 set oldversion=%major%.%oldminor%
@@ -18,6 +19,7 @@ for %%t in (%targets%) do (
 )
 cd ..\..\publish
 for %%t in (%targets%) do call :create_target %%t
+del CbzMage%major%.%oldestminor%_*.zip
 cd ..\Source
 echo Done
 pause
