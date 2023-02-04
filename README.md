@@ -42,8 +42,9 @@ Open the AzwSettings.json file in a text editor and **configure AzwDir**. Please
 **Using CbzMage to convert or scan files directly.**
 
 * **Specify a file or directory after the AzwConvert or AzwScan command** and CbzMage will process any azw or azw3 files it finds directly. All the TitleDir infrastructure is ignored. 
+* **Search subdirectories for files**. To do this add two asterisks after the directory. On Windows: [directory]\\** On Linux (and macOs, I think) it must be included in quotes: "[directory]/\**"
 * You can still use CbzDir to tell CbzMage where to create the cbz files, else they will be created in the directory with the azw/azw3 files.
-* SaveCover and SaveCoverDir also works (but SaveCoverOnly does not).
+* SaveCover, SaveCoverDir, and SaveCoverOnly also works.
 
 ## Pdf conversion.
 
