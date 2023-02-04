@@ -58,7 +58,19 @@ namespace AzwConverter.Engine
 
         private static string? GetCoverFile(string cbzFile)
         {
-            return Settings.SaveCover ? Path.ChangeExtension(cbzFile, ".jpg") : null;
+            if (!Settings.SaveCover)
+            { 
+                return null;
+            }
+
+            var cover = Path.ChangeExtension(cbzFile, ".jpg");
+
+            if (!string.IsNullOrEmpty(Settings.SaveCoverDir))
+            {
+                return Path.Combine(Settings.SaveCoverDir, Path.GetFileName(cover));
+            }
+
+            return cover;
         }
     }
 }
