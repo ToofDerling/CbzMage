@@ -1,5 +1,4 @@
 ﻿using CbzMage.Shared.IO;
-using MobiMetadata;
 
 namespace AzwConverter.Engine
 {
@@ -16,43 +15,31 @@ namespace AzwConverter.Engine
         }
 
         public string? GetCoverString()
-        { 
+        {
             return _coverString;
         }
 
-        protected override async Task<CbzState> ProcessImagesAsync(PageRecords? pageRecordsHd, PageRecords pageRecords)
+        protected override async Task<CbzState> ProcessImagesAsync()
         {
-            await SaveCoverAsync(pageRecordsHd, pageRecords);
+            await SaveCoverAsync();
             return new CbzState();
         }
 
-        private async Task SaveCoverAsync(PageRecords? hdImageRecords, PageRecords sdImageRecords)
+        private async Task SaveCoverAsync()
         {
             using var stream = AsyncStreams.AsyncFileWriteStream(_coverFile!);
 
-            // First try HD cover
-            if (hdImageRecords != null && hdImageRecords.CoverRecord != null 
-                && await hdImageRecords.CoverRecord.TryWriteHDImageDataAsync(stream))
+            if (Metadata.MergedCoverRecord != null)
             {
-                _coverString = "HD cover";
+                await Metadata.MergedCoverRecord.WriteDataAsync(stream);
+
+                _coverString = Metadata.IsHdCover() ? "HD cover" : "SD cover";
             }
-            // Then the SD cover
-            else if (sdImageRecords.CoverRecord != null)
-            {
-                await sdImageRecords.CoverRecord.WriteDataAsync(stream);
-                _coverString = "SD cover";
-            }
-            // Then the first HD page
-            else if (hdImageRecords != null && hdImageRecords.ContentRecords.Count > 0
-                && await hdImageRecords.ContentRecords[0].TryWriteHDImageDataAsync(stream))
-            {
-                _coverString = "HD page 1";
-            }
-            // Then the first SD page
             else
             {
-                await sdImageRecords.ContentRecords[0].WriteDataAsync(stream);
-                _coverString = "SD page 1";
+                await Metadata.MergedImageRecords[0].WriteDataAsync(stream);
+
+                _coverString = Metadata.IsHdPage(0) ? "HD page 1" : "SD page 1";
             }
         }
     }

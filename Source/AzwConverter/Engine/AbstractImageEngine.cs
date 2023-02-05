@@ -6,7 +6,7 @@ namespace AzwConverter.Engine
 {
     public abstract class AbstractImageEngine
     {
-        protected MobiMetadata.MobiMetadata? Metadata { get; set; }
+        protected MobiMetadata.MobiMetadata Metadata { get; set; }
 
         protected bool IgnoreHDContainerWarning { get; set; }
 
@@ -56,7 +56,6 @@ namespace AzwConverter.Engine
                     (metadata, disposables) = await ReadMetadataAsync(dataFiles);
                 }
                 Metadata = metadata;
-                await metadata.ReadImageRecordsAsync();
 
                 var hdContainer = SelectHDContainer(dataFiles);
                 if (hdContainer != null)
@@ -64,19 +63,21 @@ namespace AzwConverter.Engine
                     using var hdMappedFile = MemoryMappedFile.CreateFromFile(hdContainer.FullName);
                     using var hdStream = hdMappedFile.CreateViewStream();
 
-                    await metadata.ReadHDImageRecordsAsync(hdStream);
+                    await metadata.SetImageRecordsAsync(hdStream);
 
-                    return await ProcessImagesAsync(metadata.PageRecordsHD, metadata.PageRecords);
+                    return await ProcessImagesAsync();
                 }
                 else
                 {
+                    await metadata.SetImageRecordsAsync(null);
+
                     if (!IgnoreHDContainerWarning)
                     {
                         ProgressReporter.Warning(
                             $"{Environment.NewLine}[{bookId}] / [{metadata.MobiHeader.GetFullTitle()}]: no HD image container");
                     }
 
-                    return await ProcessImagesAsync(null, metadata.PageRecords);
+                    return await ProcessImagesAsync();
                 }
             }
             finally
@@ -97,6 +98,6 @@ namespace AzwConverter.Engine
             return dataFiles.FirstOrDefault(file => file.IsAzwResOrAzw6File());
         }
 
-        protected abstract Task<CbzState> ProcessImagesAsync(PageRecords? pageRecordsHd, PageRecords pageRecords);
+        protected abstract Task<CbzState> ProcessImagesAsync();
     }
 }

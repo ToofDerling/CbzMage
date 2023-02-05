@@ -2,6 +2,7 @@
 using CbzMage.Shared.Helpers;
 using ImageMagick;
 using MobiMetadata;
+using System.Text;
 
 namespace AzwConverter.Engine
 {
@@ -41,65 +42,104 @@ namespace AzwConverter.Engine
             return _analyzeMessageError;
         }
 
-        protected override async Task<CbzState> ProcessImagesAsync(PageRecords? pageRecordsHd, PageRecords pageRecords)
-            => await AnalyzeBookAsync(pageRecordsHd, pageRecords);
+        protected override async Task<CbzState> ProcessImagesAsync()
+            => await AnalyzeBookAsync();
 
-        private async Task<CbzState> AnalyzeBookAsync(PageRecords? hdImageRecords, PageRecords sdImageRecords)
+        private async Task<CbzState> AnalyzeBookAsync()
         {
             var state = new CbzState();
 
-            //var bookType = Metadata.MobiHeader.ExthHeader.BookType;
+            //var messageOk = new StringBuilder();
+            var messageError = new StringBuilder();
 
-            //if (bookType.EqualsIgnoreCase("comic"))
+            var bookType = Metadata.MobiHeader.ExthHeader.BookType;
+
+            if (!bookType.EqualsIgnoreCase("comic"))
+            {
+                AppendMsg(messageError, bookType);
+            }
+
+            //foreach (var record in sdImageRecords.ImageRecords) 
             //{
-            //    _analyzeMessageOk = bookType;
-            //}
-            //else
-            //{
-            //    _analyzeMessageError = bookType;
+            //    if (await record.IsFontRecordAsync())
+            //    {
+            //        AppendMsg(messageError, "FONT");
+            //    }
             //}
 
             //if (hdImageRecords != null)
             //{
-            //    //TODO TEST THIS
             //    if (Metadata.Azw6Header.Title != Metadata.MobiHeader.ExthHeader.UpdatedTitle)
             //    {
-            //        _analyzeMessageError = $"[{Metadata.Azw6Header.Title}] vs [{Metadata.MobiHeader.ExthHeader.UpdatedTitle}]";
-            //        //throw new MobiMetadataException(_analyzeMessageError);
-            //    }
-            //    else
-            //    {
-            //        _analyzeMessageOk = Metadata.Azw6Header.Title;
+            //        var msg = $"[{Metadata.Azw6Header.Title}] vs [{Metadata.MobiHeader.ExthHeader.UpdatedTitle}]";
+            //        AppendMsg(messageError, msg);
             //    }
             //}
 
-            if (hdImageRecords != null)
+            //if (hdImageRecords != null)
+            //{
+            //    var rescRecords = sdImageRecords.ContentRecords.Count;
+            //    if (sdImageRecords.CoverRecord != null)
+            //    {
+            //        rescRecords++;
+            //    }
+
+            //    if (Metadata.Azw6Header.RescRecordsCount != rescRecords)
+            //    {
+            //        var msg = $"hd: {Metadata.Azw6Header.RescRecordsCount} sd: {rescRecords}";
+            //        AppendMsg(messageError, msg);
+            //    }
+            //}
+
+            if (Metadata.HdContainerRecords != null)
             {
-                var rescRecords = sdImageRecords.ContentRecords.Count;
-                if (sdImageRecords.CoverRecord != null)
+                var cresCount = 0;
+                var placeHolderCount = 0;
+
+                foreach (var hdImageRecord in Metadata.HdContainerRecords.ImageRecords)
                 {
-                    rescRecords++;
+                    var isCres = await hdImageRecord.IsCresRecordAsync();
+                    if (isCres)
+                    {
+                        cresCount++;
+                    }
+
+                    var isPlaceHolder = hdImageRecord.IsCresPlaceHolder();
+                    if (isPlaceHolder)
+                    {
+                        placeHolderCount++;
+                    }
+
+                    if (!isCres && !isPlaceHolder)
+                    {
+                        throw new Exception($"{Metadata.MobiHeader.ExthHeader.UpdatedTitle} isCres & isPlaceholder both false");
+                    }
                 }
 
-                string msg = $"hd: {Metadata.Azw6Header.RescRecordsCount} sd: {rescRecords}";
+                var total = cresCount + placeHolderCount;
+                _analyzeMessageOk = $"{total} cres: {cresCount} placeholder: {placeHolderCount}";
 
-                if (Metadata.Azw6Header.RescRecordsCount != rescRecords)
+                if (total != Metadata.PageRecords.RescRecord.PageCount)
                 {
-                    throw new Exception(msg);
+                    throw new Exception($"{Metadata.MobiHeader.ExthHeader.UpdatedTitle} {total} vs {Metadata.PageRecords.RescRecord.PageCount}");
                 }
-                _analyzeMessageOk = msg;
             }
 
             if (!_analyzeImages)
             {
-                state.Pages = sdImageRecords.ContentRecords.Count;
+                if (messageError.Length> 0) 
+                {
+                    _analyzeMessageError = messageError.ToString();
+                }
+
+                state.Pages = Metadata.PageRecords.ImageRecords.Count;
                 return state;
             }
 
             var sdDir = Path.Combine(_bookDir, "SD");
 
             string hdDir = null;
-            if (hdImageRecords != null)
+            if (Metadata.HdContainerRecords != null)
             {
                 hdDir = Path.Combine(_bookDir, "HD");
             }
@@ -108,52 +148,34 @@ namespace AzwConverter.Engine
             var name = coverName;
 
             // HD cover
-            if (hdImageRecords != null && hdImageRecords.CoverRecord != null)
+            if (Metadata.HdContainerRecords != null && Metadata.HdContainerRecords.CoverRecord != null)
             {
                 state.HdCover = true;
             }
 
             // SD cover
-            if (sdImageRecords.CoverRecord != null)
+            if (Metadata.PageRecords.CoverRecord != null)
             {
                 state.SdCover = true;
             }
 
-            if (!await IsUnexpectedHdRecordAsync(hdImageRecords?.CoverRecord, hdDir, name))
+            if (!await IsUnexpectedHdRecordAsync(Metadata.HdContainerRecords?.CoverRecord, hdDir, name))
             {
-                //SaveRecords(sdImageRecords, sdDir);
-                //SaveRecords(hdImageRecords, hdDir);
-                await CompareRecordsAsync(name, hdImageRecords?.CoverRecord, hdDir, sdImageRecords.CoverRecord, sdDir);
-            }
-
-            // pages
-            for (int i = 0, sz = sdImageRecords.ContentRecords.Count; i < sz; i++)
-            {
-                // SD
-                state.SdImages++;
-                state.Pages++;
-
-                // HD
-                if (hdImageRecords != null)
-                {
-                    var hdRecord = hdImageRecords.ContentRecords[i];
-                    if (await hdRecord.IsCresRecordAsync())
-                    {
-                        state.HdImages++;
-                    }
-
-                    name = i.ToString().PadLeft(4, '0');
-
-                    if (!await IsUnexpectedHdRecordAsync(hdRecord, hdDir, name))
-                    {
-                        //SaveRecords(sdImageRecords, sdDir);
-                        //SaveRecords(hdImageRecords, hdDir);
-                        await CompareRecordsAsync(name, hdRecord, hdDir, sdImageRecords.ContentRecords[i], sdDir);
-                    }
-                }
+                await SaveRecordsAsync(Metadata.PageRecords, sdDir);
+                await SaveRecordsAsync(Metadata.HdContainerRecords!, hdDir);
+                //await CompareRecordsAsync(name, hdImageRecords?.CoverRecord, hdDir, sdImageRecords.CoverRecord, sdDir);
             }
 
             return state;
+        }
+
+        private static void AppendMsg(StringBuilder sb, string msg)
+        {
+            if (sb.Length > 0)
+            {
+                sb.AppendLine();
+            };
+            sb.Append(msg);
         }
 
         public async Task<bool> IsUnexpectedHdRecordAsync(PageRecord? hdRecord, string hdDir, string name)
@@ -199,9 +221,9 @@ namespace AzwConverter.Engine
                 await SaveRecordDataAsync(records.CoverRecord, path);
             }
 
-            for (var i = 1; i <= records.ContentRecords.Count - 1; i++)
+            for (var i = 0; i < records.ImageRecords.Count; i++)
             {
-                var rec = records.ContentRecords[i];
+                var rec = records.ImageRecords[i];
 
                 var name = i.ToString().PadLeft(4, '0');
                 if (await rec.IsCresRecordAsync())

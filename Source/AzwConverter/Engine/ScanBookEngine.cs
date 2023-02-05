@@ -1,34 +1,25 @@
-﻿using MobiMetadata;
-
-namespace AzwConverter.Engine
+﻿namespace AzwConverter.Engine
 {
     public class ScanBookEngine : AbstractImageEngine
     {
-        public async Task<CbzState> ScanBookAsync(string bookId, FileInfo[] dataFiles) 
+        public async Task<CbzState> ScanBookAsync(string bookId, FileInfo[] dataFiles)
             => await ReadImageDataAsync(bookId, dataFiles);
 
-        protected override async Task<CbzState> ProcessImagesAsync(PageRecords? pageRecordsHd, PageRecords pageRecords) 
-            => await ReadCbzStateAsync(pageRecordsHd, pageRecords);
+        protected override Task<CbzState> ProcessImagesAsync() => Task.FromResult(ReadCbzState());
 
-        private static async Task<CbzState> ReadCbzStateAsync(PageRecords? hdImageRecords, PageRecords sdImageRecords)
+        private CbzState ReadCbzState()
         {
             var state = new CbzState
             {
-                HdCover = hdImageRecords != null && hdImageRecords.CoverRecord != null 
-                    && await hdImageRecords.CoverRecord.IsCresRecordAsync()
+                HdCover = Metadata.IsHdCover(),
+                SdCover = Metadata.IsSdCover(),
             };
 
-            if (!state.HdCover)
-            {
-                state.SdCover = sdImageRecords.CoverRecord != null;
-            }
-
-            for (int i = 0, sz = sdImageRecords.ContentRecords.Count; i < sz; i++)
+            for (int i = 0, sz = Metadata.MergedImageRecords.Count; i < sz; i++)
             {
                 state.Pages++;
 
-                if (hdImageRecords != null 
-                    && await hdImageRecords.ContentRecords[i].IsCresRecordAsync())
+                if (Metadata.IsHdPage(i))
                 {
                     state.HdImages++;
                 }
