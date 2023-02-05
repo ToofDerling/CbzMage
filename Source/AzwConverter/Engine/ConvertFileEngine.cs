@@ -35,12 +35,12 @@ namespace AzwConverter.Engine
             return hdContainer;
         }
 
-        protected override async Task<CbzState> ProcessImagesAsync(PageRecords? pageRecordsHd, PageRecords pageRecords)
+        protected override async Task<CbzState> ProcessImagesAsync()
         {
             _cbzFile = GetCbzFile(_azwFile!.FullName, Metadata!.MobiHeader.GetFullTitle());
             _coverFile = GetCoverFile(_cbzFile);
 
-            return await CreateCbzAsync(pageRecordsHd, pageRecords);
+            return await CreateCbzAsync();
         }
 
         private static string GetCbzFile(string azwFile, string title)

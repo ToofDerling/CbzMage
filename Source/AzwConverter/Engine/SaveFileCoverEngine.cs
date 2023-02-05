@@ -12,7 +12,7 @@ namespace AzwConverter.Engine
         {
             _hdHeaderList = hdHeaderList;
 
-            _azwFile= azwFile;
+            _azwFile = azwFile;
 
             return await ReadImageDataAsync(azwFile.Name, azwFile);
         }

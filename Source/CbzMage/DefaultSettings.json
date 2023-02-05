@@ -3,7 +3,7 @@
 {
   "AzwDir": "",
   "TitlesDir": "",
-  "ConvertAllBookTypes": false,
+  "ConvertAllBookTypes": true,
   "ConvertedTitlesDirName": "",
   "NewTitleMarker": "",
   "UpdatedTitleMarker": "",

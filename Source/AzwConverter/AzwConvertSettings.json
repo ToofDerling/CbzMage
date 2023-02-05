@@ -37,10 +37,12 @@
   // SaveCover must also be true for SaveCoverOnly to work. 
   "SaveCoverOnly": false,
 
-  // Normally CbzMage only scans and converts azw files where the BookType is 
-  // "comic". If you run into files that are ignored and you're sure they're comics 
-  // try changing ConvertAllBookTypes to true.
-  "ConvertAllBookTypes": false,
+  // Normally CbzMage scans and converts all azw files in your Kdl library. If you 
+  // set ConvertAllBookTypes to false it will only convert azw files with the 
+  // "comic" booktype, which may be useful if you also have regular books in your 
+  // library. But beware that some non-Cmxlgy graphic novels have a different 
+  // booktype than "comic", so be careful when changing this. 
+  "ConvertAllBookTypes": true,
 
   // The converted titles directory is a subdirectory of TitlesDir. The default
   // name is "Converted Titles", you can change it to something else below. Don't

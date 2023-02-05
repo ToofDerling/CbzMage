@@ -9,18 +9,12 @@ namespace AzwConverter.Engine
         {
             var title = metadata!.MobiHeader.FullName;
 
-            var rescRecords = metadata.PageRecords.ContentRecords.Count;
-            if (metadata.PageRecords.CoverRecord != null)
-            {
-                rescRecords++;
-            }
-
-            var list = hdHeaderList!.Where(header => header.Title == title && header.RescRecordsCount == rescRecords).ToList();
+            var list = hdHeaderList!.Where(header => header.Title == title).ToList();
 
             if (list.Count > 1)
             {
                 var errorMsg = 
-                    $"Found {list.Count} HD containers with the same title [{title}] and page count [{rescRecords}]:{Environment.NewLine}";
+                    $"Found {list.Count} HD containers with the same title [{title}]:{Environment.NewLine}";
 
                 var sb = new StringBuilder(errorMsg);
                 foreach (var header in list)
