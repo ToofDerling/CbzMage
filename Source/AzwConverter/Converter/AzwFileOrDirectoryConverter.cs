@@ -78,18 +78,18 @@ namespace AzwConverter.Converter
                 return;
             }
 
-            await DoConvertAzwFilesAndHDContainersAsync(azwFiles, allFiles);
+            var hdContainerFiles = allFiles.Where(file => file.IsAzwResOrAzw6File()).ToList();
+            await DoConvertAzwFilesAndHDContainersAsync(azwFiles, hdContainerFiles);
         }
 
         private async Task DoConvertAzwFilesAndHDContainersAsync(List<FileInfo> azwFiles,
-            List<FileInfo> allFiles)
+           List<FileInfo> hdContainerFiles)
         {
-            var hdContainerFiles = allFiles.Where(file => file.IsAzwResOrAzw6File()).ToList();
+            ProgressReporter.Line();
 
             var actionString = Action == CbzMageAction.AzwConvert ? "Converting" : "Listing";
-
-            ProgressReporter.Line();
             ProgressReporter.Info($"{actionString} {azwFiles.Count} azw/azw3 file{azwFiles.SIf1()}");
+
             if (hdContainerFiles.Count > 0)
             {
                 ProgressReporter.Info($"Found {hdContainerFiles.Count} azw.res/azw6 file{hdContainerFiles.SIf1()} with HD images");
@@ -99,19 +99,36 @@ namespace AzwConverter.Converter
 
             ConversionBegin();
 
-            var hdContainerHeaders = await AnalyzeHdContainersAsync(hdContainerFiles);
-            await ConvertAzwFilesAndHdContainersAsync(azwFiles, hdContainerHeaders);
+            var azwDict = azwFiles.ToDictionary(azw => azw.FullName, azw => new List<Azw6Head>());
+            var hdContainers = await AnalyzeHdContainersAsync(hdContainerFiles);
 
-            ConversionEnd(azwFiles.Count);
+            // Group hdcontainers by directory
+            var hdContainerLookup = hdContainers.ToLookup(hd => hd.Path!.Directory!.FullName);
+
+            // Match each azwfile with all hdcontainers in the same directory.
+            foreach (var azw in azwDict) 
+            {
+                var azwDir = Path.GetDirectoryName(azw.Key);
+                if (hdContainerLookup.Contains(azwDir!))
+                {
+                    azw.Value.AddRange(hdContainerLookup[azwDir!]);
+                }
+            }
+
+            await ConvertAzwFilesAndHdContainersAsync(azwDict);
+
+            ConversionEnd(azwDict.Count);
         }
 
-        private async Task ConvertAzwFilesAndHdContainersAsync(List<FileInfo> azwFiles,
-            List<Azw6Head> hdContainerHeaders)
+        private async Task ConvertAzwFilesAndHdContainersAsync(IDictionary<string, List<Azw6Head>> azwDict)
         {
-            await Parallel.ForEachAsync(azwFiles, Settings.ParallelOptions,
-                async (azwFile, _) =>
+            await Parallel.ForEachAsync(azwDict, Settings.ParallelOptions,
+                async (azw, _) =>
                 {
                     CbzState? state = null;
+
+                    var azwFile = new FileInfo(azw.Key);
+                    var hdContainers = azw.Value;
 
                     switch (Action)
                     {
@@ -120,14 +137,14 @@ namespace AzwConverter.Converter
                                 if (Settings.SaveCoverOnly)
                                 {
                                     var saveConverEngine = new SaveFileCoverEngine();
-                                    await saveConverEngine.SaveFileCoverAsync(azwFile, hdContainerHeaders);
+                                    await saveConverEngine.SaveFileCoverAsync(azwFile, hdContainers);
 
                                     PrintCoverString(saveConverEngine.GetCoverFile(), saveConverEngine.GetCoverString());
                                 }
                                 else
                                 {
                                     var convertEngine = new ConvertFileEngine();
-                                    state = await convertEngine.ConvertFileAsync(azwFile, hdContainerHeaders);
+                                    state = await convertEngine.ConvertFileAsync(azwFile, hdContainers);
 
                                     PrintCbzState(state!.Name, state);
                                 }
@@ -136,7 +153,7 @@ namespace AzwConverter.Converter
                         case CbzMageAction.AzwScan:
                             {
                                 var scanEngine = new ScanFileEngine();
-                                state = await scanEngine.ScanFileAsync(azwFile, hdContainerHeaders);
+                                state = await scanEngine.ScanFileAsync(azwFile, hdContainers);
 
                                 PrintCbzState(state!.Name, state);
                                 break;
