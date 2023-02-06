@@ -2,7 +2,7 @@ echo off
 set targets=CbzMage_Win CbzMage_Linux CbzMage_macOS
 set publish=dotnet publish -c Release -p:PublishProfile=
 set zip="C:\Program Files\7-Zip\7z.exe" a -tzip
-cd ..\publish
+cd ..\Publish
 for %%v in (*.minor) do set oldminor=%%~nv
 set /a newminor=oldminor + 1
 set /a oldestminor=newminor - 5 
@@ -12,12 +12,12 @@ set oldversion=%major%.%oldminor%
 set newversion=%major%.%newminor%
 echo Version: %newversion%
 for %%t in (%targets%) do if exist %%t rmdir /s /q %%t
-cd ..\source\cbzmage
+cd ..\Source\CbzMage
 for %%t in (%targets%) do (
 	echo Publish %%t
 	%publish%%%t >nul:
 )
-cd ..\..\publish
+cd ..\..\Publish
 for %%t in (%targets%) do call :create_target %%t
 del CbzMage%major%.%oldestminor%_*.zip
 cd ..\Source
