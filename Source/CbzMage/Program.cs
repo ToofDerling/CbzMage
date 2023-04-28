@@ -80,7 +80,7 @@ BlackSteedConvert [BlackSteed Convert] <directory>
                             case CbzMageAction.BlackSteedConvert:
                                 {
                                     var blackSteedConverter = new BlackSteedConverter.BlackSteedConverter();
-                                    blackSteedConverter.ConvertDirectory(path);
+                                    await blackSteedConverter.ConvertDirectoryAsync(path!);
                                 }
                                 break;
                         }

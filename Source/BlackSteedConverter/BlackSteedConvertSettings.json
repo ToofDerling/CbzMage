@@ -2,7 +2,10 @@
 // (or otherwise change the structure). Back slashes in directory paths must be 
 // quoted like this: "C:\\System\\Apps\\CbzMage\\CbzDir"
 {
+  "AdbPath": "C:\\System\\Apps\\Adb\\adb.exe",
   "CbzDir": "",
+  "TitlesDir": "",
   "SaveCover": false,
-  "CompressionLevel": "Fastest"
+  "CompressionLevel": "Fastest",
+  "NumberOfThreads": 0
 }

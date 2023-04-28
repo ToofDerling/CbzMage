@@ -3,7 +3,7 @@ using CbzMage.Shared;
 
 namespace BlackSteedConverter
 {
-    public class BlackSteedSettings
+    public class BlackSteedConvertSettings
     {
         public static Settings Settings => new();
 
@@ -11,7 +11,7 @@ namespace BlackSteedConverter
 
         public void CreateSettings()
         {
-            _settingsHelper.CreateSettings(nameof(BlackSteedSettings), Settings);
+            _settingsHelper.CreateSettings(nameof(BlackSteedConvertSettings), Settings);
 
             ConfigureSettings();
         }
@@ -23,6 +23,9 @@ namespace BlackSteedConverter
             {
                 Settings.CbzDir.CreateDirIfNotExists();
             }
+
+            Settings.NumberOfThreads = _settingsHelper.GetThreadCount(Settings.NumberOfThreads);
+            Settings.SetParallelOptions(new ParallelOptions { MaxDegreeOfParallelism = Settings.NumberOfThreads });
         }
     }
 }
