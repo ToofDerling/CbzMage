@@ -10,7 +10,6 @@ namespace BlackSteedConverter
     {
         public async Task ConvertDirectoryAsync(string bookDir)
         {
-
             var config = new BlackSteedConvertSettings();
             config.CreateSettings();
             
@@ -21,9 +20,17 @@ namespace BlackSteedConverter
                 return;
             }
 
+            if (!await downloader.TryBooksPathsAsync())
+            { 
+                
+            }
+
+
             //downloader.UploadFile();
 
-            await downloader.GetBooksAsync();
+            //await downloader.FindBooksDirAsync();
+
+            //await downloader.GetBooksAsync();
 
             return;
 
