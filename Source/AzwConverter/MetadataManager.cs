@@ -24,6 +24,7 @@ namespace AzwConverter
             // the cover record index offset,
             // thumbnail record index offset 
 
+
             return new MobiMetadata.MobiMetadata(pdbHeader, palmDocHeader, throwIfNoExthHeader: true);
         }
 
