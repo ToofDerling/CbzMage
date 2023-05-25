@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 
-namespace CbzMage.Shared
+namespace CbzMage.Shared.Settings
 {
     public class SharedSettings
     {
@@ -64,7 +64,7 @@ namespace CbzMage.Shared
                 directory = directory.Replace(ScanAllDirectoriesPattern, null);
             }
 
-            return directory ;
+            return directory;
         }
     }
 }
