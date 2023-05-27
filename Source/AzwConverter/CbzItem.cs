@@ -1,4 +1,4 @@
-﻿using CollectionManager;
+﻿using CbzMage.Shared.CollectionManager;
 
 namespace AzwConverter
 {

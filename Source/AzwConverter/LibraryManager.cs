@@ -1,6 +1,6 @@
 ﻿using AzwConverter.Engine;
+using CbzMage.Shared.CollectionManager;
 using CbzMage.Shared.Extensions;
-using CollectionManager;
 using MobiMetadata;
 using System.Collections.Concurrent;
 

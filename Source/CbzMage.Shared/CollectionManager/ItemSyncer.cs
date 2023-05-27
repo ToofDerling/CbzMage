@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
 
-namespace CollectionManager
+namespace CbzMage.Shared.CollectionManager
 {
     public class ItemSyncer<T> where T : CollectionItem, new()
     {

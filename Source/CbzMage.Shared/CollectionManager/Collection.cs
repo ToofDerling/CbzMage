@@ -1,4 +1,4 @@
-﻿namespace CollectionManager
+﻿namespace CbzMage.Shared.CollectionManager
 {
     public class Collection<T> where T : CollectionItem, new()
     {

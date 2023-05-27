@@ -3,7 +3,7 @@ using System.IO.MemoryMappedFiles;
 using System.Text;
 using System.Text.Json;
 
-namespace CollectionManager
+namespace CbzMage.Shared.CollectionManager
 {
     public sealed class CollectionDb<T> where T : CollectionItem, new()
     {

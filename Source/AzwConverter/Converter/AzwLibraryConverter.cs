@@ -3,9 +3,9 @@ using System.Text;
 using System.Text.RegularExpressions;
 using AzwConverter.Engine;
 using CbzMage.Shared;
+using CbzMage.Shared.CollectionManager;
 using CbzMage.Shared.Extensions;
 using CbzMage.Shared.Helpers;
-using CollectionManager;
 
 namespace AzwConverter.Converter
 {
