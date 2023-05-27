@@ -27,20 +27,20 @@ namespace PdfConverter.Jobs
             _coverFile = coverFile;
         }
 
-        public IEnumerable<string> Execute()
+        public async Task<IEnumerable<string>> ExecuteAsync()
         {
             var firstPage = true;
 
             foreach (var (page, bufferWriter) in _imageList)
             {
-                var imageData = bufferWriter.WrittenSpan;
+                var imageData = bufferWriter.WrittenMemory;
 
                 if (firstPage)
                 {
                     if (_coverFile != null)
                     {
                         using var coverStream = new FileStream(_coverFile, FileMode.Create);
-                        coverStream.Write(imageData);
+                        await coverStream.WriteAsync(imageData);
 
                         if (_compressor == null)
                         {
@@ -55,7 +55,7 @@ namespace PdfConverter.Jobs
                     var entry = _compressor.CreateEntry(page);
 
                     using var cbzStream = entry.Open();
-                    cbzStream.Write(imageData);
+                    await cbzStream.WriteAsync(imageData);
 
                     _progressReporter.ShowProgress($"Converted {page}");
                 }

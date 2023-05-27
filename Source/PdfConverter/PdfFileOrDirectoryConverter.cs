@@ -79,7 +79,7 @@ namespace PdfConverter
             ProgressReporter.Line();
         }
 
-        private List<Pdf> InitializePdfPath(string path)
+        private static List<Pdf> InitializePdfPath(string path)
         {
             // Must run before before the checks for file/dir existance
             path = SharedSettings.GetDirectorySearchOption(path, out var searchOption);

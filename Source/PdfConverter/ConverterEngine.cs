@@ -4,7 +4,6 @@ using CbzMage.Shared.Helpers;
 using PdfConverter.Exceptions;
 using PdfConverter.Ghostscript;
 using System.Collections.Concurrent;
-using System.Diagnostics;
 
 namespace PdfConverter
 {

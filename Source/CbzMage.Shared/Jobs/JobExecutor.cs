@@ -16,16 +16,13 @@ namespace CbzMage.Shared.Jobs
 
         private InternalJobWaiter _jobWaiter;
 
-        private readonly ThreadPriority _threadPriority;
-
         private readonly int _numThreads;
 
         private int _numFinishedThreads = 0;
 
-        public JobExecutor(ThreadPriority threadPriority = ThreadPriority.Normal, int numThreads = 1)
+        public JobExecutor(int numThreads = 1)
         {
             _numThreads = numThreads;
-            _threadPriority = threadPriority;
         }
 
         public JobWaiter Start(bool withWaiter)
@@ -39,12 +36,7 @@ namespace CbzMage.Shared.Jobs
 
             for (int i = 0; i < _numThreads; i++)
             {
-                var jobThread = new Thread(new ThreadStart(JobExecutorLoop))
-                {
-                    Priority = _threadPriority
-                };
-
-                jobThread.Start();
+                Task.Factory.StartNew(JobExecutorLoopAsync, TaskCreationOptions.LongRunning);
             }
 
             return _jobWaiter;
@@ -60,15 +52,11 @@ namespace CbzMage.Shared.Jobs
             _runningQueue.Add(job);
         }
 
-        private void JobExecutorLoop()
+        private async Task JobExecutorLoopAsync()
         {
-            var jobCount = 0;
-
             foreach (var job in _runningQueue.GetConsumingEnumerable())
             {
-                var result = job.Execute();
-
-                jobCount++;
+                var result = await job.ExecuteAsync();
 
                 JobExecuted?.Invoke(this, new JobEventArgs<T>(result));
             }

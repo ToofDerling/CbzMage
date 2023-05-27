@@ -24,7 +24,7 @@ namespace PdfConverter
 
             _convertedPages = convertedPages;
 
-            _converterExecutor = new JobExecutor<string>(ThreadPriority.AboveNormal);
+            _converterExecutor = new JobExecutor<string>();
             _converterExecutor.JobExecuted += (s, e) => OnImageConverted(e);
             
             _jobWaiter = _converterExecutor.Start(withWaiter: true);

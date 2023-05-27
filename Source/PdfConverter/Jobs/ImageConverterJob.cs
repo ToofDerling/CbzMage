@@ -31,7 +31,7 @@ namespace PdfConverter.Jobs
             _resizeHeight = resizeHeight;
         }
 
-        public string Execute()
+        public Task<string> ExecuteAsync()
         {
 
 #if DEBUG 
@@ -74,7 +74,7 @@ namespace PdfConverter.Jobs
             {
                 throw new SomethingWentWrongSorryException($"{_page} already converted?");
             }
-            return _page;
+            return Task.FromResult(_page);
         }
     }
 }

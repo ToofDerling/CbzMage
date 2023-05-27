@@ -2,6 +2,6 @@
 {
     public interface IJob<T>
     {
-        T Execute();
+        Task<T> ExecuteAsync();
     }
 }
