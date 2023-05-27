@@ -21,11 +21,6 @@ namespace AzwConverter.Converter
 
         public AzwLibraryConverter(CbzMageAction action) : base(action)
         {
-            var config = new AzwConvertSettings();
-            config.CreateSettings();
-
-            var dbFile = Path.Combine(Settings.TitlesDir, Settings.ArchiveName);
-
             _collection = new Collection<CbzItem>(Settings.TitlesDir, Settings.ConvertedTitlesDirName, Settings.ArchiveName);
 
             ProgressReporter.Info($"Azw files: {Settings.AzwDir}");

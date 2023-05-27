@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
 
-namespace CbzMage.Shared.Jobs
+namespace CbzMage.Shared.JobQueue
 {
     public abstract class JobWaiter
     {

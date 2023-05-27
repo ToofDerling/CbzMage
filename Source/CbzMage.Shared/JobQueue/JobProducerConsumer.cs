@@ -1,4 +1,4 @@
-﻿namespace CbzMage.Shared.Jobs
+﻿namespace CbzMage.Shared.JobQueue
 {
     public class JobProducerConsumer<T> : AbstractJobQueue<T>
     {

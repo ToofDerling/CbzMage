@@ -1,5 +1,5 @@
 ﻿using CbzMage.Shared.Buffers;
-using CbzMage.Shared.Jobs;
+using CbzMage.Shared.JobQueue;
 using ImageMagick;
 using PdfConverter.Exceptions;
 using PdfConverter.Helpers;

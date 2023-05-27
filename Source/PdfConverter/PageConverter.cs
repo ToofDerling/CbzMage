@@ -1,5 +1,5 @@
 ﻿using CbzMage.Shared.Buffers;
-using CbzMage.Shared.Jobs;
+using CbzMage.Shared.JobQueue;
 using CbzMage.Shared.Settings;
 using PdfConverter.Ghostscript;
 using PdfConverter.Jobs;
