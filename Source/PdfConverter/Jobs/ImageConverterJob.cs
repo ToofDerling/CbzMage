@@ -8,7 +8,7 @@ using System.Diagnostics;
 
 namespace PdfConverter.Jobs
 {
-    public class ImageConverterJob : IJob<string>
+    public class ImageConverterJob : IJobConsumer<string>
     {
         private readonly ConcurrentDictionary<string, ArrayPoolBufferWriter<byte>> _convertedImages;
 
@@ -31,7 +31,7 @@ namespace PdfConverter.Jobs
             _resizeHeight = resizeHeight;
         }
 
-        public Task<string> ExecuteAsync()
+        public Task<string> ConsumeAsync()
         {
 
 #if DEBUG 

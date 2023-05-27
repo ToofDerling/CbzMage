@@ -5,7 +5,7 @@ using System.IO.Compression;
 
 namespace PdfConverter.Jobs
 {
-    public class ImageCompressorJob : IJob<IEnumerable<string>>
+    public class ImageCompressorJob : IJobConsumer<IEnumerable<string>>
     {
         private readonly ZipArchive? _compressor;
 
@@ -27,7 +27,7 @@ namespace PdfConverter.Jobs
             _coverFile = coverFile;
         }
 
-        public async Task<IEnumerable<string>> ExecuteAsync()
+        public async Task<IEnumerable<string>> ConsumeAsync()
         {
             var firstPage = true;
 
