@@ -1,5 +1,5 @@
 ﻿using CbzMage.Shared.Extensions;
-using CbzMage.Shared;
+using CbzMage.Shared.Settings;
 
 namespace BlackSteedConverter
 {

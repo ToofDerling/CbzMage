@@ -44,7 +44,7 @@ namespace AzwConverter.Engine
             return (metadata, disposables);
         }
 
-        protected async Task<CbzState> ReadImageDataAsync(string bookId, params FileInfo[] dataFiles)
+        protected async Task<CbzItem> ReadImageDataAsync(string bookId, params FileInfo[] dataFiles)
         {
             var metadata = MetadataManager.GetCachedMetadata(bookId);
 
@@ -98,6 +98,6 @@ namespace AzwConverter.Engine
             return dataFiles.FirstOrDefault(file => file.IsAzwResOrAzw6File());
         }
 
-        protected abstract Task<CbzState> ProcessImagesAsync();
+        protected abstract Task<CbzItem> ProcessImagesAsync();
     }
 }

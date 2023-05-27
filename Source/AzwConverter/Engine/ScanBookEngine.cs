@@ -2,14 +2,14 @@
 {
     public class ScanBookEngine : AbstractImageEngine
     {
-        public async Task<CbzState> ScanBookAsync(string bookId, FileInfo[] dataFiles)
+        public async Task<CbzItem> ScanBookAsync(string bookId, FileInfo[] dataFiles)
             => await ReadImageDataAsync(bookId, dataFiles);
 
-        protected override Task<CbzState> ProcessImagesAsync() => Task.FromResult(ReadCbzState());
+        protected override Task<CbzItem> ProcessImagesAsync() => Task.FromResult(ReadCbzState());
 
-        private CbzState ReadCbzState()
+        private CbzItem ReadCbzState()
         {
-            var state = new CbzState
+            var state = new CbzItem
             {
                 HdCover = Metadata.IsHdCover(),
                 SdCover = Metadata.IsSdCover(),

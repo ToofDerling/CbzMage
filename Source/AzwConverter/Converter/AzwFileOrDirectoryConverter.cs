@@ -3,6 +3,7 @@ using CbzMage.Shared;
 using CbzMage.Shared.Extensions;
 using CbzMage.Shared.Helpers;
 using CbzMage.Shared.IO;
+using CbzMage.Shared.Settings;
 using MobiMetadata;
 using System.Collections.Concurrent;
 
@@ -125,7 +126,7 @@ namespace AzwConverter.Converter
             await Parallel.ForEachAsync(azwDict, Settings.ParallelOptions,
                 async (azw, _) =>
                 {
-                    CbzState? state = null;
+                    CbzItem? state = null;
 
                     var azwFile = new FileInfo(azw.Key);
                     var hdContainers = azw.Value;

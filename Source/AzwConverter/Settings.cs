@@ -61,5 +61,7 @@ namespace AzwConverter
         {
             AllMarkers = new string[] { NewTitleMarker, UpdatedTitleMarker };
         }
+
+        public static string ArchiveName => "archive.db";
     }
 }

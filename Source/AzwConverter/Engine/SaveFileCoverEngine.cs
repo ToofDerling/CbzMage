@@ -1,4 +1,5 @@
-﻿using MobiMetadata;
+﻿using CbzMage.Shared.Extensions;
+using MobiMetadata;
 
 namespace AzwConverter.Engine
 {
@@ -8,7 +9,7 @@ namespace AzwConverter.Engine
 
         private FileInfo? _azwFile;
 
-        public async Task<CbzState> SaveFileCoverAsync(FileInfo azwFile, List<Azw6Head> hdHeaderList)
+        public async Task<CbzItem> SaveFileCoverAsync(FileInfo azwFile, List<Azw6Head> hdHeaderList)
         {
             _hdHeaderList = hdHeaderList;
 

@@ -18,7 +18,7 @@ namespace AzwConverter.Engine
 
         private bool _analysisDir;
 
-        public async Task<CbzState> AnalyzeBookAsync(string bookId, FileInfo[] dataFiles, bool analyzeImages, string bookDir)
+        public async Task<CbzItem> AnalyzeBookAsync(string bookId, FileInfo[] dataFiles, bool analyzeImages, string bookDir)
         {
             _analyzeImages = analyzeImages;
             _bookDir = bookDir;
@@ -42,12 +42,12 @@ namespace AzwConverter.Engine
             return _analyzeMessageError;
         }
 
-        protected override async Task<CbzState> ProcessImagesAsync()
+        protected override async Task<CbzItem> ProcessImagesAsync()
             => await AnalyzeBookAsync();
 
-        private async Task<CbzState> AnalyzeBookAsync()
+        private async Task<CbzItem> AnalyzeBookAsync()
         {
-            var state = new CbzState();
+            var state = new CbzItem();
 
             //var messageOk = new StringBuilder();
             var messageError = new StringBuilder();

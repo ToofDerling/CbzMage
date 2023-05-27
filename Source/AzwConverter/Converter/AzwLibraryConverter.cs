@@ -5,6 +5,7 @@ using AzwConverter.Engine;
 using CbzMage.Shared;
 using CbzMage.Shared.Extensions;
 using CbzMage.Shared.Helpers;
+using CollectionManager;
 
 namespace AzwConverter.Converter
 {
@@ -16,10 +17,16 @@ namespace AzwConverter.Converter
         // Try to be as lenient as possible (and Trim the results).
         private readonly Regex _publisherTitleRegex = new(@"(\[)(?<publisher>.*?)(\])(?<title>.*)");
 
+        private readonly Collection<CbzItem> _collection;
+
         public AzwLibraryConverter(CbzMageAction action) : base(action)
         {
             var config = new AzwConvertSettings();
             config.CreateSettings();
+
+            var dbFile = Path.Combine(Settings.TitlesDir, Settings.ArchiveName);
+
+            _collection = new Collection<CbzItem>(Settings.TitlesDir, Settings.ConvertedTitlesDirName, Settings.ArchiveName);
 
             ProgressReporter.Info($"Azw files: {Settings.AzwDir}");
             ProgressReporter.Info($"Title files: {Settings.TitlesDir}");
@@ -38,31 +45,27 @@ namespace AzwConverter.Converter
 
         public async Task ConvertOrScanAsync()
         {
-            var reader = new TitleReader();
-
             Console.Write("Reading current titles: ");
-            var titles = await reader.ReadTitlesAsync();
+            var titles = await _collection.Reader.ReadItemsAsync();
             Console.WriteLine(titles.Count);
 
             Console.Write("Reading archived titles: ");
-            var archive = new ArchiveDb();
-            await archive.ReadArchiveDbAsync();
-            Console.WriteLine(archive.Count);
+            await _collection.Db.ReadDbAsync();
+            Console.WriteLine(_collection.Db.Count);
 
             Console.Write("Reading converted titles: ");
-            var convertedTitles = await reader.ReadConvertedTitlesAsync();
+            var convertedTitles = await _collection.Reader.ReadProcessedItemsAsync();
             Console.WriteLine(convertedTitles.Count);
             Console.WriteLine();
 
             // Key is the book id, Value is a list of book datafiles 
             Console.Write("Reading books: ");
-            var books = reader.ReadBooks();
+            var library = new LibraryManager(_collection.Db);
+            var books = library.ReadBooks();
             Console.WriteLine(books.Count);
 
-            var syncer = new TitleSyncer();
-
             // Number of books is stable after title syncing.
-            var (added, skipped) = await syncer.SyncBooksToTitlesAsync(books, titles, archive);
+            var (added, skipped) = await library.SyncBooksToCollectionAsync(books, titles);
 
             Console.Write($"Added {added} missing title{added.SIf1()}");
             if (!Settings.ConvertAllBookTypes)
@@ -74,29 +77,28 @@ namespace AzwConverter.Converter
                 Console.WriteLine();
             }
 
-            var archived = syncer.SyncAndArchiveTitles(titles, convertedTitles, archive, books);
+            var archived = _collection.Syncer.SyncAndArchiveItems(titles, convertedTitles, books);
             Console.WriteLine($"Archived {archived} title{archived.SIf1()}");
 
             Console.WriteLine();
 
-            var updatedBooks = GetUpdatedBooks(books, convertedTitles, archive);
+            var updatedBooks = GetUpdatedBooks(books, convertedTitles);
             ProgressReporter.Info($"Found {updatedBooks.Count} updated book{updatedBooks.SIf1()}");
 
             var unconvertedBooks = GetUnconvertedBooks(books, convertedTitles);
             ProgressReporter.DoneOrInfo($"Found {unconvertedBooks.Count} unconverted book{unconvertedBooks.SIf1()}", unconvertedBooks.Count);
-            
+
             ConversionBegin();
             try
             {
                 if (updatedBooks.Count > 0 || unconvertedBooks.Count > 0 || Action == CbzMageAction.AzwAnalyze)
                 {
-                    await RunActionsInParallelAsync(books, updatedBooks, unconvertedBooks,
-                        titles, convertedTitles, syncer, archive);
+                    await RunActionsInParallelAsync(books, updatedBooks, unconvertedBooks, titles, convertedTitles);
                 }
             }
             finally
             {
-                await archive.SaveArchiveDbAsync();
+                await _collection.Db.SaveArchiveDbAsync();
             }
             ConversionEnd(unconvertedBooks.Count);
 
@@ -108,8 +110,7 @@ namespace AzwConverter.Converter
         private async Task RunActionsInParallelAsync(IDictionary<string, FileInfo[]> books,
             IReadOnlyCollection<KeyValuePair<string, FileInfo[]>> updatedBooks,
             IReadOnlyCollection<KeyValuePair<string, FileInfo[]>> unconvertedBooks,
-            IDictionary<string, FileInfo> titles, IDictionary<string, FileInfo> convertedTitles,
-            TitleSyncer syncer, ArchiveDb archive)
+            IDictionary<string, FileInfo> titles, IDictionary<string, FileInfo> convertedTitles)
         {
             if (updatedBooks.Count > 0)
             {
@@ -122,10 +123,7 @@ namespace AzwConverter.Converter
                 await Parallel.ForEachAsync(updatedBooks, Settings.ParallelOptions,
                     async (book, _) =>
                         await ScanUpdatedBookAsync(book.Key, book.Value, titles[book.Key],
-                        convertedTitles.TryGetValue(book.Key, out var convertedTitle)
-                            ? convertedTitle
-                            : null,
-                        archive));
+                        convertedTitles.TryGetValue(book.Key, out var convertedTitle) ? convertedTitle : null));
             }
 
             if (unconvertedBooks.Count == 0 && Action != CbzMageAction.AzwAnalyze)
@@ -147,8 +145,7 @@ namespace AzwConverter.Converter
                         await ConvertBookAsync(book.Key, book.Value, titles[book.Key],
                         convertedTitles.TryGetValue(book.Key, out var convertedTitle)
                             ? convertedTitle
-                            : null,
-                        syncer, archive));
+                            : null));
             }
             else if (Action == CbzMageAction.AzwScan)
             {
@@ -156,7 +153,7 @@ namespace AzwConverter.Converter
                 _totalBooks = unconvertedBooks.Count;
 
                 Parallel.ForEach(unconvertedBooks, Settings.ParallelOptions, book =>
-                    SyncNewBook(book.Key, titles[book.Key], archive));
+                    SyncNewBook(book.Key, titles[book.Key]));
             }
             else if (Action == CbzMageAction.AzwAnalyze)
             {
@@ -202,8 +199,7 @@ namespace AzwConverter.Converter
             }
         }
 
-        private async Task ConvertBookAsync(string bookId, FileInfo[] dataFiles, FileInfo titleFile, FileInfo? convertedTitleFile,
-            TitleSyncer syncer, ArchiveDb archive)
+        private async Task ConvertBookAsync(string bookId, FileInfo[] dataFiles, FileInfo titleFile, FileInfo? convertedTitleFile)
         {
             if (!TryParseTitleFile(titleFile, out var publisher, out var title))
             {
@@ -216,7 +212,7 @@ namespace AzwConverter.Converter
             var cbzFile = Path.Combine(publisherDir, $"{title}.cbz");
             var coverFile = GetCoverFile(titleFile, cbzFile);
 
-            CbzState? state = null;
+            CbzItem? state = null;
 
             if (coverFile != null && Settings.SaveCoverOnly)
             {
@@ -229,7 +225,7 @@ namespace AzwConverter.Converter
             }
 
             var newTitleFile = AddMarkerOrRemoveAnyMarker(titleFile);
-            syncer.SyncConvertedTitle(newTitleFile, convertedTitleFile);
+            _collection.Syncer.SyncProcessedItem(newTitleFile, convertedTitleFile);
 
             if (state != null)
             {
@@ -237,13 +233,13 @@ namespace AzwConverter.Converter
             }
             else
             {
-                state = new CbzState();
+                state = new CbzItem();
             }
 
             // Title may have been renamed between scanning and converting, so update the archive.
             // This also removes any Changed state: if the book is updated it will be scanned again.  
             state.Name = Path.GetFileName(newTitleFile).RemoveAnyMarker();
-            archive.SetState(bookId, state);
+            _collection.Db.SetItem(bookId, state);
         }
 
         private bool TryParseTitleFile(FileInfo titleFile, out string publisher, out string title)
@@ -283,12 +279,11 @@ namespace AzwConverter.Converter
             return null;
         }
 
-        private async Task ScanUpdatedBookAsync(string bookId, FileInfo[] dataFiles, FileInfo titleFile,
-             FileInfo? convertedTitleFile, ArchiveDb archive)
+        private async Task ScanUpdatedBookAsync(string bookId, FileInfo[] dataFiles, FileInfo titleFile, FileInfo? convertedTitleFile)
         {
-            CbzState state;
+            CbzItem state;
 
-            var oldState = archive.GetState(bookId);
+            var oldState = _collection.Db.GetItem(bookId);
             if (oldState.Changed != null)
             {
                 // If the Changed state has not been removed by converting the book there is
@@ -327,21 +322,22 @@ namespace AzwConverter.Converter
             if (downgradedMessage != null || upgradedMessage != null)
             {
                 state.Changed = oldState;
-                archive.SetState(bookId, state);
 
                 var newTitleFile = AddMarkerOrRemoveAnyMarker(titleFile, Settings.UpdatedTitleMarker);
-                
+
                 PrintCbzState(newTitleFile, state, convertedDate: convertedTitleFile?.LastWriteTime,
                     doneMsg: upgradedMessage, errorMsg: downgradedMessage);
             }
             else
             {
                 // If there's no changes set the checked date to prevent book being scanned again
-                archive.UpdateCheckedDate(bookId);
+                state.Checked = DateTime.Now;
             }
+
+            _collection.Db.SetItem(bookId, state);
         }
 
-        private static string GetUpdatedMessage(CbzState state, CbzState oldState,
+        private static string GetUpdatedMessage(CbzItem state, CbzItem oldState,
             bool coverUpdated, bool pagesUpdated, string coverMsg, string pagesMsg)
         {
             var sb = new StringBuilder();
@@ -366,10 +362,10 @@ namespace AzwConverter.Converter
             return sb.ToString();
         }
 
-        private void SyncNewBook(string bookId, FileInfo titleFile, ArchiveDb archive)
+        private void SyncNewBook(string bookId, FileInfo titleFile)
         {
             // Sync title before the .NEW marker is added.
-            archive.SetOrCreateName(bookId, titleFile.Name);
+            _collection.Db.SetOrCreateName(bookId, titleFile.Name);
 
             // We're in scan mode so the metadata is not needed anymore.
             MetadataManager.DisposeCachedMetadata(bookId);
@@ -397,8 +393,8 @@ namespace AzwConverter.Converter
             return newTitleFile;
         }
 
-        private static IReadOnlyCollection<KeyValuePair<string, FileInfo[]>> GetUpdatedBooks(IDictionary<string, FileInfo[]> books,
-            IDictionary<string, FileInfo> convertedTitles, ArchiveDb archive)
+        private IReadOnlyCollection<KeyValuePair<string, FileInfo[]>> GetUpdatedBooks(IDictionary<string, FileInfo[]> books,
+            IDictionary<string, FileInfo> convertedTitles)
         {
             var updatedBooks = new ConcurrentBag<KeyValuePair<string, FileInfo[]>>();
 
@@ -407,8 +403,9 @@ namespace AzwConverter.Converter
                 // If the title has been converted--
                 if (convertedTitles.TryGetValue(book.Key, out var convertedTitle))
                 {
-                    var checkedDate = archive.GetCheckedDate(book.Key)
-                        ?? convertedTitle.LastWriteTime;
+                    var item = _collection.Db.GetItem(book.Key);
+
+                    var checkedDate = item.Checked ?? convertedTitle.LastWriteTime;
 
                     // --test if the two datafiles has been updated since last check
                     if (book.Value.Any(file => (file.IsAzwOrAzw3File() || file.IsAzwResOrAzw6File())

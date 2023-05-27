@@ -1,6 +1,6 @@
 ﻿using CbzMage.Shared.Extensions;
-using CbzMage.Shared;
 using CbzMage.Shared.Helpers;
+using CbzMage.Shared.Settings;
 
 namespace AzwConverter
 {
@@ -42,8 +42,8 @@ namespace AzwConverter
             {
                 var dir = new DirectoryInfo(Settings.AzwDir).Parent;
                 Settings.TitlesDir = Path.Combine(dir.FullName, _defaultTitlesDir);
-                Settings.TitlesDir.CreateDirIfNotExists();
             }
+            Settings.TitlesDir.CreateDirIfNotExists();
 
             //SaveCover/SaveCoverOnly
             Settings.SaveCoverOnly = Settings.SaveCoverOnly && Settings.SaveCover;

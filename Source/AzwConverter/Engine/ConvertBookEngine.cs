@@ -1,5 +1,5 @@
-﻿using CbzMage.Shared;
-using CbzMage.Shared.IO;
+﻿using CbzMage.Shared.IO;
+using CbzMage.Shared.Settings;
 using MobiMetadata;
 using System.IO.Compression;
 using System.IO.MemoryMappedFiles;
@@ -13,7 +13,7 @@ namespace AzwConverter.Engine
 
         protected long _mappedArchiveLen;
 
-        public async Task<CbzState> ConvertBookAsync(string bookId, FileInfo[] dataFiles, string cbzFile, string? coverFile)
+        public async Task<CbzItem> ConvertBookAsync(string bookId, FileInfo[] dataFiles, string cbzFile, string? coverFile)
         {
             _cbzFile = cbzFile;
             _coverFile = coverFile;
@@ -30,10 +30,10 @@ namespace AzwConverter.Engine
             return await ReadImageDataAsync(bookId, dataFiles);
         }
 
-        protected override async Task<CbzState> ProcessImagesAsync()
+        protected override async Task<CbzItem> ProcessImagesAsync()
             => await CreateCbzAsync();
 
-        protected async Task<CbzState> CreateCbzAsync()
+        protected async Task<CbzItem> CreateCbzAsync()
         {
             var tempFile = $"{_cbzFile}.temp";
 
@@ -44,9 +44,9 @@ namespace AzwConverter.Engine
             return state;
         }
 
-        private async Task<CbzState> ReadAndCompressAsync(string tempFile)
+        private async Task<CbzItem> ReadAndCompressAsync(string tempFile)
         {
-            CbzState state;
+            CbzItem state;
             long realArchiveLen;
 
             using (var mappedFileStream = AsyncStreams.AsyncFileWriteStream(tempFile))
@@ -76,9 +76,9 @@ namespace AzwConverter.Engine
             return state;
         }
 
-        private async Task<CbzState> ReadAndCompressPagesAsync(ZipArchive zipArchive)
+        private async Task<CbzItem> ReadAndCompressPagesAsync(ZipArchive zipArchive)
         {
-            var state = new CbzState();
+            var state = new CbzItem();
             const string coverName = "cover.jpg";
 
             // Cover

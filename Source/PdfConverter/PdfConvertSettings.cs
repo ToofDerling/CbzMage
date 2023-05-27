@@ -1,7 +1,7 @@
-﻿using CbzMage.Shared;
-using CbzMage.Shared.AppVersions;
+﻿using CbzMage.Shared.AppVersions;
 using CbzMage.Shared.Extensions;
 using CbzMage.Shared.Helpers;
+using CbzMage.Shared.Settings;
 using System.Diagnostics;
 
 namespace PdfConverter

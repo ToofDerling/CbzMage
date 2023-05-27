@@ -7,7 +7,7 @@ namespace AzwConverter.Engine
         protected string? _coverFile;
         private string? _coverString;
 
-        public async Task<CbzState> SaveBookCoverAsync(string bookId, FileInfo[] dataFiles, string coverFile)
+        public async Task<CbzItem> SaveBookCoverAsync(string bookId, FileInfo[] dataFiles, string coverFile)
         {
             _coverFile = coverFile;
 
@@ -19,10 +19,10 @@ namespace AzwConverter.Engine
             return _coverString;
         }
 
-        protected override async Task<CbzState> ProcessImagesAsync()
+        protected override async Task<CbzItem> ProcessImagesAsync()
         {
             await SaveCoverAsync();
-            return new CbzState();
+            return new CbzItem();
         }
 
         private async Task SaveCoverAsync()

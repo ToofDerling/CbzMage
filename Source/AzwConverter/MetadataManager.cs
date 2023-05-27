@@ -1,4 +1,5 @@
-﻿using MobiMetadata;
+﻿using CbzMage.Shared.Extensions;
+using MobiMetadata;
 using System.Collections.Concurrent;
 
 namespace AzwConverter
@@ -65,7 +66,7 @@ namespace AzwConverter
         {
             foreach (var disposable in disposables)
             {
-                disposable.Dispose();
+                disposable.DisposeDontCare();
             }
         }
 

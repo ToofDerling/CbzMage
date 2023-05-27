@@ -1,6 +1,6 @@
-using CbzMage.Shared;
 using CbzMage.Shared.Extensions;
 using CbzMage.Shared.Helpers;
+using CbzMage.Shared.Settings;
 using PdfConverter.Helpers;
 using System.Diagnostics;
 

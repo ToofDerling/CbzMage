@@ -6,7 +6,7 @@ namespace AzwConverter.Engine
     {
         private List<Azw6Head>? _hdHeaderList;
 
-        public async Task<CbzState> ScanFileAsync(FileInfo azwFile, List<Azw6Head> hdHeaderList)
+        public async Task<CbzItem> ScanFileAsync(FileInfo azwFile, List<Azw6Head> hdHeaderList)
         {
             _hdHeaderList = hdHeaderList;
 

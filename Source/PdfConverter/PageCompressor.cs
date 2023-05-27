@@ -1,7 +1,7 @@
-﻿using CbzMage.Shared;
-using CbzMage.Shared.Buffers;
+﻿using CbzMage.Shared.Buffers;
 using CbzMage.Shared.Helpers;
 using CbzMage.Shared.Jobs;
+using CbzMage.Shared.Settings;
 using PdfConverter.Jobs;
 using System.Collections.Concurrent;
 using System.IO.Compression;

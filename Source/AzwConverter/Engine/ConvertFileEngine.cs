@@ -1,4 +1,5 @@
-﻿using MobiMetadata;
+﻿using CbzMage.Shared.Extensions;
+using MobiMetadata;
 
 namespace AzwConverter.Engine
 {
@@ -8,7 +9,7 @@ namespace AzwConverter.Engine
 
         private FileInfo? _azwFile;
 
-        public async Task<CbzState> ConvertFileAsync(FileInfo azwFile, List<Azw6Head> hdHeaderList)
+        public async Task<CbzItem> ConvertFileAsync(FileInfo azwFile, List<Azw6Head> hdHeaderList)
         {
             _azwFile = azwFile;
             _mappedArchiveLen = azwFile.Length;
@@ -35,7 +36,7 @@ namespace AzwConverter.Engine
             return hdContainer;
         }
 
-        protected override async Task<CbzState> ProcessImagesAsync()
+        protected override async Task<CbzItem> ProcessImagesAsync()
         {
             _cbzFile = GetCbzFile(_azwFile!.FullName, Metadata!.MobiHeader.GetFullTitle());
             _coverFile = GetCoverFile(_cbzFile);

@@ -1,11 +1,9 @@
-﻿namespace AzwConverter
+﻿using CollectionManager;
+
+namespace AzwConverter
 {
-    public sealed class CbzState
+    public class CbzItem : CollectionItem
     {
-        public string Id { get; set; }
-
-        public string Name { get; set; }
-
         public bool HdCover { get; set; }
         public bool SdCover { get; set; }
 
@@ -16,6 +14,6 @@
 
         public DateTime? Checked { get; set; }
 
-        public CbzState? Changed { get; set; }
+        public CbzItem? Changed { get; set; }
     }
 }

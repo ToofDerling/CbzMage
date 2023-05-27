@@ -74,7 +74,7 @@ namespace AzwConverter.Converter
             return insert;
         }
 
-        protected void PrintCbzState(string cbzFile, CbzState state,
+        protected void PrintCbzState(string cbzFile, CbzItem state,
             bool showPagesAndCover = true, bool showAllCovers = false,
             DateTime? convertedDate = null, string? doneMsg = null, string? errorMsg = null)
         {
