@@ -111,7 +111,7 @@ namespace PdfConverter
             return dpi;
         }
 
-        private int CalculateBigStep(int firstDiff, int nextDiff, int usedStep)
+        private static int CalculateBigStep(int firstDiff, int nextDiff, int usedStep)
         {
             var interval = (double)firstDiff - nextDiff;
             var factor = firstDiff / interval;

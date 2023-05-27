@@ -2,7 +2,7 @@
 {
     public class PageChunker
     {
-        public List<int>[] CreatePageLists(int numberOfPages, int numberOfChunks)
+        public static List<int>[] CreatePageLists(int numberOfPages, int numberOfChunks)
         {
             var pageLists = new List<int>[numberOfChunks];
 

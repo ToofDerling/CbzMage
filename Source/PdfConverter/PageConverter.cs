@@ -17,7 +17,7 @@ namespace PdfConverter
 
         private readonly int? _resizeHeight;
 
-        public PageConverter(Queue<int> pageQueue,  
+        public PageConverter(Queue<int> pageQueue,
             ConcurrentDictionary<string, ArrayPoolBufferWriter<byte>> convertedPages, int? resizeHeight)
         {
             _pageQueue = pageQueue;
@@ -26,7 +26,7 @@ namespace PdfConverter
 
             _converterExecutor = new JobExecutor<string>();
             _converterExecutor.JobExecuted += (s, e) => OnImageConverted(e);
-            
+
             _jobWaiter = _converterExecutor.Start(withWaiter: true);
 
             _resizeHeight = resizeHeight;
@@ -47,7 +47,7 @@ namespace PdfConverter
             var pageNumber = _pageQueue.Dequeue();
             var page = SharedSettings.GetPageString(pageNumber);
 
-            var job = new ImageConverterJob(bufferWriter , _convertedPages, page, _resizeHeight);
+            var job = new ImageConverterJob(bufferWriter, _convertedPages, page, _resizeHeight);
             _converterExecutor.AddJob(job);
         }
 
@@ -55,7 +55,7 @@ namespace PdfConverter
         {
             PageConverted?.Invoke(this, new PageConvertedEventArgs(eventArgs.Result));
         }
-              
+
         public event EventHandler<PageConvertedEventArgs> PageConverted;
     }
 }

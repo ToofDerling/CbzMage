@@ -152,8 +152,7 @@ namespace PdfConverter
                 }
             }
 
-            var pageChunker = new PageChunker();
-            var pageLists = pageChunker.CreatePageLists(pageCount, parallelThreads);
+            var pageLists = PageChunker.CreatePageLists(pageCount, parallelThreads);
 
             Array.ForEach(pageLists, p => Console.WriteLine($"  Reader{p.First()}: {p.Count} pages"));
 
