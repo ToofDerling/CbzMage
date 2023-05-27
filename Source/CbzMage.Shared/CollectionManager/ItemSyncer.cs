@@ -60,31 +60,7 @@ namespace CbzMage.Shared.CollectionManager
                 processedItems.Remove(bookId); // This is safe even if title is not converted
             }
 
-            // In version 23 and earlier a converted titlefile did not get archived together with the
-            // main titlefile. So we must trim the converted titles to be consistent with version 24+
-            // The trimming is only expensive first time it's run.
-            TrimConvertedTitles(processedItems, items);
-
             return idsToRemove.Count;
-        }
-
-        private static void TrimConvertedTitles(IDictionary<string, FileInfo> convertedTitles, IDictionary<string, FileInfo> titles)
-        {
-            var idsToRemove = new ConcurrentBag<string>();
-
-            convertedTitles.AsParallel().ForAll(convertedTitle =>
-            {
-                if (!titles.TryGetValue(convertedTitle.Key, out var _))
-                {
-                    idsToRemove.Add(convertedTitle.Key);
-                    convertedTitle.Value.Delete();
-                }
-            });
-
-            foreach (var bookId in idsToRemove)
-            {
-                convertedTitles.Remove(bookId);
-            }
         }
 
         public string SyncProcessedItem(string itemFile, FileInfo? convertedItemFile)

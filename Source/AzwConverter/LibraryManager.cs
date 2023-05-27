@@ -130,5 +130,24 @@ namespace AzwConverter
 
             return publisher;
         }
+
+        public static void TrimConvertedTitles(IDictionary<string, FileInfo> convertedTitles, IDictionary<string, FileInfo> titles)
+        {
+            var idsToRemove = new ConcurrentBag<string>();
+
+            convertedTitles.AsParallel().ForAll(convertedTitle =>
+            {
+                if (!titles.TryGetValue(convertedTitle.Key, out var _))
+                {
+                    idsToRemove.Add(convertedTitle.Key);
+                    convertedTitle.Value.Delete();
+                }
+            });
+
+            foreach (var bookId in idsToRemove)
+            {
+                convertedTitles.Remove(bookId);
+            }
+        }
     }
 }

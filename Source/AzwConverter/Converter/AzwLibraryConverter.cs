@@ -78,6 +78,12 @@ namespace AzwConverter.Converter
             }
 
             var archived = _collection.Syncer.SyncAndArchiveItems(titles, convertedTitles, books);
+
+            // In version 23 and earlier a converted titlefile did not get archived together with the
+            // main titlefile. So we must trim the converted titles to be consistent with version 24+
+            // The trimming is only expensive first time it's run.
+            LibraryManager.TrimConvertedTitles(convertedTitles, titles);
+
             Console.WriteLine($"Archived {archived} title{archived.SIf1()}");
 
             Console.WriteLine();
