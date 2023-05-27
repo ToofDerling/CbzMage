@@ -15,9 +15,7 @@ namespace CbzMage.Shared.CollectionManager
             _processedItemsDir = processedItemsDir;
         }
 
-        public int SyncAndArchiveItems(IDictionary<string, FileInfo> items,
-            IDictionary<string, FileInfo> processedItems,
-            IDictionary<string, FileInfo[]> books)
+        public int SyncAndArchiveItems(IDictionary<string, FileInfo> items, IDictionary<string, FileInfo> processedItems, IDictionary<string, FileInfo[]> books)
         {
             var idsToRemove = new ConcurrentBag<string>();
 

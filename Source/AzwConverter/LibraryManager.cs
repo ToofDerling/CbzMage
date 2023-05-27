@@ -131,6 +131,9 @@ namespace AzwConverter
             return publisher;
         }
 
+        // In version 23 and earlier a converted titlefile did not get archived together with the
+        // main titlefile. So we must trim the converted titles to be consistent with version 24+
+        // The trimming is only expensive first time it's run.
         public static void TrimConvertedTitles(IDictionary<string, FileInfo> convertedTitles, IDictionary<string, FileInfo> titles)
         {
             var idsToRemove = new ConcurrentBag<string>();
