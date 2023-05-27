@@ -26,7 +26,7 @@ namespace PdfConverter
             }
         }
 
-        private List<(int width, int height, int count)> ParsePdfImages(Pdf pdf, PdfImageParser pdfImageParser)
+        private static List<(int width, int height, int count)> ParsePdfImages(Pdf pdf, PdfImageParser pdfImageParser)
         {
             var progressReporter = new ProgressReporter(pdf.PageCount);
 
@@ -43,7 +43,7 @@ namespace PdfConverter
             return imageSizesMap;
         }
 
-        private int GetWantedWidth(Pdf pdf, List<(int width, int height, int count)> sortedImageSizes)
+        private static int GetWantedWidth(Pdf pdf, List<(int width, int height, int count)> sortedImageSizes)
         {
             var mostOfThisSize = sortedImageSizes.First();
 
@@ -58,7 +58,7 @@ namespace PdfConverter
             return mostOfThisSize.width;
         }
 
-        private int? GetAdjustedHeight(Pdf pdf, List<(int width, int height, int count)> sortedImageSizes, int dpiHeight)
+        private static int? GetAdjustedHeight(Pdf pdf, List<(int width, int height, int count)> sortedImageSizes, int dpiHeight)
         {
             // The height of the image with the largest page count
             var realHeight = sortedImageSizes.First().height;
@@ -103,7 +103,7 @@ namespace PdfConverter
             return null;
         }
 
-        private (int dpi, int wantedHeight) CalculateDpiForWantedWidth(Pdf pdf, int wantedImageWidth)
+        private static (int dpi, int wantedHeight) CalculateDpiForWantedWidth(Pdf pdf, int wantedImageWidth)
         {
             Console.WriteLine($"Wanted width: {wantedImageWidth}");
 
@@ -131,7 +131,7 @@ namespace PdfConverter
             return (dpi, dpiHeight);
         }
 
-        private List<int>[] CreatePageLists(Pdf pdf)
+        private static List<int>[] CreatePageLists(Pdf pdf)
         {
             // If we're only saving the cover this is all we need.
             if (Settings.SaveCoverOnly)
@@ -160,7 +160,7 @@ namespace PdfConverter
             return pageLists;
         }
 
-        private int ConvertPages(Pdf pdf, List<int>[] pageLists, int dpi, int? resizeHeight)
+        private static int ConvertPages(Pdf pdf, List<int>[] pageLists, int dpi, int? resizeHeight)
         {
             // Each page machine reads a range of pages continously and saves them as png images in memory.
             // Each machine has a dedicated converter thread that converts images to jpg, also in memory 
