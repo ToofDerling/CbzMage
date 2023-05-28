@@ -84,10 +84,7 @@ namespace CbzMage.Shared.CollectionManager
             _isDirty = true;
         }
 
-        public T GetItem(string itemId)
-        {
-            return _db[itemId];
-        }
+        public T GetItem(string itemId) => _db[itemId];
 
         public void SetItem(string itemId, T item)
         {

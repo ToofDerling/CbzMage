@@ -42,8 +42,7 @@ namespace CbzMage.Shared.CollectionManager
                 else
                 {
                     // Sync title -> converted title
-                    if (processedItems.TryGetValue(itemId, out var convertedTitleFile)
-                        && convertedTitleFile.Name != itemFile.Name)
+                    if (processedItems.TryGetValue(itemId, out var convertedTitleFile) && convertedTitleFile.Name != itemFile.Name)
                     {
                         var newConvertedTitleFile = Path.Combine(convertedTitleFile.DirectoryName!, itemFile.Name);
                         convertedTitleFile.MoveTo(newConvertedTitleFile);
