@@ -13,8 +13,7 @@ namespace AzwConverter.Engine
 
             if (list.Count > 1)
             {
-                var errorMsg = 
-                    $"Found {list.Count} HD containers with the same title [{title}]:{Environment.NewLine}";
+                var errorMsg = $"Found {list.Count} HD containers with the same title [{title}]:{Environment.NewLine}";
 
                 var sb = new StringBuilder(errorMsg);
                 foreach (var header in list)

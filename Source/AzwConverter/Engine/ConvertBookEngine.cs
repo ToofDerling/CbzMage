@@ -30,8 +30,7 @@ namespace AzwConverter.Engine
             return await ReadImageDataAsync(bookId, dataFiles);
         }
 
-        protected override async Task<CbzItem> ProcessImagesAsync()
-            => await CreateCbzAsync();
+        protected override async Task<CbzItem> ProcessImagesAsync() => await CreateCbzAsync();
 
         protected async Task<CbzItem> CreateCbzAsync()
         {
@@ -51,14 +50,12 @@ namespace AzwConverter.Engine
 
             using (var mappedFileStream = AsyncStreams.AsyncFileWriteStream(tempFile))
             {
-                using (var mappedArchive = MemoryMappedFile.CreateFromFile(mappedFileStream, null,
-                    _mappedArchiveLen, MemoryMappedFileAccess.ReadWrite, HandleInheritability.None,
+                using (var mappedArchive = MemoryMappedFile.CreateFromFile(mappedFileStream, null, _mappedArchiveLen, MemoryMappedFileAccess.ReadWrite, HandleInheritability.None,
                     leaveOpen: true))
                 {
                     using (var archiveStream = mappedArchive.CreateViewStream())
                     {
-                        using (var zipArchive = new ZipArchive(archiveStream, ZipArchiveMode.Create,
-                            leaveOpen: true))
+                        using (var zipArchive = new ZipArchive(archiveStream, ZipArchiveMode.Create, leaveOpen: true))
                         {
                             state = await ReadAndCompressPagesAsync(zipArchive);
                         }
@@ -87,8 +84,7 @@ namespace AzwConverter.Engine
                 state.HdCover = Metadata.IsHdCover();
                 state.SdCover = !state.HdCover;
 
-                await WriteRecordAsync(zipArchive, coverName, Metadata.MergedCoverRecord, 
-                    isRealCover: true, isFakeCover: false);
+                await WriteRecordAsync(zipArchive, coverName, Metadata.MergedCoverRecord, isRealCover: true, isFakeCover: false);
             }
 
             // Pages
@@ -105,21 +101,19 @@ namespace AzwConverter.Engine
                     state.HdImages++;
                 }
                 else
-                { 
+                {
                     state.SdImages++;
                 }
 
                 var isFakeCover = pageIndex == 0 && !state.HdCover && !state.SdCover;
 
-                await WriteRecordAsync(zipArchive, pageName, pageRecord, isRealCover: false, 
-                    isFakeCover: isFakeCover);
+                await WriteRecordAsync(zipArchive, pageName, pageRecord, isRealCover: false, isFakeCover: isFakeCover);
             }
 
             return state;
         }
 
-        private async Task WriteRecordAsync(ZipArchive zipArchive, string pageName,
-            PageRecord record, bool isRealCover, bool isFakeCover)
+        private async Task WriteRecordAsync(ZipArchive zipArchive, string pageName, PageRecord record, bool isRealCover, bool isFakeCover)
         {
             // Write a cover file?
             Stream? coverStream = (isRealCover || isFakeCover) && _coverFile != null

@@ -40,7 +40,7 @@ namespace AzwConverter
 
             var addedTitles = new ConcurrentDictionary<string, FileInfo>();
 
-            await Parallel.ForEachAsync(books, Settings.ParallelOptions, async (item, ct) =>
+            await Parallel.ForEachAsync(books, Settings.ParallelOptions, async (item, _) =>
             {
                 var itemId = item.Key;
 
@@ -64,8 +64,7 @@ namespace AzwConverter
                             var engine = new MetadataEngine();
                             (metadata, disposables) = await engine.GetMetadataAsync(bookFiles);
 
-                            if (!Settings.ConvertAllBookTypes
-                                && !metadata.MobiHeader.ExthHeader.BookType.EqualsIgnoreCase("comic"))
+                            if (!Settings.ConvertAllBookTypes && !metadata.MobiHeader.ExthHeader.BookType.EqualsIgnoreCase("comic"))
                             {
                                 skippedItems.Add(itemId);
                                 return;
@@ -140,7 +139,7 @@ namespace AzwConverter
 
             convertedTitles.AsParallel().ForAll(convertedTitle =>
             {
-                if (!titles.TryGetValue(convertedTitle.Key, out var _))
+                if (!titles.ContainsKey(convertedTitle.Key))
                 {
                     idsToRemove.Add(convertedTitle.Key);
                     convertedTitle.Value.Delete();

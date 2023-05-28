@@ -19,7 +19,8 @@ namespace AzwConverter.Converter
 
         private readonly Collection<CbzItem> _collection;
 
-        public AzwLibraryConverter(CbzMageAction action) : base(action)
+        public AzwLibraryConverter(CbzMageAction action)
+            : base(action)
         {
             _collection = new Collection<CbzItem>(Settings.TitlesDir, Settings.ConvertedTitlesDirName, Settings.ArchiveName);
 
@@ -121,8 +122,10 @@ namespace AzwConverter.Converter
 
                 await Parallel.ForEachAsync(updatedBooks, Settings.ParallelOptions,
                     async (book, _) =>
-                        await ScanUpdatedBookAsync(book.Key, book.Value, titles[book.Key],
-                        convertedTitles.TryGetValue(book.Key, out var convertedTitle) ? convertedTitle : null));
+                        await ScanUpdatedBookAsync(book.Key, book.Value, titles[book.Key], 
+                            convertedTitles.TryGetValue(book.Key, out var convertedTitle) 
+                                ? convertedTitle 
+                                : null));
             }
 
             if (unconvertedBooks.Count == 0 && Action != CbzMageAction.AzwAnalyze)
@@ -141,18 +144,17 @@ namespace AzwConverter.Converter
 
                 await Parallel.ForEachAsync(unconvertedBooks, Settings.ParallelOptions,
                     async (book, _) =>
-                        await ConvertBookAsync(book.Key, book.Value, titles[book.Key],
-                        convertedTitles.TryGetValue(book.Key, out var convertedTitle)
-                            ? convertedTitle
-                            : null));
+                        await ConvertBookAsync(book.Key, book.Value, titles[book.Key], 
+                            convertedTitles.TryGetValue(book.Key, out var convertedTitle) 
+                                ? convertedTitle 
+                                : null));
             }
             else if (Action == CbzMageAction.AzwScan)
             {
                 ProgressReporter.Info($"Listing {unconvertedBooks.Count} unconverted book{unconvertedBooks.SIf1()}:");
                 _totalBooks = unconvertedBooks.Count;
 
-                Parallel.ForEach(unconvertedBooks, Settings.ParallelOptions, book =>
-                    SyncNewBook(book.Key, titles[book.Key]));
+                Parallel.ForEach(unconvertedBooks, Settings.ParallelOptions, book => SyncNewBook(book.Key, titles[book.Key]));
             }
             else if (Action == CbzMageAction.AzwAnalyze)
             {
@@ -307,15 +309,13 @@ namespace AzwConverter.Converter
             string? downgradedMessage = null;
             if (coverDowngraded || pagesDowngraded)
             {
-                downgradedMessage = GetUpdatedMessage(state, oldState, coverDowngraded, pagesDowngraded,
-                    "HD cover removed", "HD pages removed");
+                downgradedMessage = GetUpdatedMessage(state, oldState, coverDowngraded, pagesDowngraded, "HD cover removed", "HD pages removed");
             }
 
             string? upgradedMessage = null;
             if (coverUpgraded || pagesUpgraded)
             {
-                upgradedMessage = GetUpdatedMessage(state, oldState, coverUpgraded, pagesUpgraded,
-                    "HD cover added", "HD pages added");
+                upgradedMessage = GetUpdatedMessage(state, oldState, coverUpgraded, pagesUpgraded, "HD cover added", "HD pages added");
             }
 
             if (downgradedMessage != null || upgradedMessage != null)
@@ -324,8 +324,7 @@ namespace AzwConverter.Converter
 
                 var newTitleFile = AddMarkerOrRemoveAnyMarker(titleFile, Settings.UpdatedTitleMarker);
 
-                PrintCbzState(newTitleFile, state, convertedDate: convertedTitleFile?.LastWriteTime,
-                    doneMsg: upgradedMessage, errorMsg: downgradedMessage);
+                PrintCbzState(newTitleFile, state, convertedDate: convertedTitleFile?.LastWriteTime, doneMsg: upgradedMessage, errorMsg: downgradedMessage);
             }
             else
             {
@@ -336,8 +335,7 @@ namespace AzwConverter.Converter
             _collection.Db.SetItem(bookId, state);
         }
 
-        private static string GetUpdatedMessage(CbzItem state, CbzItem oldState,
-            bool coverUpdated, bool pagesUpdated, string coverMsg, string pagesMsg)
+        private static string GetUpdatedMessage(CbzItem state, CbzItem oldState, bool coverUpdated, bool pagesUpdated, string coverMsg, string pagesMsg)
         {
             var sb = new StringBuilder();
 
@@ -406,8 +404,7 @@ namespace AzwConverter.Converter
                     var checkedDate = item.Checked ?? convertedTitle.LastWriteTime;
 
                     // --test if the two datafiles has been updated since last check
-                    if (book.Value.Any(file => (file.IsAzwOrAzw3File() || file.IsAzwResOrAzw6File())
-                        && file.LastWriteTime > checkedDate))
+                    if (book.Value.Any(file => (file.IsAzwOrAzw3File() || file.IsAzwResOrAzw6File()) && file.LastWriteTime > checkedDate))
                     {
                         updatedBooks.Add(book);
                     }
@@ -417,7 +414,8 @@ namespace AzwConverter.Converter
             return updatedBooks;
         }
 
-        private static IReadOnlyCollection<KeyValuePair<string, FileInfo[]>> GetUnconvertedBooks(IDictionary<string, FileInfo[]> books, IDictionary<string, FileInfo> convertedTitles)
+        private static IReadOnlyCollection<KeyValuePair<string, FileInfo[]>> GetUnconvertedBooks(IDictionary<string, FileInfo[]> books, 
+            IDictionary<string, FileInfo> convertedTitles)
         {
             var unConvertedBooks = books.AsParallel().Where(b => !convertedTitles.ContainsKey(b.Key)).ToList();
             if (_maxBooks > 0)

@@ -2,8 +2,7 @@
 {
     public class ScanBookEngine : AbstractImageEngine
     {
-        public async Task<CbzItem> ScanBookAsync(string bookId, FileInfo[] dataFiles)
-            => await ReadImageDataAsync(bookId, dataFiles);
+        public async Task<CbzItem> ScanBookAsync(string bookId, FileInfo[] dataFiles) => await ReadImageDataAsync(bookId, dataFiles);
 
         protected override Task<CbzItem> ProcessImagesAsync() => Task.FromResult(ReadCbzState());
 

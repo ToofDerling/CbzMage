@@ -83,8 +83,7 @@ namespace AzwConverter.Converter
             await DoConvertAzwFilesAndHDContainersAsync(azwFiles, hdContainerFiles);
         }
 
-        private async Task DoConvertAzwFilesAndHDContainersAsync(List<FileInfo> azwFiles,
-           List<FileInfo> hdContainerFiles)
+        private async Task DoConvertAzwFilesAndHDContainersAsync(List<FileInfo> azwFiles, List<FileInfo> hdContainerFiles)
         {
             ProgressReporter.Line();
 
@@ -107,7 +106,7 @@ namespace AzwConverter.Converter
             var hdContainerLookup = hdContainers.ToLookup(hd => hd.Path!.Directory!.FullName);
 
             // Match each azwfile with all hdcontainers in the same directory.
-            foreach (var azw in azwDict) 
+            foreach (var azw in azwDict)
             {
                 var azwDir = Path.GetDirectoryName(azw.Key);
                 if (hdContainerLookup.Contains(azwDir!))

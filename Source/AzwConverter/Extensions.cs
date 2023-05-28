@@ -19,25 +19,13 @@ namespace AzwConverter
 
         public static string AddMarker(this string name, string marker) => !name.StartsWith(marker) ? $"{marker} {name}" : name;
 
-        public static bool IsAzwOrAzw3File(this FileInfo fileInfo)
-        {
-            return fileInfo.Name.IsAzwOrAzw3File();
-        }
+        public static bool IsAzwOrAzw3File(this FileInfo fileInfo) => fileInfo.Name.IsAzwOrAzw3File();
 
-        public static bool IsAzwOrAzw3File(this string name)
-        {
-            return name.EndsWithIgnoreCase(".azw") || name.EndsWithIgnoreCase(".azw3");
-        }
+        public static bool IsAzwOrAzw3File(this string name) => name.EndsWithIgnoreCase(".azw") || name.EndsWithIgnoreCase(".azw3");
 
-        public static bool IsAzwResOrAzw6File(this FileInfo fileInfo)
-        {
-            return fileInfo.Name.IsAzwResOrAzw6File();
-        }
+        public static bool IsAzwResOrAzw6File(this FileInfo fileInfo) => fileInfo.Name.IsAzwResOrAzw6File();
 
-        public static bool IsAzwResOrAzw6File(this string name)
-        {
-            return name.EndsWithIgnoreCase(".azw.res") || name.EndsWithIgnoreCase(".azw6");
-        }
+        public static bool IsAzwResOrAzw6File(this string name) => name.EndsWithIgnoreCase(".azw.res") || name.EndsWithIgnoreCase(".azw6");
 
         public static string GetFullTitle(this MobiHead mobiHeader)
         {

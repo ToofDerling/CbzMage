@@ -29,7 +29,7 @@ namespace AzwConverter
         }
 
         private class CacheItem
-        { 
+        {
             public MobiMetadata.MobiMetadata Metadata { get; set; }
 
             public IDisposable[] Disposables { get; set; }
@@ -37,8 +37,7 @@ namespace AzwConverter
 
         private static readonly ConcurrentDictionary<string, CacheItem> _cache = new();
 
-        public static void CacheMetadata(string bookId, MobiMetadata.MobiMetadata metadata, 
-            params IDisposable[] disposables)
+        public static void CacheMetadata(string bookId, MobiMetadata.MobiMetadata metadata, params IDisposable[] disposables)
         {
             var item = new CacheItem { Metadata = metadata, Disposables = disposables };
 
@@ -50,7 +49,9 @@ namespace AzwConverter
 
         public static MobiMetadata.MobiMetadata? GetCachedMetadata(string bookId)
         {
-            return _cache.TryGetValue(bookId, out var item) ? item.Metadata : default;
+            return _cache.TryGetValue(bookId, out var item) 
+                ? item.Metadata 
+                : default;
         }
 
         public static void DisposeCachedMetadata(string bookId)

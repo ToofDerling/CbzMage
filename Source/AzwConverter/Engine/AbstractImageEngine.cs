@@ -73,8 +73,7 @@ namespace AzwConverter.Engine
 
                     if (!IgnoreHDContainerWarning)
                     {
-                        ProgressReporter.Warning(
-                            $"{Environment.NewLine}[{bookId}] / [{metadata.MobiHeader.GetFullTitle()}]: no HD image container");
+                        ProgressReporter.Warning($"{Environment.NewLine}[{bookId}] / [{metadata.MobiHeader.GetFullTitle()}]: no HD image container");
                     }
 
                     return await ProcessImagesAsync();
