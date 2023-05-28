@@ -18,9 +18,8 @@ namespace PdfConverter.Jobs
 
         private readonly int? _resizeHeight;
 
-        public ImageConverterJob(ArrayPoolBufferWriter<byte> bufferWriter, 
-            ConcurrentDictionary<string, ArrayPoolBufferWriter<byte>> convertedImages,
-            string page, int? resizeHeight)
+        public ImageConverterJob(ArrayPoolBufferWriter<byte> bufferWriter, ConcurrentDictionary<string, ArrayPoolBufferWriter<byte>> convertedImages, string page, 
+            int? resizeHeight)
         {
             _bufferWriter = bufferWriter;
 

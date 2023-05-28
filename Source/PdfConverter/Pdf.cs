@@ -13,9 +13,6 @@
 
         public int ImageCount { get; set; }
 
-        public static List<Pdf> List(params string[] paths)
-        {
-            return new List<Pdf>(paths.Select(x => new Pdf(x)));
-        }
+        public static List<Pdf> List(params string[] paths) => new(paths.Select(x => new Pdf(x)));
     }
 }

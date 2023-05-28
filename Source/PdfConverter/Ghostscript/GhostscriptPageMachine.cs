@@ -5,7 +5,7 @@ namespace PdfConverter.Ghostscript
 {
     public class GhostscriptPageMachine
     {
-        private static string[] GetSwitches(string pdfFile, string pageList, int dpi, string output)
+        private static string[] GetSwitches(string pdfFile, string pageList, int dpi)
         {
             var numRenderingThreads = string.Empty;
             if (Settings.NumberOfThreads == 1)
@@ -54,7 +54,7 @@ namespace PdfConverter.Ghostscript
             var pageList = CreatePageList(pageNumbers);
 
             var gsPath = Settings.GhostscriptPath;
-            var gsSwitches = GetSwitches(pdf.Path, pageList, dpi, string.Empty);
+            var gsSwitches = GetSwitches(pdf.Path, pageList, dpi);
 
             var parameters = string.Join(' ', gsSwitches);
             var gsRunner = new ProcessRunner(gsPath, parameters);

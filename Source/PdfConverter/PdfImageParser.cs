@@ -37,7 +37,7 @@ namespace PdfConverter
             _pdfComic.PageCount = _pdfDoc.GetNumberOfPages();
 
             _parserErrors = new List<Exception>();
-        
+
             _imageMap = new Dictionary<int, (int width, int height)>();
         }
 
@@ -55,7 +55,7 @@ namespace PdfConverter
                 pdfDocParser.ProcessContent(_pageNumber, this);
 
                 // Handle pages with no images
-                if (!_imageMap.TryGetValue(_pageNumber, out var _))
+                if (!_imageMap.ContainsKey(_pageNumber))
                 {
                     _imageMap[_pageNumber] = (0, 0);
                 }
@@ -81,10 +81,7 @@ namespace PdfConverter
             return sortedImagesList;
         }
 
-        public List<Exception> GetImageParserErrors()
-        {
-            return _parserErrors ?? new List<Exception>();
-        }
+        public List<Exception> GetImageParserErrors() => _parserErrors ?? new List<Exception>();
 
         private Dictionary<string, (int width, int height, int count)> BuildImageSizesMap()
         {
@@ -117,8 +114,7 @@ namespace PdfConverter
                 var newHeight = Convert.ToInt32(imageObject.GetHeight());
 
                 // We want the largest image on any given page.
-                if (!_imageMap.TryGetValue(_pageNumber, out var page)
-                    || (newWidth * newHeight > page.width * page.height))
+                if (!_imageMap.TryGetValue(_pageNumber, out var page) || (newWidth * newHeight > page.width * page.height))
                 {
                     _imageMap[_pageNumber] = (newWidth, newHeight);
                 }
@@ -131,10 +127,7 @@ namespace PdfConverter
             }
         }
 
-        public ICollection<EventType> GetSupportedEvents()
-        {
-            return new[] { EventType.RENDER_IMAGE };
-        }
+        public ICollection<EventType> GetSupportedEvents() => new[] { EventType.RENDER_IMAGE };
 
         #region Dispose
 

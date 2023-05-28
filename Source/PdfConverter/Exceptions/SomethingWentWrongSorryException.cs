@@ -2,7 +2,8 @@
 {
     public class SomethingWentWrongSorryException : ApplicationException
     {
-        public SomethingWentWrongSorryException(string message) : base($"Sorry: {message}")
+        public SomethingWentWrongSorryException(string message) 
+            : base($"Sorry: {message}")
         {
         }
     }
