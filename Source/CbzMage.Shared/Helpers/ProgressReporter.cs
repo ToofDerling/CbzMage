@@ -24,7 +24,7 @@ namespace CbzMage.Shared.Helpers
             var convertedProgress = Convert.ToInt32(progressPercentage);
             convertedProgress = Math.Min(convertedProgress, 100);
 
-            var progress = $">> {message} {convertedProgress}%";
+            var progress = $"{message} {convertedProgress}%";
 
             lock (_progressLock)
             {

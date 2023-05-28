@@ -22,13 +22,16 @@ PdfConvert [or Pdf Convert] <pdf file> or <directory with pdf files>
 
 Commands are case insensitive. 
 ";
-/*
-BlackSteedConvert [BlackSteed Convert] <directory>
-    Convert one or more Black Steed comic books copied from a mobile device.
-*/
+        /*
+        BlackSteedConvert [BlackSteed Convert] <directory>
+            Convert one or more Black Steed comic books copied from a mobile device.
+        */
 
         static async Task Main(string[] args)
         {
+            Console.CursorVisible = false;
+            Console.CancelKeyPress += (_, _) => Console.CursorVisible = true;
+
             var validAction = false;
             CbzMageAction action;
 
@@ -105,6 +108,8 @@ BlackSteedConvert [BlackSteed Convert] <directory>
                     Console.ReadLine();
                 }
             }
+
+            Console.CursorVisible = true;
 
             void ParseActionString()
             {
