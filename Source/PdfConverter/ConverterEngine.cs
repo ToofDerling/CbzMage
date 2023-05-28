@@ -33,8 +33,8 @@ namespace PdfConverter
             pdfImageParser.PageParsed += (s, e) => progressReporter.ShowProgress($"Parsing page-{e.CurrentPage}");
 
             var imageSizesMap = pdfImageParser.ParseImages();
+            progressReporter.EndProgress();
 
-            Console.WriteLine();
             Console.WriteLine($"{pdf.ImageCount} images");
 
             var parserErrors = pdfImageParser.GetImageParserErrors();
@@ -195,7 +195,7 @@ namespace PdfConverter
             pageCompressor.SignalAllPagesConverted();
             pageCompressor.WaitForPagesCompressed();
 
-            Console.WriteLine();
+            progressReporter.EndProgress();
 
             var foundErrors = 0;
             var warningsOrErrors = new List<string>();
