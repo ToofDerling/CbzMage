@@ -57,7 +57,7 @@ Commands are case insensitive.
                         {
                             case CbzMageAction.AzwScan:
                             case CbzMageAction.AzwConvert:
-                                if (!string.IsNullOrEmpty(path))
+                                if (path.Length > 0)
                                 {
                                     var fileOrDirConverter = new AzwFileOrDirectoryConverter(action, path);
                                     await fileOrDirConverter.ConvertOrScanAsync();

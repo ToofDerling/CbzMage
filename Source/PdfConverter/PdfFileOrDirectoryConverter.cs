@@ -81,12 +81,17 @@ namespace PdfConverter
 
         private static List<Pdf> InitializePdfPath(string path)
         {
-            // Must run before before the checks for file/dir existance
-            path = SharedSettings.GetDirectorySearchOption(path, out var searchOption);
+            SearchOption searchOption;
 
             if (string.IsNullOrEmpty(path))
             {
                 path = Environment.CurrentDirectory;
+                searchOption = SearchOption.TopDirectoryOnly;
+            }
+            else
+            {
+                // Must run before before the checks for file/dir existance
+                path = SharedSettings.GetDirectorySearchOption(path, out searchOption);
             }
 
             if (Directory.Exists(path))
