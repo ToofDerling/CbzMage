@@ -1,5 +1,4 @@
 ﻿using CbzMage.Shared.Extensions;
-using CbzMage.Shared.Helpers;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser;
 using iText.Kernel.Pdf.Canvas.Parser.Data;
@@ -48,9 +47,6 @@ namespace PdfConverter
             {
                 throw new ApplicationException("Comic pageCount is 0");
             }
-
-            var progressReporter = new ProgressReporter(_pdfComic.PageCount);
-            PageParsed += (s, e) => progressReporter.ShowProgress($"Parsing page-{e.CurrentPage}");
 
             var pdfDocParser = new PdfDocumentContentParser(_pdfDoc);
 
