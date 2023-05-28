@@ -15,8 +15,7 @@ namespace PdfConverter.Jobs
 
         private readonly string? _coverFile;
 
-        public ImageCompressorJob(ZipArchive? compressor, List<(string, ArrayPoolBufferWriter<byte>)> imageList,
-            ProgressReporter progressReporter, string? coverFile = null)
+        public ImageCompressorJob(ZipArchive? compressor, List<(string, ArrayPoolBufferWriter<byte>)> imageList, ProgressReporter progressReporter, string? coverFile = null)
         {
             _compressor = compressor;
 

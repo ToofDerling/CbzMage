@@ -108,10 +108,8 @@ namespace AzwConverter.Converter
 #endif
         }
 
-        private async Task RunActionsInParallelAsync(IDictionary<string, FileInfo[]> books,
-            IReadOnlyCollection<KeyValuePair<string, FileInfo[]>> updatedBooks,
-            IReadOnlyCollection<KeyValuePair<string, FileInfo[]>> unconvertedBooks,
-            IDictionary<string, FileInfo> titles, IDictionary<string, FileInfo> convertedTitles)
+        private async Task RunActionsInParallelAsync(IDictionary<string, FileInfo[]> books, IReadOnlyCollection<KeyValuePair<string, FileInfo[]>> updatedBooks,
+            IReadOnlyCollection<KeyValuePair<string, FileInfo[]>> unconvertedBooks, IDictionary<string, FileInfo> titles, IDictionary<string, FileInfo> convertedTitles)
         {
             if (updatedBooks.Count > 0)
             {
@@ -394,8 +392,7 @@ namespace AzwConverter.Converter
             return newTitleFile;
         }
 
-        private IReadOnlyCollection<KeyValuePair<string, FileInfo[]>> GetUpdatedBooks(IDictionary<string, FileInfo[]> books,
-            IDictionary<string, FileInfo> convertedTitles)
+        private IReadOnlyCollection<KeyValuePair<string, FileInfo[]>> GetUpdatedBooks(IDictionary<string, FileInfo[]> books, IDictionary<string, FileInfo> convertedTitles)
         {
             var updatedBooks = new ConcurrentBag<KeyValuePair<string, FileInfo[]>>();
 
@@ -420,8 +417,7 @@ namespace AzwConverter.Converter
             return updatedBooks;
         }
 
-        private static IReadOnlyCollection<KeyValuePair<string, FileInfo[]>> GetUnconvertedBooks(IDictionary<string, FileInfo[]> books,
-            IDictionary<string, FileInfo> convertedTitles)
+        private static IReadOnlyCollection<KeyValuePair<string, FileInfo[]>> GetUnconvertedBooks(IDictionary<string, FileInfo[]> books, IDictionary<string, FileInfo> convertedTitles)
         {
             var unConvertedBooks = books.AsParallel().Where(b => !convertedTitles.ContainsKey(b.Key)).ToList();
             if (_maxBooks > 0)
