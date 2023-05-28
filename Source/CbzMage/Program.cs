@@ -51,7 +51,7 @@ Commands are case insensitive.
                 {
                     if (validAction)
                     {
-                        var path = args.Length > next ? args[next] : null;
+                        var path = args.Length > next ? args[next].Trim() : string.Empty;
 
                         switch (action)
                         {
@@ -83,7 +83,7 @@ Commands are case insensitive.
                             case CbzMageAction.BlackSteedConvert:
                                 {
                                     var blackSteedConverter = new BlackSteedConverter.BlackSteedConverter();
-                                    await blackSteedConverter.ConvertDirectoryAsync(path!);
+                                    await blackSteedConverter.ConvertDirectoryAsync(path);
                                 }
                                 break;
                         }
@@ -100,13 +100,10 @@ Commands are case insensitive.
                 ProgressReporter.Info(_usage);
             }
 
-            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+            // If this is run as a "gui" let the console hang around
+            if (ConsoleWillBeDestroyedAtTheEnd())
             {
-                // If this is run as a "gui" let the console hang around
-                if (ConsoleWillBeDestroyedAtTheEnd())
-                {
-                    Console.ReadLine();
-                }
+                Console.ReadLine();
             }
 
             Console.CursorVisible = true;
@@ -123,6 +120,11 @@ Commands are case insensitive.
 
         private static bool ConsoleWillBeDestroyedAtTheEnd()
         {
+            if (Environment.OSVersion.Platform != PlatformID.Win32NT)
+            {
+                return false;
+            }
+
             var processList = new uint[1];
             var processCount = GetConsoleProcessList(processList, 1);
 
