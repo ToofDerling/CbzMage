@@ -28,7 +28,7 @@ namespace CbzMage.Shared.Helpers
 
             lock (_progressLock)
             {
-                Console.SetCursorPosition(0, Console.CursorTop);
+                Console.CursorLeft = 0;
                 Console.Write(progress);
             }
         }
@@ -40,8 +40,8 @@ namespace CbzMage.Shared.Helpers
 
         public static void ShowMessage(string message)
         {
-            Console.SetCursorPosition(0, Console.CursorTop);
-            Console.Write($">> {message}");
+            Console.CursorLeft = 0;
+            Console.Write($"{message}");
         }
 
         public static void EndMessages()
