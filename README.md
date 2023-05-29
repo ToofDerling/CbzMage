@@ -15,7 +15,7 @@ Download CbzMage to your hard drive and unpack it anywhere. Have a look at the s
 
 ## Azw conversion.
 
-Open the AzwConvertSettings.json file in a text editor and **configure AzwDir**. Please note the comment about [moving the azw directory]([https://github.com/ToofDerling/CbzMage/wiki/How-to-move-Kdl-content-folder.](https://github.com/ToofDerling/CbzMage/wiki/Azw:-How-to-move-Kdl-content-folder)) as **running CbzMage for the first time may double the size of your azw directory.**
+Open the AzwConvertSettings.json file in a text editor and **configure AzwDir**. Please note the comment about [moving the azw directory](https://github.com/ToofDerling/CbzMage/wiki/Azw:-How-to-move-Kdl-content-folder) as **running CbzMage for the first time may double the size of your azw directory.**
 
 **Important:** Close Kdl before running CbzMage. Kdl locks some of the azw files when it's running, so there's a high chance that CbzMage will crash because it can't read a locked azw file.
 
