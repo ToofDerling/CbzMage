@@ -5,7 +5,7 @@ Additionally, if CbzMage finds a matching azw.res file it will **merge in any HD
 Comic title and publisher will be read from the azw file, and running CbzMage in scan mode will allow you to edit the values before the conversion. You can also point CbzMage at a file or directory and it will process any azw or azw3 files it finds directly.
 2. **Convert pdf files to nice cbz files**. Point CbzMage at a single pdf comic book or a directory of pdf comic books and it will convert them to cbz files in the highest possible quality.
 
-**All of this works fully in [CbzMage Version 0.27](https://github.com/ToofDerling/CbzMage/releases/tag/v0.27).**
+**All of this works fully in [CbzMage Version 1.0](https://github.com/ToofDerling/CbzMage/releases/tag/v1.0).**
 
 CbzMage is a commandline tool written in c#. It requires no installation, very little configuration and no drm plugin/tool (the last part may change in the future). It does require that **[.NET 6](https://dotnet.microsoft.com/en-us/download)** is installed on your computer. The pdf conversion requires that **[Ghostscript version 10+](https://ghostscript.com/releases/gsdnld.html)** is installed on your computer.
 
