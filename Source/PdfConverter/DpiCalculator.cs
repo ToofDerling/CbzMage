@@ -48,7 +48,7 @@ namespace PdfConverter
                 while (nextWidth < wantedWidth)
                 {
                     dpi++;
-                 
+
                     if (!TryGetImageWidth(dpi, out nextWidth))
                     {
                         return dpi;
@@ -101,7 +101,7 @@ namespace PdfConverter
             while (nextWidth < wantedWidth)
             {
                 dpi++;
-             
+
                 if (!TryGetImageWidth(dpi, out nextWidth))
                 {
                     return dpi;
@@ -130,7 +130,7 @@ namespace PdfConverter
             var imageHandler = new SingleImageDataHandler();
 
             using var gsRunner = _ghostScriptPageMachine.StartReadingPages(_pdf, new List<int> { 1 }, dpi, imageHandler);
-             
+
             var bufferWriter = imageHandler.WaitForImageDate();
 
             using var image = new MagickImage();

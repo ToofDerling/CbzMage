@@ -46,7 +46,7 @@
             _totalJpgSize += jpg;
 
             if (jpg > _largestJpg)
-            { 
+            {
                 _largestJpg = jpg;
             }
         }
