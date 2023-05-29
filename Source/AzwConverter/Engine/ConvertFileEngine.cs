@@ -18,7 +18,7 @@ namespace AzwConverter.Engine
 
             var state = await ReadImageDataAsync(azwFile.Name, azwFile);
             state.Name = _cbzFile!;
-        
+
             return state;
         }
 
@@ -27,8 +27,8 @@ namespace AzwConverter.Engine
             IgnoreHDContainerWarning = true;
 
             var hdContainer = HDContainerHelper.FindHDContainer(Metadata!, _hdHeaderList);
-            
-            if (hdContainer != null) 
+
+            if (hdContainer != null)
             {
                 _mappedArchiveLen += hdContainer.Length;
             }
@@ -60,7 +60,7 @@ namespace AzwConverter.Engine
         private static string? GetCoverFile(string cbzFile)
         {
             if (!Settings.SaveCover)
-            { 
+            {
                 return null;
             }
 

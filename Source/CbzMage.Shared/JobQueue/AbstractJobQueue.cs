@@ -15,7 +15,7 @@ namespace CbzMage.Shared.JobQueue
         private InternalJobWaiter _jobWaiter;
 
         protected AbstractJobQueue(int numWorkerThreads = 1)
-        { 
+        {
             _numWorkerThreads = numWorkerThreads;
         }
 

@@ -10,7 +10,7 @@ namespace CbzMage.Shared.Helpers
 
         private readonly ProcessPriorityClass _priorityClass;
 
-        public ProcessRunner(string path, string args = "", string workingDirectory = "", ProcessPriorityClass processPriority = ProcessPriorityClass.Normal, 
+        public ProcessRunner(string path, string args = "", string workingDirectory = "", ProcessPriorityClass processPriority = ProcessPriorityClass.Normal,
             EventHandler<DataReceivedEventArgs>? outputReceived = null)
         {
             _process = new Process

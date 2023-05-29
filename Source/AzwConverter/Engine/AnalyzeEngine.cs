@@ -127,7 +127,7 @@ namespace AzwConverter.Engine
 
             if (!_analyzeImages)
             {
-                if (messageError.Length> 0) 
+                if (messageError.Length > 0)
                 {
                     _analyzeMessageError = messageError.ToString();
                 }

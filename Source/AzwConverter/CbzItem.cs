@@ -2,7 +2,7 @@
 
 namespace AzwConverter
 {
-    public class CbzItem : CollectionItem
+    public sealed class CbzItem : CollectionItem
     {
         public bool HdCover { get; set; }
         public bool SdCover { get; set; }

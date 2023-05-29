@@ -54,7 +54,7 @@ namespace AzwConverter
                 Settings.SaveCoverDir.CreateDirIfNotExists();
             }
             else
-            { 
+            {
                 Settings.SaveCoverDir = null;
             }
 

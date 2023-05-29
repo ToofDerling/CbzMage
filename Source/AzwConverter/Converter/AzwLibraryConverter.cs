@@ -122,9 +122,9 @@ namespace AzwConverter.Converter
 
                 await Parallel.ForEachAsync(updatedBooks, Settings.ParallelOptions,
                     async (book, _) =>
-                        await ScanUpdatedBookAsync(book.Key, book.Value, titles[book.Key], 
-                            convertedTitles.TryGetValue(book.Key, out var convertedTitle) 
-                                ? convertedTitle 
+                        await ScanUpdatedBookAsync(book.Key, book.Value, titles[book.Key],
+                            convertedTitles.TryGetValue(book.Key, out var convertedTitle)
+                                ? convertedTitle
                                 : null));
             }
 
@@ -144,9 +144,9 @@ namespace AzwConverter.Converter
 
                 await Parallel.ForEachAsync(unconvertedBooks, Settings.ParallelOptions,
                     async (book, _) =>
-                        await ConvertBookAsync(book.Key, book.Value, titles[book.Key], 
-                            convertedTitles.TryGetValue(book.Key, out var convertedTitle) 
-                                ? convertedTitle 
+                        await ConvertBookAsync(book.Key, book.Value, titles[book.Key],
+                            convertedTitles.TryGetValue(book.Key, out var convertedTitle)
+                                ? convertedTitle
                                 : null));
             }
             else if (Action == CbzMageAction.AzwScan)
@@ -414,7 +414,7 @@ namespace AzwConverter.Converter
             return updatedBooks;
         }
 
-        private static IReadOnlyCollection<KeyValuePair<string, FileInfo[]>> GetUnconvertedBooks(IDictionary<string, FileInfo[]> books, 
+        private static IReadOnlyCollection<KeyValuePair<string, FileInfo[]>> GetUnconvertedBooks(IDictionary<string, FileInfo[]> books,
             IDictionary<string, FileInfo> convertedTitles)
         {
             var unConvertedBooks = books.AsParallel().Where(b => !convertedTitles.ContainsKey(b.Key)).ToList();

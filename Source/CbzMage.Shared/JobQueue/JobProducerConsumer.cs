@@ -2,7 +2,7 @@
 {
     public class JobProducerConsumer<T> : AbstractJobQueue<T>
     {
-        public JobProducerConsumer(int numWorkerThreads = 1): base(numWorkerThreads)
+        public JobProducerConsumer(int numWorkerThreads = 1) : base(numWorkerThreads)
         {
         }
 
