@@ -33,6 +33,7 @@ namespace PdfConverter
 
         public void WaitForPagesConverted() => _jobWaiter.WaitForJobsToFinish();
 
+        // Handle png/jpg (possible other types) imagedata from Itext saving original pdf images.
         public void HandleSavedImageData(ArrayPoolBufferWriter<byte> bufferWriter, string imageExt)
         {
             if (bufferWriter == null)
@@ -43,18 +44,20 @@ namespace PdfConverter
 
             var pageNumber = _pageQueue.Dequeue();
 
-            // It makes no sense to convert jpgs
+            // It makes no sense to convert jpg images
             if (imageExt == "jpg")
             {
                 OnImageConverted(new JobEventArgs<(int pageNumber, ArrayPoolBufferWriter<byte> imageData, string imageExt)>((pageNumber, bufferWriter, imageExt)));
                 return;
             }
 
-            // but it does makes sense to recompress pngs as much as possible
-            var job = new ImageConverterJob(pageNumber, bufferWriter, imageExt, _resizeHeight);
+            // But it does makes sense to recompress png images as much as possible. Converter logic is
+            // png -> recompress, everything else -> convert to jpg.
+            var job = new ImageConverterJob(pageNumber, bufferWriter, imageExt, null);
             _converterExecutor.AddJob(job);
         }
 
+        // Handle png imagedata from Ghostscript parsing a pdf. 
         public void HandleParsedImageData(ArrayPoolBufferWriter<byte> bufferWriter)
         {
             if (bufferWriter == null)
@@ -64,6 +67,7 @@ namespace PdfConverter
             }
             var pageNumber = _pageQueue.Dequeue();
 
+            // Tell converter to convert to jpg and resize if needed.
             var job = new ImageConverterJob(pageNumber, bufferWriter, "jpg", _resizeHeight);
             _converterExecutor.AddJob(job);
         }
