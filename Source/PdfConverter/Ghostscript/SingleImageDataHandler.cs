@@ -16,7 +16,7 @@ namespace PdfConverter.Ghostscript
             return buffer;
         }
 
-        public void HandleParsedImageData(ArrayPoolBufferWriter<byte> image)
+        public void HandleRenderedImageData(ArrayPoolBufferWriter<byte> image)
         {
             if (image == null)
             {

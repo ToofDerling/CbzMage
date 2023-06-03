@@ -51,20 +51,20 @@ namespace PdfConverter
                 return;
             }
 
-            // But it does makes sense to recompress png images as much as possible. Converter logic is
-            // png -> recompress, everything else -> convert to jpg.
+            // But it does makes sense to recompress png images as much as possible. Converter logic is png -> recompress, everything else -> convert to jpg.
             var job = new ImageConverterJob(pageNumber, bufferWriter, imageExt, null);
             _converterExecutor.AddJob(job);
         }
 
-        // Handle png imagedata from Ghostscript parsing a pdf. 
-        public void HandleParsedImageData(ArrayPoolBufferWriter<byte> bufferWriter)
+        // Handle png imagedata from Ghostscript rendering a pdf. 
+        public void HandleRenderedImageData(ArrayPoolBufferWriter<byte> bufferWriter)
         {
             if (bufferWriter == null)
             {
                 _converterExecutor.Stop();
                 return;
             }
+
             var pageNumber = _pageQueue.Dequeue();
 
             // Tell converter to convert to jpg and resize if needed.

@@ -4,7 +4,7 @@ namespace PdfConverter
 {
     public interface IImageDataHandler
     {
-        void HandleParsedImageData(ArrayPoolBufferWriter<byte> image);
+        void HandleRenderedImageData(ArrayPoolBufferWriter<byte> image);
 
         void HandleSavedImageData(ArrayPoolBufferWriter<byte> image, string imageExt);
     }
