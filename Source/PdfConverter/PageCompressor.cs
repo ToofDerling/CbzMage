@@ -1,7 +1,7 @@
 ﻿using CbzMage.Shared.Buffers;
+using CbzMage.Shared.Extensions;
 using CbzMage.Shared.Helpers;
 using CbzMage.Shared.JobQueue;
-using CbzMage.Shared.Settings;
 using PdfConverter.Jobs;
 using System.Collections.Concurrent;
 using System.IO.Compression;
@@ -14,7 +14,8 @@ namespace PdfConverter
 
         private readonly ConcurrentQueue<int> _pageNumbers;
 
-        private readonly ConcurrentDictionary<string, ArrayPoolBufferWriter<byte>> _convertedPages;
+        // pageNumber, (imageData, imageExt)
+        private readonly ConcurrentDictionary<int, (ArrayPoolBufferWriter<byte> imageData, string imageExt)> _convertedPages;
 
         private readonly JobExecutor<IEnumerable<string>> _compressorExecutor;
 
@@ -32,7 +33,7 @@ namespace PdfConverter
 
         private readonly ProgressReporter _progressReporter;
 
-        public PageCompressor(Pdf pdf, ConcurrentDictionary<string, ArrayPoolBufferWriter<byte>> convertedPages)
+        public PageCompressor(Pdf pdf, ConcurrentDictionary<int, (ArrayPoolBufferWriter<byte> imageData, string imageExt)> convertedPages)
         {
             _pdf = pdf;
             _convertedPages = convertedPages;
@@ -132,19 +133,17 @@ namespace PdfConverter
 
         private bool AddCompressorJob()
         {
-            var key = SharedSettings.GetPageString(_nextPageNumber);
-
             var firstPage = _nextPageNumber == 1;
 
             var imageList = new List<(string page, ArrayPoolBufferWriter<byte> imageData)>();
 
-            while (_convertedPages.TryRemove(key, out var imageData))
+            while (_convertedPages.TryRemove(_nextPageNumber, out var imageInfo))
             {
-                imageList.Add((key, imageData));
+                var page = _nextPageNumber.ToPageString(imageInfo.imageExt);
+
+                imageList.Add((page, imageInfo.imageData));
 
                 _pageNumbers.TryDequeue(out _nextPageNumber);
-
-                key = SharedSettings.GetPageString(_nextPageNumber);
             }
 
             if (imageList.Count > 0)

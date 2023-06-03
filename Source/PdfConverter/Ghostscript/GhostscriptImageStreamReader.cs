@@ -64,7 +64,7 @@ namespace PdfConverter.Ghostscript
                             nextBufferWriter.Advance(data.Length); //next buffer has first part of next image 
                             currentBufferWriter.Withdraw(data.Length); //current buffer has current image
 
-                            _imageDatahandler.HandleImageData(currentBufferWriter);
+                            _imageDatahandler.HandleParsedImageData(currentBufferWriter);
 
                             currentBufferWriter = nextBufferWriter;
 
@@ -85,11 +85,11 @@ namespace PdfConverter.Ghostscript
 
                 if (offset > 0)
                 {
-                    _imageDatahandler.HandleImageData(currentBufferWriter);
+                    _imageDatahandler.HandleParsedImageData(currentBufferWriter);
                 }
 
                 // Signal we're done.
-                _imageDatahandler.HandleImageData(null!);
+                _imageDatahandler.HandleParsedImageData(null!);
             }
             finally
             {

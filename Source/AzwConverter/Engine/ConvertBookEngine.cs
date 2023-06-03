@@ -1,4 +1,5 @@
-﻿using CbzMage.Shared.IO;
+﻿using CbzMage.Shared.Extensions;
+using CbzMage.Shared.IO;
 using CbzMage.Shared.Settings;
 using MobiMetadata;
 using System.IO.Compression;
@@ -92,7 +93,7 @@ namespace AzwConverter.Engine
             {
                 state.Pages++;
 
-                var pageName = SharedSettings.GetPageString(state.Pages);
+                var pageName = state.Pages.ToPageString();
 
                 var pageRecord = Metadata.MergedImageRecords[pageIndex];
 

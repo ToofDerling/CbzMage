@@ -16,7 +16,7 @@ namespace PdfConverter.Ghostscript
             return buffer;
         }
 
-        public void HandleImageData(ArrayPoolBufferWriter<byte> image)
+        public void HandleParsedImageData(ArrayPoolBufferWriter<byte> image)
         {
             if (image == null)
             {
@@ -24,6 +24,11 @@ namespace PdfConverter.Ghostscript
             }
 
             _queue.Add(image);
+        }
+
+        public void HandleSavedImageData(ArrayPoolBufferWriter<byte> image, string imageExt)
+        {
+            throw new NotImplementedException();
         }
     }
 }

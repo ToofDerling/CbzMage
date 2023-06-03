@@ -1,9 +1,11 @@
-﻿using CbzMage.Shared.Extensions;
+﻿using CbzMage.Shared.Buffers;
+using CbzMage.Shared.Extensions;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser;
 using iText.Kernel.Pdf.Canvas.Parser.Data;
 using iText.Kernel.Pdf.Canvas.Parser.Listener;
 using PdfConverter.Exceptions;
+using System.Buffers;
 
 namespace PdfConverter
 {
@@ -12,7 +14,7 @@ namespace PdfConverter
         // Largest image on a given page
         private readonly Dictionary<int, (int width, int height)> _imageMap;
 
-        private readonly List<Exception> _parserErrors;
+        private readonly List<Exception> _imageParserErrors;
 
         private readonly Pdf _pdfComic;
 
@@ -21,6 +23,17 @@ namespace PdfConverter
 
         private int _pageNumber;
         private int _imageCount;
+
+        private bool _pdfContainsRenderedText = false;
+
+        private ICollection<EventType> _supportedEvents;
+
+        private enum ImageMode
+        {
+            Parse, Save
+        }
+
+        private ImageMode _imageMode;
 
         public PdfImageParser(Pdf pdfComic)
         {
@@ -36,13 +49,17 @@ namespace PdfConverter
 
             _pdfComic.PageCount = _pdfDoc.GetNumberOfPages();
 
-            _parserErrors = new List<Exception>();
+            _imageParserErrors = new List<Exception>();
 
             _imageMap = new Dictionary<int, (int width, int height)>();
         }
 
         public List<(int width, int height, int count)> ParseImages()
         {
+            _supportedEvents = new[] { EventType.RENDER_IMAGE };
+
+            _imageMode = ImageMode.Parse;
+
             if (_pdfComic.PageCount == 0)
             {
                 throw new ApplicationException("Comic pageCount is 0");
@@ -81,7 +98,7 @@ namespace PdfConverter
             return sortedImagesList;
         }
 
-        public List<Exception> GetImageParserErrors() => _parserErrors ?? new List<Exception>();
+        public List<Exception> GetImageParserErrors() => _imageParserErrors;
 
         private Dictionary<string, (int width, int height, int count)> BuildImageSizesMap()
         {
@@ -105,9 +122,28 @@ namespace PdfConverter
 
         public void EventOccurred(IEventData data, EventType type)
         {
+            switch (type)
+            {
+                case EventType.RENDER_IMAGE:
+                    if (_imageMode == ImageMode.Save)
+                    {
+                        SaveImage((ImageRenderInfo)data);
+                    }
+                    else
+                    {
+                        ParseImage((ImageRenderInfo)data);
+                    }
+                    break;
+                case EventType.RENDER_TEXT:
+                    _pdfContainsRenderedText = true;
+                    break;
+            }
+        }
+
+        private void ParseImage(ImageRenderInfo renderInfo)
+        {
             try
             {
-                var renderInfo = data as ImageRenderInfo;
                 var imageObject = renderInfo.GetImage();
 
                 var newWidth = Convert.ToInt32(imageObject.GetWidth());
@@ -123,11 +159,73 @@ namespace PdfConverter
             }
             catch (Exception ex)
             {
-                _parserErrors.Add(ex);
+                _imageParserErrors.Add(ex);
             }
         }
 
-        public ICollection<EventType> GetSupportedEvents() => new[] { EventType.RENDER_IMAGE };
+        private void SaveImage(ImageRenderInfo renderInfo)
+        {
+            try
+            {
+                var imageObject = renderInfo.GetImage();
+
+                var imageBytes = imageObject.GetImageBytes(decoded: true);
+                var imageExt = imageObject.IdentifyImageFileExtension();
+
+                var bufferWriter = new ArrayPoolBufferWriter<byte>();
+                bufferWriter.Write(imageBytes);
+
+                _imageDataHandler.HandleSavedImageData(bufferWriter, imageExt);
+            }
+            catch (Exception ex)
+            {
+                _imageParserErrors.Add(ex);
+            }
+        }
+
+        public ICollection<EventType> GetSupportedEvents() => _supportedEvents;
+
+        public bool DetectRenderedText()
+        {
+            _supportedEvents = new[] { EventType.RENDER_TEXT };
+
+            var pdfDocParser = new PdfDocumentContentParser(_pdfDoc);
+
+            for (_pageNumber = 1; _pageNumber <= _pdfComic.PageCount; _pageNumber++)
+            {
+                pdfDocParser.ProcessContent(_pageNumber, this);
+
+                if (_pdfContainsRenderedText)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private IImageDataHandler _imageDataHandler;
+
+        public void SavePdfImages(List<int> pageList, IImageDataHandler imageDataHandler)
+        {
+            _imageDataHandler = imageDataHandler;
+
+            _supportedEvents = new[] { EventType.RENDER_IMAGE };
+
+            _imageMode = ImageMode.Save;
+
+            var pdfDocParser = new PdfDocumentContentParser(_pdfDoc);
+
+            for (int i = 0, sz = pageList.Count; i < sz; i++)
+            {
+                _pageNumber = pageList[i];
+
+                pdfDocParser.ProcessContent(_pageNumber, this);
+            }
+
+            imageDataHandler.HandleSavedImageData(null!, "bye");
+        }
+
 
         #region Dispose
 

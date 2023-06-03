@@ -2,11 +2,11 @@
 {
     public class PageConvertedEventArgs : EventArgs
     {
-        public PageConvertedEventArgs(string page)
+        public PageConvertedEventArgs(int pageNumber)
         {
-            Page = page;
+            PageNumber = pageNumber;
         }
 
-        public string Page { get; private set; }
+        public int PageNumber { get; private set; }
     }
 }

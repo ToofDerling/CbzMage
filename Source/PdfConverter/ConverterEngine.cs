@@ -3,6 +3,7 @@ using CbzMage.Shared.Extensions;
 using CbzMage.Shared.Helpers;
 using PdfConverter.Exceptions;
 using PdfConverter.Ghostscript;
+using PdfConverter.ImageProducer;
 using System.Collections.Concurrent;
 
 namespace PdfConverter
@@ -12,13 +13,28 @@ namespace PdfConverter
         public void ConvertToCbz(Pdf pdf, PdfImageParser pdfParser)
         {
             var sortedImageSizes = ParsePdfImages(pdf, pdfParser);
+
+            // Use original images from pdf
+            if (SavePdfImages(pdf, pdfParser, sortedImageSizes))
+            {
+                return;
+            }
+
             var wantedWidth = GetWantedWidth(pdf, sortedImageSizes);
 
             var (dpi, dpiHeight) = CalculateDpiForWantedWidth(pdf, wantedWidth);
             var adjustedHeight = GetAdjustedHeight(pdf, sortedImageSizes, dpiHeight);
 
             var pageLists = CreatePageLists(pdf);
-            var fileCount = ConvertPages(pdf, pageLists, dpi, adjustedHeight);
+            var imageProducers = new List<AbstractImageProducer>();
+
+            foreach (var pageList in pageLists)
+            {
+                var producer = new GhostScriptImageProducer(pdf, pageList, dpi);
+                imageProducers.Add(producer);
+            }
+
+            var fileCount = ConvertPages(pdf, imageProducers, adjustedHeight);
 
             if (!Settings.SaveCoverOnly && (fileCount != pdf.PageCount))
             {
@@ -32,7 +48,7 @@ namespace PdfConverter
 
             pdfImageParser.PageParsed += (s, e) => progressReporter.ShowProgress($"Parsing page-{e.CurrentPage}");
 
-            var imageSizesMap = pdfImageParser.ParseImages();
+            var sortedImageSizes = pdfImageParser.ParseImages();
             progressReporter.EndProgress();
 
             Console.WriteLine($"{pdf.ImageCount} images");
@@ -40,7 +56,49 @@ namespace PdfConverter
             var parserErrors = pdfImageParser.GetImageParserErrors();
             parserErrors.ForEach(ex => Console.WriteLine(ex.TypeAndMessage()));
 
-            return imageSizesMap;
+            return sortedImageSizes;
+        }
+
+        private static bool SavePdfImages(Pdf pdf, PdfImageParser pdfImageParser, List<(int width, int height, int count)> sortedImageSizes)
+        {
+            // Fast Mode (saving pdf original images) requires each page has exactly one image
+            if (pdf.ImageCount != pdf.PageCount
+                // Detect page without an image.
+                || sortedImageSizes.Any(i => i.width == 0))
+            {
+                return false;
+            }
+
+            Console.Write("Use original images: ");
+            try
+            {
+                // If pdf contains text to render (eg on editorial pages) Fast Mode is not available
+                if (pdfImageParser.DetectRenderedText())
+                {
+                    ProgressReporter.Info("not available");
+                    return false;
+                }
+                ProgressReporter.Done("ok");
+            }
+            catch (IOException)
+            {
+                // Text rendering can fail because of a missing font
+                ProgressReporter.Info("error");
+                return false;
+            }
+
+            var pageLists = CreatePageLists(pdf);
+            var imageProducers = new List<AbstractImageProducer>();
+
+            foreach (var pageList in pageLists)
+            {
+                var producer = new ITextImageProducer(pdf, pageList);
+                imageProducers.Add(producer);
+            }
+
+            ConvertPages(pdf, imageProducers, resizeHeight: null);
+
+            return true;
         }
 
         private static int GetWantedWidth(Pdf pdf, List<(int width, int height, int count)> sortedImageSizes)
@@ -159,35 +217,32 @@ namespace PdfConverter
             return pageLists;
         }
 
-        private static int ConvertPages(Pdf pdf, List<int>[] pageLists, int dpi, int? resizeHeight)
+        private static int ConvertPages(Pdf pdf, List<AbstractImageProducer> imageProducers, int? resizeHeight)
         {
-            // Each page machine reads a range of pages continously and saves them as png images in memory.
-            // Each machine has a dedicated converter thread that converts images to jpg, also in memory 
-            // The page compressor job thread picks up converted images as they are saved (in page order)
-            // and writes them to the cbz file.
+            // Each image producer reads a range of pages continously and saves them as png images in memory.
+            // Each machine has a dedicated converter thread that converts images to jpg/png, also in memory. 
+            // The page compressor job thread picks up converted images as they are saved (in page order) and
+            // writes them to the cbz file.
 
             var progressReporter = new ProgressReporter(pdf.PageCount);
 
             // Key is page name (page-001.jpg etc)
-            var convertedPages = new ConcurrentDictionary<string, ArrayPoolBufferWriter<byte>>(pageLists.Length, pdf.PageCount);
+            var convertedPages = new ConcurrentDictionary<int, (ArrayPoolBufferWriter<byte> imageData, string imageExt)>(imageProducers.Count, pdf.PageCount);
 
             var pageCompressor = new PageCompressor(pdf, convertedPages);
 
             var pagesCompressed = 0;
             pageCompressor.PagesCompressed += (s, e) => OnPagesCompressed(e);
 
-            var gsRunners = new ConcurrentBag<ProcessRunner>();
-
-            Parallel.For(0, pageLists.Length, (id) =>
+            Parallel.ForEach(imageProducers, producer =>
             {
-                var pageList = pageLists[id];
+                var pageList = producer.PageList;
                 var pageQueue = new Queue<int>(pageList);
 
                 var pageConverter = new PageConverter(pageQueue, convertedPages, resizeHeight);
                 pageConverter.PageConverted += (s, e) => pageCompressor.OnPageConverted(e);
 
-                var pageMachine = new GhostscriptPageMachine();
-                gsRunners.Add(pageMachine.StartReadingPages(pdf, pageList, dpi, pageConverter));
+                producer.Start(pageConverter);
 
                 pageConverter.WaitForPagesConverted();
             });
@@ -200,12 +255,12 @@ namespace PdfConverter
             var foundErrors = 0;
             var warningsOrErrors = new List<string>();
 
-            foreach (var gsRunner in gsRunners)
+            foreach (var producer in imageProducers)
             {
-                foundErrors += gsRunner.WaitForExitCode();
-                warningsOrErrors.AddRange(gsRunner.GetStandardErrorLines());
+                foundErrors += producer.WaitForExit();
+                warningsOrErrors.AddRange(producer.GetErrorLines());
 
-                gsRunner.Dispose();
+                producer.Dispose();
             }
 
             if (warningsOrErrors.Count > 0)

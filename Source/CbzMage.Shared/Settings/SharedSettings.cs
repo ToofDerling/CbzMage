@@ -46,12 +46,6 @@ namespace CbzMage.Shared.Settings
             return settingsThreadCount;
         }
 
-        public static string GetPageString(int pageNumber)
-        {
-            var page = pageNumber.ToString().PadLeft(4, '0');
-            return $"page-{page}.jpg";
-        }
-
         private static string ScanAllDirectoriesPattern => $"{Path.DirectorySeparatorChar}**";
 
         public static string GetDirectorySearchOption(string directory, out SearchOption searchOption)

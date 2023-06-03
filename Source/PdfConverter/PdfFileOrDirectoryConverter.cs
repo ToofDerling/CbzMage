@@ -1,6 +1,7 @@
 using CbzMage.Shared.Extensions;
 using CbzMage.Shared.Helpers;
 using CbzMage.Shared.Settings;
+using PdfConverter.Exceptions;
 using PdfConverter.Helpers;
 using System.Diagnostics;
 
@@ -63,19 +64,29 @@ namespace PdfConverter
         {
             var stopwatch = Stopwatch.StartNew();
 
-            // Throws if pdf is encrypted
-            using var pdfParser = new PdfImageParser(pdf);
-
             ProgressReporter.Info(pdf.Path);
-            ProgressReporter.Info($"{pdf.PageCount} pages");
 
-            _pagesCount += pdf.PageCount;
+            try
+            {
+                using var pdfParser = new PdfImageParser(pdf);
 
-            converter.ConvertToCbz(pdf, pdfParser);
+                ProgressReporter.Info($"{pdf.PageCount} pages");
+                _pagesCount += pdf.PageCount;
+
+                converter.ConvertToCbz(pdf, pdfParser);
+            }
+            catch (PdfEncryptedException e)
+            {
+                ProgressReporter.Error($"Error reading [{pdf.Path}] pdf is encrypted");
+            }
+            catch (Exception e)
+            {
+                ProgressReporter.Error($"Error reading [{pdf.Path}] {e.TypeAndMessage()}");
+            }
 
             stopwatch.Stop();
-
             ProgressReporter.Info($"{stopwatch.Elapsed.Mmss()}");
+
             ProgressReporter.Line();
         }
 

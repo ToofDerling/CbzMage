@@ -173,7 +173,7 @@ namespace BlackSteedConverter
 
                 var from = Path.Combine(bookDir, page.src_image);
 
-                var jpg = SharedSettings.GetPageString(pageCount);
+                var jpg = pageCount.ToPageString(from);
                 var to = Path.Combine(bookDir, jpg);
 
                 if (!File.Exists(to))
