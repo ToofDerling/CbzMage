@@ -219,14 +219,13 @@ namespace PdfConverter
 
         private static int ConvertPages(Pdf pdf, List<AbstractImageProducer> imageProducers, int? resizeHeight)
         {
-            // Each image producer reads a range of pages continously and saves them as png images in memory.
-            // Each machine has a dedicated converter thread that converts images to jpg/png, also in memory. 
-            // The page compressor job thread picks up converted images as they are saved (in page order) and
-            // writes them to the cbz file.
+            // Each image producer reads a range of pages continously and saves the images in memory.
+            // Each producer has a dedicated converter thread that converts images to jpg (or recompresses png images), also in memory. 
+            // The page compressor thread picks up converted images as they are saved (in page order) and writes them to the cbz file.
 
             var progressReporter = new ProgressReporter(pdf.PageCount);
 
-            // Key is page name (page-001.jpg etc)
+            // Key is pagenumber
             var convertedPages = new ConcurrentDictionary<int, (ArrayPoolBufferWriter<byte> imageData, string imageExt)>(imageProducers.Count, pdf.PageCount);
 
             var pageCompressor = new PageCompressor(pdf, convertedPages);
