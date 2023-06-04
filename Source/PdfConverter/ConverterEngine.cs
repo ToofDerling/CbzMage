@@ -219,7 +219,7 @@ namespace PdfConverter
 
         private static int ConvertPages(Pdf pdf, List<AbstractImageProducer> imageProducers, int? resizeHeight)
         {
-            // Each image producer reads a range of pages continously and saves the images in memory.
+            // Each image producer reads a range of pages continously and renders or saves the images in memory.
             // Each producer has a dedicated converter thread that converts images to jpg (or recompresses png images), also in memory. 
             // The page compressor thread picks up converted images as they are saved (in page order) and writes them to the cbz file.
 
