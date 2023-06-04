@@ -3,7 +3,7 @@ using System.Text;
 
 namespace CbzMage.Shared.Extensions
 {
-    public static class FileSystemExtensions
+    public static class FilesystemExtensions
     {
         private static readonly char[] _invalidChars = Path.GetInvalidFileNameChars().Union(Path.GetInvalidPathChars()).ToArray();
 
