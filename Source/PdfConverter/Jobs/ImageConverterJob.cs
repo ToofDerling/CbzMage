@@ -13,7 +13,7 @@ namespace PdfConverter.Jobs
 
         private readonly ArrayPoolBufferWriter<byte> _bufferWriter;
 
-        private readonly string _imageExt;
+        private string _imageExt;
 
         private readonly int? _resizeHeight;
 
@@ -59,6 +59,7 @@ namespace PdfConverter.Jobs
                     image.Quality = 100;
                     break;
                 default:
+                    _imageExt = "jpg";
                     // Produce baseline jpgs with no subsampling.
                     image.Format = MagickFormat.Jpg;
                     image.Quality = Settings.JpgQuality;
