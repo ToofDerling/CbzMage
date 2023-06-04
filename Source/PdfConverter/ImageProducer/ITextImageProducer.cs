@@ -18,7 +18,7 @@ namespace PdfConverter.ImageProducer
             IsStarted = true;
         }
 
-        public override ICollection<string> GetErrorLines()
+        public override ICollection<string> GetErrors()
         {
             EnsureStarted();
             return _pdfImageParser.GetImageParserErrors().Select(e => e.TypeAndMessage()).ToList();

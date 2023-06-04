@@ -257,7 +257,7 @@ namespace PdfConverter
             foreach (var producer in imageProducers)
             {
                 foundErrors += producer.WaitForExit();
-                warningsOrErrors.AddRange(producer.GetErrorLines());
+                warningsOrErrors.AddRange(producer.GetErrors());
 
                 producer.Dispose();
             }

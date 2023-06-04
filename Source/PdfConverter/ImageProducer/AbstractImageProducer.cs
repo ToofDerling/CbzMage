@@ -24,7 +24,7 @@
 
         public abstract void Start(IImageDataHandler imageDataHandler);
 
-        public abstract ICollection<string> GetErrorLines();
+        public abstract ICollection<string> GetErrors();
 
         public abstract int WaitForExit();
 
