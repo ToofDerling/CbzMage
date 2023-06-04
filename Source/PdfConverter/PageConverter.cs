@@ -45,7 +45,7 @@ namespace PdfConverter
             var pageNumber = _pageQueue.Dequeue();
 
             // It makes no sense to convert jpg images
-            if (imageExt == "jpg")
+            if (imageExt == ImageExt.Jpg)
             {
                 OnImageConverted(new JobEventArgs<(int pageNumber, ArrayPoolBufferWriter<byte> imageData, string imageExt)>((pageNumber, bufferWriter, imageExt)));
                 return;
@@ -69,7 +69,7 @@ namespace PdfConverter
             var pageNumber = _pageQueue.Dequeue();
 
             // Tell converter to convert to jpg and resize if needed.
-            var job = new ImageConverterJob(pageNumber, bufferWriter, "jpg", _resizeHeight);
+            var job = new ImageConverterJob(pageNumber, bufferWriter, ImageExt.Jpg, _resizeHeight);
             _converterExecutor.AddJob(job);
         }
 

@@ -41,25 +41,15 @@ namespace PdfConverter.Jobs
             var pngSize = _bufferWriter.WrittenCount;
             using var image = new MagickImage(_bufferWriter.WrittenSpan);
 
-            /* itext code:
-                 return IdentifyImageType() switch
-                 {
-                     ImageType.PNG => "png",
-                     ImageType.JPEG => "jpg",
-                     ImageType.JPEG2000 => "jp2",
-                     ImageType.TIFF => "tif",
-                     ImageType.JBIG2 => "jbig2",
-                     _ => throw new InvalidOperationException("Should have never happened. This type of image is not allowed for ImageXObject"),
-                 };
-            */
             switch (_imageExt)
             {
-                case "png":
+                case ImageExt.Png:
                     image.Format = MagickFormat.Png;
                     image.Quality = 100;
                     break;
                 default:
-                    _imageExt = "jpg";
+                    _imageExt = ImageExt.Jpg;
+
                     // Produce baseline jpgs with no subsampling.
                     image.Format = MagickFormat.Jpg;
                     image.Quality = Settings.JpgQuality;
