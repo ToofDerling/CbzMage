@@ -86,7 +86,7 @@ namespace PdfConverter
                 return null;
             }
 
-            var coverFile = Path.ChangeExtension(_cbzFile, ".jpg");
+            var coverFile = _cbzFile; // The extension is changed in AddCompressorJob
 
             if (!string.IsNullOrEmpty(Settings.SaveCoverDir))
             {
@@ -137,19 +137,28 @@ namespace PdfConverter
 
             var imageList = new List<(string page, ArrayPoolBufferWriter<byte> imageData)>();
 
+            string coverFile = null;
+
             while (_convertedPages.TryRemove(_nextPageNumber, out var imageInfo))
             {
                 var page = _nextPageNumber.ToPageString(imageInfo.imageExt);
 
                 imageList.Add((page, imageInfo.imageData));
 
+                if (firstPage)
+                {
+                    if (_coverFile != null)
+                    {
+                        coverFile = Path.ChangeExtension(_coverFile, imageInfo.imageExt);
+                    }
+                    firstPage = false;
+                }
+
                 _pageNumbers.TryDequeue(out _nextPageNumber);
             }
 
             if (imageList.Count > 0)
             {
-                var coverFile = firstPage ? _coverFile : null;
-
                 var job = new ImageCompressorJob(_compressor, imageList, _progressReporter, coverFile);
                 _compressorExecutor.AddJob(job);
 
