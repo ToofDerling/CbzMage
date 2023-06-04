@@ -54,16 +54,16 @@ namespace PdfConverter
                 Settings.GhostscriptPath = "gs";
             }
 
-            //CbzDir
+            // CbzDir
             if (!string.IsNullOrWhiteSpace(Settings.CbzDir))
             {
                 Settings.CbzDir.CreateDirIfNotExists();
             }
 
-            //SaveCover/SaveCoverOnly
+            // SaveCover/SaveCoverOnly
             Settings.SaveCoverOnly = Settings.SaveCoverOnly && Settings.SaveCover;
 
-            //SaveCoverDir
+            // SaveCoverDir
             if (Settings.SaveCover && !string.IsNullOrWhiteSpace(Settings.SaveCoverDir))
             {
                 Settings.SaveCoverDir.CreateDirIfNotExists();
@@ -73,31 +73,31 @@ namespace PdfConverter
                 Settings.SaveCoverDir = null;
             }
 
-            //MinimumDpi
+            // MinimumDpi
             if (Settings.MinimumDpi <= 0)
             {
                 Settings.MinimumDpi = 300;
             }
 
-            //MinimumHeight
+            // MinimumHeight
             if (Settings.MinimumHeight <= 0)
             {
                 Settings.MinimumHeight = 1920;
             }
 
-            //MaximumHeight
+            // MaximumHeight
             if (Settings.MaximumHeight <= 0)
             {
                 Settings.MaximumHeight = 3840;
             }
 
-            //JpgQuality
+            // JpgQuality
             if (Settings.JpgQuality <= 0)
             {
                 Settings.JpgQuality = 93;
             }
 
-            //NumberOfThreads
+            // NumberOfThreads
             Settings.NumberOfThreads = _settingsHelper.GetThreadCount(Settings.NumberOfThreads);
         }
 

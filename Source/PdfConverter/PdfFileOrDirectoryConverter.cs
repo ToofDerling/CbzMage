@@ -119,7 +119,7 @@ namespace PdfConverter
                 return Pdf.List(path);
             }
 
-            //Nothing to do
+            // Nothing to do
             return Pdf.List();
         }
     }

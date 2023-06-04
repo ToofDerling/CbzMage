@@ -78,7 +78,7 @@ namespace PdfConverter.Jobs
                 });
             }
 
-            // Reuse the png buffer for the jpg. 
+            // Reuse buffer for the converted image 
             _bufferWriter.Reset();
             image.Write(_bufferWriter);
 

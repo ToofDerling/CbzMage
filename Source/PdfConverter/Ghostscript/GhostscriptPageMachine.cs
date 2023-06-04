@@ -7,12 +7,6 @@ namespace PdfConverter.Ghostscript
     {
         private static string[] GetSwitches(string pdfFile, string pageList, int dpi)
         {
-            var numRenderingThreads = string.Empty;
-            if (Settings.NumberOfThreads == 1)
-            {
-                numRenderingThreads = $"-dNumRenderingThreads={Environment.ProcessorCount / 2}";
-            }
-
             var switches = new[]
             {
                 //"-empty", wut?
@@ -27,7 +21,6 @@ namespace PdfConverter.Ghostscript
                 "-sDEVICE=png16m",
                 //"-sDEVICE=png16malpha", causes inverted colors on editorial pages in many books
                 //$"-dMaxBitmap={BufferSize}", this is for X only
-                numRenderingThreads,
                 $"-sPageList={pageList}",
                 $"-r{dpi}",
                 $"-o-", // write image output to stdout

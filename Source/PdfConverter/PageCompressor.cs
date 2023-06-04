@@ -86,7 +86,7 @@ namespace PdfConverter
                 return null;
             }
 
-            var coverFile = _cbzFile; // The extension is changed in AddCompressorJob
+            var coverFile = _cbzFile; // The .cbz extension is changed in AddCompressorJob
 
             if (!string.IsNullOrEmpty(Settings.SaveCoverDir))
             {

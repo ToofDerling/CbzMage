@@ -51,7 +51,8 @@ namespace PdfConverter
                 return;
             }
 
-            // But it does makes sense to recompress png images as much as possible. Converter logic is png -> recompress, everything else -> convert to jpg.
+            // But it does makes sense to recompress png images as much as possible.
+            // Converter logic is png -> recompress, everything else -> convert to jpg.
             var job = new ImageConverterJob(pageNumber, bufferWriter, imageExt, null);
             _converterExecutor.AddJob(job);
         }

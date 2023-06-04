@@ -61,7 +61,7 @@ namespace PdfConverter
 
         private static bool SavePdfImages(Pdf pdf, PdfImageParser pdfImageParser, List<(int width, int height, int count)> sortedImageSizes)
         {
-            // Fast Mode (saving pdf original images) requires each page has exactly one image
+            // Saving original images from pdf requires each page has exactly one image
             if (pdf.ImageCount != pdf.PageCount
                 // Detect page without an image.
                 || sortedImageSizes.Any(i => i.width == 0))
@@ -72,7 +72,7 @@ namespace PdfConverter
             Console.Write("Use original images: ");
             try
             {
-                // If pdf contains text to render (eg on editorial pages) Fast Mode is not available
+                // Disable saving original images if pdf contains any text to render
                 if (pdfImageParser.DetectRenderedText())
                 {
                     ProgressReporter.Info("not available");
