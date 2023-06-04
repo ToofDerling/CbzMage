@@ -19,8 +19,7 @@ namespace PdfConverter.Ghostscript
 
         public void StartReadingImages()
         {
-            var thread = new Thread(new ThreadStart(ReadGhostscriptOutput));
-            thread.Start();
+            Task.Factory.StartNew(ReadGhostscriptOutput, TaskCreationOptions.LongRunning);
         }
 
         private void ReadGhostscriptOutput()
@@ -48,31 +47,31 @@ namespace PdfConverter.Ghostscript
                     LogRead(readCount);
                     currentBufferWriter.Advance(readCount);
 
-                    //Image header is found at the start position of a read
+                    // Image header is found at the start position of a read
                     if (span.StartsWith(pngHeaderSpan))
                     {
-                        //Buffer contains a full image plus the first read of the next
+                        // Buffer contains a full image plus the first read of the next
                         if (!firstImage)
                         {
-                            //Create next buffer and copy next image bytes into it
+                            // Create next buffer and copy next image bytes into it
                             var nextBufferWriter = new ArrayPoolBufferWriter<byte>(Settings.ImageBufferSize);
 
                             var data = currentBufferWriter.WrittenSpan.Slice(offset, readCount);
                             var nextSpan = nextBufferWriter.GetSpan(data.Length);
                             data.CopyTo(nextSpan);
 
-                            nextBufferWriter.Advance(data.Length); //next buffer has first part of next image 
-                            currentBufferWriter.Withdraw(data.Length); //current buffer has current image
+                            nextBufferWriter.Advance(data.Length); // Next buffer has first part of next image 
+                            currentBufferWriter.Withdraw(data.Length); // Current buffer has current image
 
                             _imageDatahandler.HandleRenderedImageData(currentBufferWriter);
 
                             currentBufferWriter = nextBufferWriter;
 
-                            offset = readCount; //We already have readCount bytes in next buffer
+                            offset = readCount; // We already have readCount bytes in next buffer
                         }
                         else
                         {
-                            //Keep reading if it's the first image
+                            // Keep reading if it's the first image
                             firstImage = false;
                             offset += readCount;
                         }
