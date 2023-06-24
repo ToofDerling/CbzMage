@@ -1,6 +1,7 @@
 ﻿using AzwConverter.Converter;
 using CbzMage.Shared;
 using CbzMage.Shared.Helpers;
+using EpubConverter;
 using PdfConverter;
 using System.Runtime.InteropServices;
 
@@ -20,6 +21,9 @@ AzwScan [or Azw Scan] <file or directory>
 PdfConvert [or Pdf Convert] <pdf file> or <directory with pdf files>
     Converts one or more pdf comic books to cbz files.
 
+EpubConvert [or Epub Convert] <epub file> or <directory with epub files>
+    Converts one or more epub comic books to cbz files.
+
 Commands are case insensitive. 
 ";
         /*
@@ -37,6 +41,8 @@ Commands are case insensitive.
 
             var actionStr = string.Empty;
             var next = 0;
+
+            args = new[] { "EpubConvert" };
 
             if (args.Length > next)
             {
@@ -84,6 +90,12 @@ Commands are case insensitive.
                                 {
                                     var blackSteedConverter = new BlackSteedConverter.BlackSteedConverter();
                                     await blackSteedConverter.ConvertDirectoryAsync(path);
+                                }
+                                break;
+                            case CbzMageAction.EpubConvert:
+                                {
+                                    var epubConverter = new EpubFileOrDirectoryConverter();
+                                    await epubConverter.ConvertFileOrDirectoryAsync(path);
                                 }
                                 break;
                         }
