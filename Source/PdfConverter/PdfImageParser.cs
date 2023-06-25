@@ -1,10 +1,12 @@
 ﻿using CbzMage.Shared.Buffers;
 using CbzMage.Shared.Extensions;
+using ImageMagick;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser;
 using iText.Kernel.Pdf.Canvas.Parser.Data;
 using iText.Kernel.Pdf.Canvas.Parser.Listener;
 using PdfConverter.Exceptions;
+using PdfConverter.ImageData;
 using System.Buffers;
 
 namespace PdfConverter
@@ -167,13 +169,14 @@ namespace PdfConverter
         {
             try
             {
-                var imageObject = renderInfo.GetImage();
+                var imageObject = renderInfo. GetImage();
 
                 var imageBytes = imageObject.GetImageBytes(decoded: true);
-                var imageExt = imageObject.IdentifyImageFileExtension();
 
                 var bufferWriter = new ArrayPoolBufferWriter<byte>();
                 bufferWriter.Write(imageBytes);
+
+                var imageExt = imageObject.IdentifyImageFileExtension();
 
                 _imageDataHandler.HandleSavedImageData(bufferWriter, imageExt);
             }

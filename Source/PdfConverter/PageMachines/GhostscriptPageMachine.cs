@@ -1,7 +1,8 @@
 ﻿using CbzMage.Shared.Helpers;
+using PdfConverter.ImageData;
 using System.Text;
 
-namespace PdfConverter.Ghostscript
+namespace PdfConverter.PageMachines
 {
     public class GhostscriptPageMachine
     {
@@ -55,7 +56,7 @@ namespace PdfConverter.Ghostscript
             gsRunner.Run();
             var stream = gsRunner.GetOutputStream();
 
-            var gsOutputReader = new GhostscriptImageStreamReader(stream, imageDataHandler);
+            var gsOutputReader = new PngStreamReader(stream, imageDataHandler);
             gsOutputReader.StartReadingImages();
 
             return gsRunner;

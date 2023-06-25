@@ -1,9 +1,10 @@
 ﻿using PdfConverter.Helpers;
 using CbzMage.Shared.Buffers;
+using System.Diagnostics;
 
-namespace PdfConverter.Ghostscript
+namespace PdfConverter.ImageData
 {
-    public class GhostscriptImageStreamReader
+    public class PngStreamReader
     {
         private static readonly byte[] _pngHeader = new byte[] { 0x89, 0x50, 0x4e, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }; // PNG "\x89PNG\x0D\0xA\0x1A\0x0A"
 
@@ -11,7 +12,9 @@ namespace PdfConverter.Ghostscript
 
         private readonly Stream _stream;
 
-        public GhostscriptImageStreamReader(Stream stream, IImageDataHandler imageDatahandler)
+        private readonly bool _debugTrace = false;
+
+        public PngStreamReader(Stream stream, IImageDataHandler imageDatahandler)
         {
             _stream = stream;
             _imageDatahandler = imageDatahandler;
@@ -34,6 +37,8 @@ namespace PdfConverter.Ghostscript
 
                 var pngHeaderSpan = _pngHeader.AsSpan();
 
+                var imageCount = 0; // Only used for debugging
+
                 while (true)
                 {
                     var span = currentBufferWriter.GetSpan(Settings.WriteBufferSize);
@@ -47,27 +52,37 @@ namespace PdfConverter.Ghostscript
                     LogRead(readCount);
                     currentBufferWriter.Advance(readCount);
 
-                    // Image header is found at the start position of a read
-                    if (span.StartsWith(pngHeaderSpan))
+                    var readCountSpan = currentBufferWriter.WrittenSpan[^readCount..];
+                    var pngIdx = readCountSpan.IndexOf(pngHeaderSpan);
+
+                    if (pngIdx != -1)
                     {
+                        imageCount++;
+
                         // Buffer contains a full image plus the first read of the next
                         if (!firstImage)
                         {
                             // Create next buffer and copy next image bytes into it
                             var nextBufferWriter = new ArrayPoolBufferWriter<byte>(Settings.ImageBufferSize);
 
-                            var data = currentBufferWriter.WrittenSpan.Slice(offset, readCount);
-                            var nextSpan = nextBufferWriter.GetSpan(data.Length);
-                            data.CopyTo(nextSpan);
+                            var nextDataStart = offset + pngIdx;
+                            var nextData = currentBufferWriter.WrittenSpan[nextDataStart..];
 
-                            nextBufferWriter.Advance(data.Length); // Next buffer has first part of next image 
-                            currentBufferWriter.Withdraw(data.Length); // Current buffer has current image
+                            var nextSpan = nextBufferWriter.GetSpan(nextData.Length);
+                            nextData.CopyTo(nextSpan);
 
+                            Debug.Assert(nextSpan.StartsWith(pngHeaderSpan), $"image-{imageCount}: nextSpan does not start with png header");
+
+                            nextBufferWriter.Advance(nextData.Length); // Next buffer has first part of next image 
+                            currentBufferWriter.Withdraw(nextData.Length); // Current buffer has current image
+
+                            Debug.Assert(currentBufferWriter.WrittenSpan.StartsWith(pngHeaderSpan), $"image-{imageCount}: currentBufferWriter.WrittenSpan does not start with png header");
+                            
                             _imageDatahandler.HandleRenderedImageData(currentBufferWriter);
 
                             currentBufferWriter = nextBufferWriter;
 
-                            offset = readCount; // We already have readCount bytes in next buffer
+                            offset = readCount - pngIdx; // Adjust offset for bytes in next buffer
                         }
                         else
                         {

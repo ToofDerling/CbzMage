@@ -1,13 +1,13 @@
 ﻿using CbzMage.Shared.Buffers;
 
-namespace PdfConverter
+namespace PdfConverter.ImageData
 {
     public interface IImageDataHandler
     {
-        // From Ghostscript
+        // From pngtoppm -png
         void HandleRenderedImageData(ArrayPoolBufferWriter<byte> image);
 
-        // From IText
+        // From pdfimages
         void HandleSavedImageData(ArrayPoolBufferWriter<byte> image, string imageExt);
     }
 }

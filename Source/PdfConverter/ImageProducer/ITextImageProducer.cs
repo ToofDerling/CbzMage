@@ -1,4 +1,5 @@
 ﻿using CbzMage.Shared.Extensions;
+using PdfConverter.ImageData;
 
 namespace PdfConverter.ImageProducer
 {

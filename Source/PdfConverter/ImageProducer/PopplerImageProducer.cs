@@ -4,11 +4,11 @@ using PdfConverter.PageMachines;
 
 namespace PdfConverter.ImageProducer
 {
-    public class GhostScriptImageProducer : AbstractImageProducer
+    public class PopplerImageProducer : AbstractImageProducer
     {
         private readonly int _dpi;
 
-        public GhostScriptImageProducer(Pdf pdf, List<int> pageList, int dpi) : base(pdf, pageList)
+        public PopplerImageProducer(Pdf pdf, List<int> pageList, int dpi) : base(pdf, pageList)
         {
             _dpi = dpi;
         }
@@ -17,7 +17,7 @@ namespace PdfConverter.ImageProducer
 
         public override void Start(IImageDataHandler imageDataHandler)
         {
-            var pageMachine = new GhostscriptPageMachine();
+            var pageMachine = new PopplerPageMachine();
             _gsRunner = pageMachine.StartReadingPages(Pdf, PageList, _dpi, imageDataHandler);
 
             IsStarted = true;

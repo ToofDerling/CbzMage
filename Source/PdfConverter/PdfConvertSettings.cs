@@ -21,6 +21,47 @@ namespace PdfConverter
 
         private void ConfigureSettings()
         {
+            const string poppler = "Poppler";
+            var isWindows = Environment.OSVersion.Platform == PlatformID.Win32NT;
+
+            if (Directory.Exists(poppler))
+            {
+                var pdfToPngPath = Path.Combine(poppler, "pdftoppm");
+                var pdfImagesPath = Path.Combine(poppler, "pdfimages");
+
+                if (isWindows)
+                {
+                    pdfToPngPath = Path.ChangeExtension(pdfToPngPath, "exe");
+                    pdfImagesPath = Path.ChangeExtension(pdfImagesPath, "exe");
+                }
+
+                if (File.Exists(pdfToPngPath))
+                {
+                    Settings.SetPdfToPngPath(pdfToPngPath);
+                }
+                if (File.Exists(pdfImagesPath))
+                {
+                    Settings.SetPdfImagesPath(pdfImagesPath);
+                }
+            }
+
+            if (!isWindows)
+            {
+                if (Settings.PdfImagesPath == null)
+                {
+                    Settings.SetPdfImagesPath("pdfimages");
+                }
+                if (Settings.PdfToPngPath == null)
+                {
+                    Settings.SetPdfToPngPath("pdftopng");
+                }
+            }
+
+            if (Settings.PdfToPngPath == null || Settings.PdfImagesPath == null)
+            {
+                throw new FileNotFoundException($"{poppler} tools missing.");
+            }
+
             if (!string.IsNullOrEmpty(Settings.GhostscriptPath))
             {
                 if (File.Exists(Settings.GhostscriptPath))
@@ -41,7 +82,7 @@ namespace PdfConverter
                     }
                 }
             }
-            else if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+            else if (isWindows)
             {
                 var versionList = AppVersionManager.GetInstalledVersionsOf(App.Ghostscript);
                 var appVersion = GetValidGhostscriptVersion(versionList);
