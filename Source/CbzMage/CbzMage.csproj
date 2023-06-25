@@ -11,6 +11,7 @@
     <ProjectReference Include="..\AzwConverter\AzwConverter.csproj" />
     <ProjectReference Include="..\BlackSteedConverter\BlackSteedConverter.csproj" />
     <ProjectReference Include="..\CbzMage.Shared\CbzMage.Shared.csproj" />
+    <ProjectReference Include="..\EpubConverter\EpubConverter.csproj" />
     <ProjectReference Include="..\PdfConverter\PdfConverter.csproj" />
   </ItemGroup>
 
