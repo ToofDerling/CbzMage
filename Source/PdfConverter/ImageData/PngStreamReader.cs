@@ -12,8 +12,6 @@ namespace PdfConverter.ImageData
 
         private readonly Stream _stream;
 
-        private readonly bool _debugTrace = false;
-
         public PngStreamReader(Stream stream, IImageDataHandler imageDatahandler)
         {
             _stream = stream;
