@@ -1,6 +1,6 @@
 # CbzMage.
 
-**Comic book conversion no longer works with the latest Kdl, you have to use a version earlier than 2.2.0. Read more [here](https://github.com/ToofDerling/CbzMage/discussions/35)**
+**Comic book conversion no longer works with the latest Kdl (you have to use a version earlier than 2.2.0). Read more [here](https://github.com/ToofDerling/CbzMage/discussions/35)**
 
 CzbMage is a comic book converter. It aims to do exactly two things:
 1. **Convert azw files to nice cbz files**, ready to read in your favorite cbz reader. Azw files entirely like the ones found in Kdl for PC or Mac. 
