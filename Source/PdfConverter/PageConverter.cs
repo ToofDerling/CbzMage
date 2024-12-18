@@ -1,32 +1,25 @@
-﻿using CbzMage.Shared.Buffers;
-using CbzMage.Shared.Extensions;
+﻿using CbzMage.Shared.Extensions;
 using CbzMage.Shared.JobQueue;
 using PdfConverter.Exceptions;
 using PdfConverter.ImageData;
 using PdfConverter.Jobs;
+using PdfConverter.PageInfo;
 using System.Collections.Concurrent;
 
 namespace PdfConverter
 {
     public class PageConverter : IImageDataHandler
     {
-        private readonly JobExecutor<(int pageNumber, ArrayPoolBufferWriter<byte> imageData, string imageExt)> _converterExecutor;
+        private readonly JobExecutor<AbstractPdfPageInfo> _converterExecutor;
         private readonly JobWaiter _jobWaiter;
 
-        private readonly Queue<int> _pageQueue;
-        private readonly ConcurrentDictionary<int, (ArrayPoolBufferWriter<byte> imageData, string imageExt)> _convertedPages;
+        private readonly ConcurrentDictionary<int, AbstractPdfPageInfo> _convertedPages;
 
-        private readonly int? _resizeHeight;
-
-        public PageConverter(Queue<int> pageQueue, ConcurrentDictionary<int, (ArrayPoolBufferWriter<byte> imageData, string imageExt)> convertedPages, int? resizeHeight)
+        public PageConverter(Queue<int> pageQueue, ConcurrentDictionary<int, AbstractPdfPageInfo> convertedPages)
         {
-            _pageQueue = pageQueue;
-
             _convertedPages = convertedPages;
 
-            _resizeHeight = resizeHeight;
-
-            _converterExecutor = new JobExecutor<(int pageNumber, ArrayPoolBufferWriter<byte> imageData, string imageExt)>();
+            _converterExecutor = new JobExecutor<AbstractPdfPageInfo>();
             _converterExecutor.JobExecuted += (s, e) => OnImageConverted(e);
 
             _jobWaiter = _converterExecutor.Start(withWaiter: true);
@@ -34,56 +27,28 @@ namespace PdfConverter
 
         public void WaitForPagesConverted() => _jobWaiter.WaitForJobsToFinish();
 
-        // Handle png/jpg (possible other types) imagedata from saving the original pdf images.
-        public void HandleSavedImageData(ArrayPoolBufferWriter<byte> bufferWriter, string imageExt)
+        public void HandleImageData(AbstractPdfPageInfo pageInfo)
         {
-            if (bufferWriter == null)
+            if (pageInfo == null)
             {
                 _converterExecutor.Stop();
                 return;
             }
 
-            var pageNumber = _pageQueue.Dequeue();
-
-            // It makes no sense to convert jpg images
-            if (imageExt == ImageExt.Jpg)
-            {
-                OnImageConverted(new JobEventArgs<(int pageNumber, ArrayPoolBufferWriter<byte> imageData, string imageExt)>((pageNumber, bufferWriter, imageExt)));
-                return;
-            }
-
-            // But it does makes sense to recompress png images as much as possible.
-            // Converter logic is png -> recompress, everything else -> convert to jpg.
-            var job = new ImageConverterJob(pageNumber, bufferWriter, imageExt, null);
+            var job = new ImageConverterJob(pageInfo);
             _converterExecutor.AddJob(job);
         }
 
-        // Handle png imagedata from rendering the pdf. 
-        public void HandleRenderedImageData(ArrayPoolBufferWriter<byte> bufferWriter)
+        private void OnImageConverted(JobEventArgs<AbstractPdfPageInfo> eventArgs)
         {
-            if (bufferWriter == null)
+            var pageInfo = eventArgs.Result;
+
+            if (!_convertedPages.TryAdd(pageInfo.PageNumber, pageInfo))
             {
-                _converterExecutor.Stop();
-                return;
+                throw new SomethingWentWrongSorryException($"{pageInfo.PageNumber.ToPageString()} already converted?");
             }
 
-            var pageNumber = _pageQueue.Dequeue();
-
-            // Tell converter to convert to jpg and resize if needed.
-            var job = new ImageConverterJob(pageNumber, bufferWriter, ImageExt.Jpg, _resizeHeight);
-            _converterExecutor.AddJob(job);
-        }
-
-        private void OnImageConverted(JobEventArgs<(int pageNumber, ArrayPoolBufferWriter<byte> imageData, string imageExt)> eventArgs)
-        {
-            var (pageNumber, imageData, imageExt) = eventArgs.Result;
-
-            if (!_convertedPages.TryAdd(pageNumber, (imageData, imageExt)))
-            {
-                throw new SomethingWentWrongSorryException($"{pageNumber.ToPageString()} already converted?");
-            }
-
-            PageConverted?.Invoke(this, new PageConvertedEventArgs(pageNumber));
+            PageConverted?.Invoke(this, new PageConvertedEventArgs(pageInfo.PageNumber));
         }
 
         public event EventHandler<PageConvertedEventArgs> PageConverted;

@@ -6,6 +6,21 @@ namespace PdfConverter
     {
         // All properties with a public setter are read from settings file
 
+        public static string PdfToPngPath { get; set; }
+
+        public static void SetPdfToPngPath(string pdfToPngPath)
+        {
+            PdfToPngPath = pdfToPngPath;
+        }
+
+        public static string PdfImagesPath { get; set; }
+
+        public static void SetPdfImagesPath(string pdfImagesPath)
+        {
+            PdfImagesPath = pdfImagesPath;
+        }
+
+
         public static string CbzDir { get; set; }
 
         public static bool SaveCover { get; set; }
@@ -23,37 +38,16 @@ namespace PdfConverter
 
         public static int JpgQuality { get; set; }
 
+        public static bool ForceJpgImages { get; set; }
+
         public static int NumberOfThreads { get; set; }
 
         public static CompressionLevel CompressionLevel { get; set; }
 
-        public static int ImageBufferSize => 4194304 * 2;
+        public static int ImageBufferSize => 8 * 1048576;
 
-        public static Version GhostscriptMinVersion => new(10, 0);
+        public static int ReadRequestSize => 32 * 1024;
 
-        public static string GhostscriptPath { get; set; }
-
-        public static Version GhostscriptVersion { get; private set; }
-
-        public static void SetGhostscriptVersion(Version version)
-        {
-            GhostscriptVersion = version;
-        }
-
-        public static int WriteBufferSize => 262144;
-
-        public static string PdfToPngPath { get; private set; }
-
-        public static void SetPdfToPngPath(string pdfToPngPath)
-        {
-            PdfToPngPath = pdfToPngPath;
-        }
-
-        public static string PdfImagesPath { get; private set; }
-
-        public static void SetPdfImagesPath(string pdfImagesPath)
-        {
-            PdfImagesPath = pdfImagesPath;
-        }
+  
     }
 }

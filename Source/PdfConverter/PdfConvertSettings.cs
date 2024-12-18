@@ -1,8 +1,5 @@
-﻿using CbzMage.Shared.AppVersions;
-using CbzMage.Shared.Extensions;
-using CbzMage.Shared.Helpers;
+﻿using CbzMage.Shared.Extensions;
 using CbzMage.Shared.Settings;
-using System.Diagnostics;
 
 namespace PdfConverter
 {
@@ -62,39 +59,6 @@ namespace PdfConverter
                 throw new FileNotFoundException($"{poppler} tools missing.");
             }
 
-            if (!string.IsNullOrEmpty(Settings.GhostscriptPath))
-            {
-                if (File.Exists(Settings.GhostscriptPath))
-                {
-                    var version = FileVersionInfo.GetVersionInfo(Settings.GhostscriptPath).FileVersion;
-                    if (version == null)
-                    {
-                        ProgressReporter.Warning($"{Settings.GhostscriptPath} does not contain any version information.");
-                    }
-                    else
-                    {
-                        var appVersion = new AppVersion(Settings.GhostscriptPath, new Version(version));
-
-                        // Throws if version is not valid
-                        appVersion = GetValidGhostscriptVersion(new List<AppVersion> { appVersion });
-
-                        Settings.SetGhostscriptVersion(appVersion.Version);
-                    }
-                }
-            }
-            else if (isWindows)
-            {
-                var versionList = AppVersionManager.GetInstalledVersionsOf(App.Ghostscript);
-                var appVersion = GetValidGhostscriptVersion(versionList);
-
-                Settings.GhostscriptPath = appVersion.Exe;
-                Settings.SetGhostscriptVersion(appVersion.Version);
-            }
-            else
-            {
-                Settings.GhostscriptPath = "gs";
-            }
-
             // CbzDir
             if (!string.IsNullOrWhiteSpace(Settings.CbzDir))
             {
@@ -139,23 +103,7 @@ namespace PdfConverter
             }
 
             // NumberOfThreads
-            Settings.NumberOfThreads = _settingsHelper.GetThreadCount(Settings.NumberOfThreads);
-        }
-
-        public static AppVersion GetValidGhostscriptVersion(List<AppVersion> gsVersions)
-        {
-            var gsVersion = gsVersions.OrderByDescending(gs => gs.Version).FirstOrDefault();
-
-            if (gsVersion == null || gsVersion.Version < Settings.GhostscriptMinVersion)
-            {
-                var foundVersion = gsVersion != null
-                    ? $". (found version {gsVersion.Version})"
-                    : string.Empty;
-
-                throw new Exception($"PdfConvert requires Ghostscript version {Settings.GhostscriptMinVersion}+ is installed{foundVersion}");
-
-            }
-            return gsVersion!;
+            Settings.NumberOfThreads = Settings.NumberOfThreads <= 0 ? Environment.ProcessorCount : Settings.NumberOfThreads;
         }
     }
 }

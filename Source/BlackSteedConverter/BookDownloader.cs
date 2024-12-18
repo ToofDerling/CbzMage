@@ -26,7 +26,7 @@ namespace BlackSteedConverter
 
         private AdbServicesClient _adbClient;
 
-        private (string serial, string state) _device;
+        private (string serial, AdbConnectionState state) _device;
 
         private AdbSyncClient _syncClient;
 
@@ -66,11 +66,11 @@ namespace BlackSteedConverter
 
             if (devices.Count == 1)
             {
-                ProgressReporter.Info($"Found {devices.Count} connected device{devices.SIf1()}: {_device.serial}");
+                ProgressReporter.Info($"Found {devices.Count} connected device{devices.SIfNot1()}: {_device.serial}");
             }
             else
             {
-                ProgressReporter.Info($"Found {devices.Count} connected device{devices.SIf1()}. Using: {_device.serial}");
+                ProgressReporter.Info($"Found {devices.Count} connected device{devices.SIfNot1()}. Using: {_device.serial}");
             }
 
             _syncClient = await _adbClient.GetSyncClient(_device.serial);
@@ -120,7 +120,7 @@ namespace BlackSteedConverter
         public async Task<bool> AnalyzeBooksDirAsync(string dir)
         {
             var bookList = await ListDirAsync(dir, _getBookDirsFilter);
-            Console.WriteLine($"Checking {bookList.Count} book{bookList.SIf1()}");
+            Console.WriteLine($"Checking {bookList.Count} book{bookList.SIfNot1()}");
 
             var allGood = 0;
             var fileCount = 0;

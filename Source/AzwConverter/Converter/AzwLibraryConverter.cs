@@ -63,7 +63,7 @@ namespace AzwConverter.Converter
             // Number of books is stable after title syncing.
             var (added, skipped) = await library.SyncBooksToCollectionAsync(books, titles);
 
-            Console.Write($"Added {added} missing title{added.SIf1()}");
+            Console.Write($"Added {added} missing title{added.SIfNot1()}");
             if (!Settings.ConvertAllBookTypes)
             {
                 Console.WriteLine($" (skipped {skipped})");
@@ -80,15 +80,15 @@ namespace AzwConverter.Converter
             // The trimming is only expensive first time it's run.
             LibraryManager.TrimConvertedTitles(convertedTitles, titles);
 
-            Console.WriteLine($"Archived {archived} title{archived.SIf1()}");
+            Console.WriteLine($"Archived {archived} title{archived.SIfNot1()}");
 
             Console.WriteLine();
 
             var updatedBooks = GetUpdatedBooks(books, convertedTitles);
-            ProgressReporter.Info($"Found {updatedBooks.Count} updated book{updatedBooks.SIf1()}");
+            ProgressReporter.Info($"Found {updatedBooks.Count} updated book{updatedBooks.SIfNot1()}");
 
             var unconvertedBooks = GetUnconvertedBooks(books, convertedTitles);
-            ProgressReporter.DoneOrInfo($"Found {unconvertedBooks.Count} unconverted book{unconvertedBooks.SIf1()}", unconvertedBooks.Count);
+            ProgressReporter.DoneOrInfo($"Found {unconvertedBooks.Count} unconverted book{unconvertedBooks.SIfNot1()}", unconvertedBooks.Count);
 
             ConversionBegin();
             try
@@ -118,7 +118,7 @@ namespace AzwConverter.Converter
                 _bookCount = 0;
 
                 Console.WriteLine();
-                ProgressReporter.Info($"Checking {updatedBooks.Count} updated book{updatedBooks.SIf1()}:");
+                ProgressReporter.Info($"Checking {updatedBooks.Count} updated book{updatedBooks.SIfNot1()}:");
 
                 await Parallel.ForEachAsync(updatedBooks, Settings.ParallelOptions,
                     async (book, _) =>
@@ -139,7 +139,7 @@ namespace AzwConverter.Converter
 
             if (Action == CbzMageAction.AzwConvert)
             {
-                ProgressReporter.Info($"Converting {unconvertedBooks.Count} book{unconvertedBooks.SIf1()}:");
+                ProgressReporter.Info($"Converting {unconvertedBooks.Count} book{unconvertedBooks.SIfNot1()}:");
                 _totalBooks = unconvertedBooks.Count;
 
                 await Parallel.ForEachAsync(unconvertedBooks, Settings.ParallelOptions,
@@ -151,14 +151,14 @@ namespace AzwConverter.Converter
             }
             else if (Action == CbzMageAction.AzwScan)
             {
-                ProgressReporter.Info($"Listing {unconvertedBooks.Count} unconverted book{unconvertedBooks.SIf1()}:");
+                ProgressReporter.Info($"Listing {unconvertedBooks.Count} unconverted book{unconvertedBooks.SIfNot1()}:");
                 _totalBooks = unconvertedBooks.Count;
 
                 Parallel.ForEach(unconvertedBooks, Settings.ParallelOptions, book => SyncNewBook(book.Key, titles[book.Key]));
             }
             else if (Action == CbzMageAction.AzwAnalyze)
             {
-                ProgressReporter.Info($"Analyzing {books.Count} book{books.SIf1()}:");
+                ProgressReporter.Info($"Analyzing {books.Count} book{books.SIfNot1()}:");
                 _totalBooks = books.Count;
 
                 await Parallel.ForEachAsync(books, Settings.ParallelOptions,

@@ -4,10 +4,17 @@
     {
         public Pdf(string path)
         {
-            Path = path;
+            PdfPath = path;
+
+            SaveDirectory = Path.ChangeExtension(PdfPath, null);
+#if !DEBUG
+            SaveDirectory = $"{SaveDirectory}.{Path.GetRandomFileName()}";
+#endif
         }
 
-        public string Path { get; private set; }
+        public string PdfPath { get; private set; }
+
+        public string SaveDirectory { get; private set; }
 
         public int PageCount { get; set; }
 

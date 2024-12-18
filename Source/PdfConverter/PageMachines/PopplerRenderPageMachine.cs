@@ -1,9 +1,9 @@
 ﻿using CbzMage.Shared.Helpers;
-using PdfConverter.ImageData;
+using PdfConverter.PageInfo;
 
 namespace PdfConverter.PageMachines
 {
-    public class PopplerPageMachine
+    public class PopplerRenderPageMachine
     {
         private static string[] GetSwitches(string pdfFile, int firstPage, int lastPage, int dpi)
         {
@@ -20,19 +20,20 @@ namespace PdfConverter.PageMachines
             return switches;
         }
 
-        public ProcessRunner StartReadingPages(Pdf pdf, List<int> pageNumbers, int dpi, IImageDataHandler imageDataHandler)
+        public ProcessRunner RenderPage(Pdf pdf, PdfPageInfoRenderImage pageInfoRenderImage)
+        {
+            return RenderPage(pdf, new List<int> { pageInfoRenderImage.PageNumber }, pageInfoRenderImage.Dpi);
+        }
+
+        public ProcessRunner RenderPage(Pdf pdf, List<int> pageNumbers, int dpi)
         {
             var pdfToPngPath = Settings.PdfToPngPath;
-            var switches = GetSwitches(pdf.Path, pageNumbers.First(), pageNumbers.Last(), dpi);
+            var switches = GetSwitches(pdf.PdfPath, pageNumbers.First(), pageNumbers.Last(), dpi);
 
             var parameters = string.Join(' ', switches);
             var pdfToPngRunner = new ProcessRunner(pdfToPngPath, parameters);
 
             pdfToPngRunner.Run();
-            var stream = pdfToPngRunner.GetOutputStream();
-
-            var pngOutputReader = new PngStreamReader(stream, imageDataHandler);
-            pngOutputReader.StartReadingImages();
 
             return pdfToPngRunner;
         }

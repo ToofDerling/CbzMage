@@ -9,7 +9,8 @@
   // PdfConvert requires Ghostscript version 10 or later. If you don't specify the
   // path to the Ghostscript excutable, CbzMage will try to detect a valid 
   // installation on Windows. On Linux/macOS it will simply try to use "gs".
-  "GhostscriptPath": "",
+  "PdfToPngPath": "",
+  "PdfImagesPath": "",
 
   // CbzDir is where your cbz backups are created. This can be placed anywhere
   // you want. If you specify nothing the default for PdfConvert is to create the
@@ -32,6 +33,9 @@
   // high as possible (90+). The default quality quality is 93 (95 creates images 
   // that are 15% larger. 98 creates images that are 50% larger).
   "JpgQuality": 93,
+
+  //TODO:
+  "ForceJpg": false,
 
   // MinimumDpi determines the minimum quality of the pages Ghostscript reads from 
   // the pdf. It's not recommended to set this lower than 300, and setting it higher

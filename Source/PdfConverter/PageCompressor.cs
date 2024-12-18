@@ -1,7 +1,6 @@
-﻿using CbzMage.Shared.Buffers;
-using CbzMage.Shared.Extensions;
-using CbzMage.Shared.Helpers;
+﻿using CbzMage.Shared.Helpers;
 using CbzMage.Shared.JobQueue;
+using PdfConverter.ImageConversion;
 using PdfConverter.Jobs;
 using System.Collections.Concurrent;
 using System.IO.Compression;
@@ -14,10 +13,9 @@ namespace PdfConverter
 
         private readonly ConcurrentQueue<int> _pageNumbers;
 
-        // pageNumber, (imageData, imageExt)
-        private readonly ConcurrentDictionary<int, (ArrayPoolBufferWriter<byte> imageData, string imageExt)> _convertedPages;
+        private readonly ConcurrentDictionary<int, AbstractImageConverter> _convertedPages;
 
-        private readonly JobExecutor<IEnumerable<string>> _compressorExecutor;
+        private readonly JobExecutor<IEnumerable<int>> _compressorExecutor;
 
         private readonly JobWaiter _jobWaiter;
 
@@ -33,7 +31,7 @@ namespace PdfConverter
 
         private readonly ProgressReporter _progressReporter;
 
-        public PageCompressor(Pdf pdf, ConcurrentDictionary<int, (ArrayPoolBufferWriter<byte> imageData, string imageExt)> convertedPages)
+        public PageCompressor(Pdf pdf, ConcurrentDictionary<int, AbstractImageConverter> convertedPages)
         {
             _pdf = pdf;
             _convertedPages = convertedPages;
@@ -41,7 +39,7 @@ namespace PdfConverter
             _pageNumbers = new ConcurrentQueue<int>(Enumerable.Range(1, pdf.PageCount));
             _pageNumbers.TryDequeue(out _nextPageNumber);
 
-            _compressorExecutor = new JobExecutor<IEnumerable<string>>();
+            _compressorExecutor = new JobExecutor<IEnumerable<int>>();
             _compressorExecutor.JobExecuted += (s, e) => OnImagesCompressed(e);
 
             _jobWaiter = _compressorExecutor.Start(withWaiter: true);
@@ -55,7 +53,7 @@ namespace PdfConverter
 
         private string CreateCbzFile()
         {
-            var cbzFile = Path.ChangeExtension(_pdf.Path, ".cbz");
+            var cbzFile = Path.ChangeExtension(_pdf.PdfPath, ".cbz");
 
             if (!string.IsNullOrEmpty(Settings.CbzDir))
             {
@@ -107,7 +105,7 @@ namespace PdfConverter
             _compressor?.Dispose();
         }
 
-        public void OnPageConverted(PageConvertedEventArgs _)
+        public void SignalPageConverted()
         {
             if (!_addedJob)
             {
@@ -122,7 +120,7 @@ namespace PdfConverter
             _compressorExecutor.Stop();
         }
 
-        private void OnImagesCompressed(JobEventArgs<IEnumerable<string>> eventArgs)
+        private void OnImagesCompressed(JobEventArgs<IEnumerable<int>> eventArgs)
         {
             PagesCompressed?.Invoke(this, new PagesCompressedEventArgs(eventArgs.Result));
 
@@ -135,21 +133,19 @@ namespace PdfConverter
         {
             var firstPage = _nextPageNumber == 1;
 
-            var imageList = new List<(string page, ArrayPoolBufferWriter<byte> imageData)>();
+            var imageList = new List<AbstractImageConverter>();
 
-            string coverFile = null;
+            string? coverFile = null;
 
-            while (_convertedPages.TryRemove(_nextPageNumber, out var imageInfo))
+            while (_convertedPages.TryRemove(_nextPageNumber, out var imageProducer))
             {
-                var page = _nextPageNumber.ToPageString(imageInfo.imageExt);
-
-                imageList.Add((page, imageInfo.imageData));
+                imageList.Add(imageProducer);
 
                 if (firstPage)
                 {
                     if (_coverFile != null)
                     {
-                        coverFile = Path.ChangeExtension(_coverFile, imageInfo.imageExt);
+                        coverFile = Path.ChangeExtension(_coverFile, imageProducer.GetImageExt());
                     }
                     firstPage = false;
                 }

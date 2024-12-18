@@ -2,11 +2,11 @@
 {
     public class PagesCompressedEventArgs : EventArgs
     {
-        public PagesCompressedEventArgs(IEnumerable<string> pages)
+        public PagesCompressedEventArgs(IEnumerable<int> pages)
         {
             Pages = pages;
         }
 
-        public IEnumerable<string> Pages { get; private set; }
+        public IEnumerable<int> Pages { get; private set; }
     }
 }
