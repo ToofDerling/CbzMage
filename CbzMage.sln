@@ -19,8 +19,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CbzMageExternal", "CbzMageE
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MobiMetadata", "..\CbzMageExternal\MobiMetadata\Source\MobiMetadata\MobiMetadata.csproj", "{E849A028-6AE9-478D-B405-B3038F5D1777}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlackSteedConverter", "Source\BlackSteedConverter\BlackSteedConverter.csproj", "{F22AA4A0-3913-4DA9-B280-9980943D6C0E}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EpubConverter", "Source\EpubConverter\EpubConverter.csproj", "{84095547-4052-4AB1-AB98-3946FDCA1DAC}"
 EndProject
 Global
@@ -93,18 +91,6 @@ Global
 		{E849A028-6AE9-478D-B405-B3038F5D1777}.Release|x64.Build.0 = Release|Any CPU
 		{E849A028-6AE9-478D-B405-B3038F5D1777}.Release|x86.ActiveCfg = Release|Any CPU
 		{E849A028-6AE9-478D-B405-B3038F5D1777}.Release|x86.Build.0 = Release|Any CPU
-		{F22AA4A0-3913-4DA9-B280-9980943D6C0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F22AA4A0-3913-4DA9-B280-9980943D6C0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F22AA4A0-3913-4DA9-B280-9980943D6C0E}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{F22AA4A0-3913-4DA9-B280-9980943D6C0E}.Debug|x64.Build.0 = Debug|Any CPU
-		{F22AA4A0-3913-4DA9-B280-9980943D6C0E}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{F22AA4A0-3913-4DA9-B280-9980943D6C0E}.Debug|x86.Build.0 = Debug|Any CPU
-		{F22AA4A0-3913-4DA9-B280-9980943D6C0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F22AA4A0-3913-4DA9-B280-9980943D6C0E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F22AA4A0-3913-4DA9-B280-9980943D6C0E}.Release|x64.ActiveCfg = Release|Any CPU
-		{F22AA4A0-3913-4DA9-B280-9980943D6C0E}.Release|x64.Build.0 = Release|Any CPU
-		{F22AA4A0-3913-4DA9-B280-9980943D6C0E}.Release|x86.ActiveCfg = Release|Any CPU
-		{F22AA4A0-3913-4DA9-B280-9980943D6C0E}.Release|x86.Build.0 = Release|Any CPU
 		{84095547-4052-4AB1-AB98-3946FDCA1DAC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{84095547-4052-4AB1-AB98-3946FDCA1DAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{84095547-4052-4AB1-AB98-3946FDCA1DAC}.Debug|x64.ActiveCfg = Debug|Any CPU
