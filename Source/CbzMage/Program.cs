@@ -39,8 +39,6 @@ EpubConvert [or Epub Convert] <epub file> or <directory with epub files>
             var actionStr = string.Empty;
             var next = 0;
 
-            args = new[] { "EpubConvert" };
-
             if (args.Length > next)
             {
                 ParseActionString();
