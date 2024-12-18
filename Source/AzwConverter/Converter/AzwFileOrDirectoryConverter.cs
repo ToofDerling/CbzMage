@@ -88,11 +88,11 @@ namespace AzwConverter.Converter
             ProgressReporter.Line();
 
             var actionString = Action == CbzMageAction.AzwConvert ? "Converting" : "Listing";
-            ProgressReporter.Info($"{actionString} {azwFiles.Count} azw/azw3 file{azwFiles.SIf1()}");
+            ProgressReporter.Info($"{actionString} {azwFiles.Count} azw/azw3 file{azwFiles.SIfNot1()}");
 
             if (hdContainerFiles.Count > 0)
             {
-                ProgressReporter.Info($"Found {hdContainerFiles.Count} azw.res/azw6 file{hdContainerFiles.SIf1()} with HD images");
+                ProgressReporter.Info($"Found {hdContainerFiles.Count} azw.res/azw6 file{hdContainerFiles.SIfNot1()} with HD images");
             }
 
             _totalBooks = azwFiles.Count;
