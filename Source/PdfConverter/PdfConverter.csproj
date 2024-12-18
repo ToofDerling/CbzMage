@@ -12,27 +12,15 @@
 		<PublishRepositoryUrl>true</PublishRepositoryUrl>
 		<EmbedUntrackedSources>true</EmbedUntrackedSources>
 	</PropertyGroup>
-
-	<ItemGroup>
-	  <Compile Remove="ImageData\**" />
-	  <EmbeddedResource Remove="ImageData\**" />
-	  <None Remove="ImageData\**" />
-	</ItemGroup>
 	
   <ItemGroup>
-    <Compile Remove="ImageConversion\GhostScriptImageProducer.cs" />
-    <Compile Remove="ImageConversion\ITextImageProducer.cs" />
-    <Compile Remove="PageChunker.cs" />
-    <Compile Remove="PageConvertedEventArgs.cs" />
-    <Compile Remove="PageConverter.cs" />
-    <Compile Remove="PageMachines\GhostscriptPageMachine.cs" />
     <Compile Remove="PageMachines\GhostscriptPageMachineManager.cs" />
   </ItemGroup>
  
   <ItemGroup>
-    <PackageReference Include="itext7" Version="8.0.2" />
-    <PackageReference Include="itext7.bouncy-castle-adapter" Version="8.0.2" />
-    <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.5.0" />
+    <PackageReference Include="itext7" Version="8.0.0" />
+    <PackageReference Include="itext7.bouncy-castle-adapter" Version="8.0.0" />
+    <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.1.2" />
   </ItemGroup>
 
   <ItemGroup>

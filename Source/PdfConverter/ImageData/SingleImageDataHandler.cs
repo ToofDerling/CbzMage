@@ -1,13 +1,13 @@
-﻿using PdfConverter.PageInfo;
+﻿using CbzMage.Shared.Buffers;
 using System.Collections.Concurrent;
 
 namespace PdfConverter.ImageData
 {
     public class SingleImageDataHandler : IImageDataHandler
     {
-        private readonly BlockingCollection<AbstractPdfPageInfo> _queue = new();
+        private readonly BlockingCollection<ArrayPoolBufferWriter<byte>> _queue = new();
 
-        public AbstractPdfPageInfo WaitForImageDate()
+        public ArrayPoolBufferWriter<byte> WaitForImageDate()
         {
             var buffer = _queue.Take();
 
@@ -16,7 +16,7 @@ namespace PdfConverter.ImageData
             return buffer;
         }
 
-        public void HandleImageData(AbstractPdfPageInfo image)
+        public void HandleRenderedImageData(ArrayPoolBufferWriter<byte> image)
         {
             if (image == null)
             {
@@ -24,6 +24,11 @@ namespace PdfConverter.ImageData
             }
 
             _queue.Add(image);
+        }
+
+        public void HandleSavedImageData(ArrayPoolBufferWriter<byte> image, string imageExt)
+        {
+            throw new NotImplementedException();
         }
     }
 }

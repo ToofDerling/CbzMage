@@ -42,7 +42,7 @@ Commands are case insensitive.
             var actionStr = string.Empty;
             var next = 0;
 
-            //args = new[] { "EpubConvert" };
+            args = new[] { "EpubConvert" };
 
             if (args.Length > next)
             {
@@ -83,7 +83,7 @@ Commands are case insensitive.
                             case CbzMageAction.PdfConvert:
                                 {
                                     var pdfConverter = new PdfFileOrDirectoryConverter();
-                                    await pdfConverter.ConvertFileOrDirectoryAsync(path!);
+                                    pdfConverter.ConvertFileOrDirectory(path!);
                                 }
                                 break;
                             case CbzMageAction.BlackSteedConvert:

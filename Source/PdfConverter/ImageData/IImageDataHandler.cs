@@ -1,9 +1,13 @@
-﻿using PdfConverter.PageInfo;
+﻿using CbzMage.Shared.Buffers;
 
 namespace PdfConverter.ImageData
 {
     public interface IImageDataHandler
     {
-        void HandleImageData(AbstractPdfPageInfo pageInfo);
+        // From pngtoppm -png
+        void HandleRenderedImageData(ArrayPoolBufferWriter<byte> image);
+
+        // From pdfimages
+        void HandleSavedImageData(ArrayPoolBufferWriter<byte> image, string imageExt);
     }
 }

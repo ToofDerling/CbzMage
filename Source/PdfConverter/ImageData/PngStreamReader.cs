@@ -101,7 +101,7 @@ namespace PdfConverter.ImageData
                 }
 
                 // Signal we're done.
-                _imageDatahandler.HandleImageData(null!);
+                _imageDatahandler.HandleRenderedImageData(null!);
             }
             finally
             {

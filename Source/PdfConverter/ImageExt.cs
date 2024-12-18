@@ -11,7 +11,7 @@
              _ => throw new InvalidOperationException("Should have never happened. This type of image is not allowed for ImageXObject"),
          };
          */
-    internal class PdfImageExt
+    internal class ImageExt
     {
         public const string Jpg = "jpg";
 

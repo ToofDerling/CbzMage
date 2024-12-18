@@ -1,27 +1,24 @@
 ﻿using ImageMagick;
+using PdfConverter.ImageData;
 using PdfConverter.PageMachines;
 
 namespace PdfConverter
 {
     public class DpiCalculator
     {
-        private readonly PopplerRenderPageMachine _pageMachine;
-
-        private readonly int _pageNumber;
+        private readonly PopplerPageMachine _pageMachine;
 
         private readonly int _wantedImageWidth;
 
         private readonly Pdf _pdf;
 
-        public DpiCalculator(PopplerRenderPageMachine pageMachine, Pdf pdf, int wantedImageWidth, int pageNumber)
+        public DpiCalculator(PopplerPageMachine pageMachine, Pdf pdf, int wantedImageWidth)
         {
             _pageMachine = pageMachine;
 
             _wantedImageWidth = wantedImageWidth;
 
             _pdf = pdf;
-
-            _pageNumber = pageNumber;
         }
 
         public int CalculateDpi()
@@ -124,25 +121,31 @@ namespace PdfConverter
             return Convert.ToInt32(bigStep);
         }
 
-        private readonly List<string> _errors = new();
+        private readonly List<string> _warningsOrErrors = new();
+        private int _foundErrors = 0;
 
-        public List<string> GetErrors() => _errors;
+        public (int foundErrors, List<string> warningsOrErrors) WarningsOrErrors => (_foundErrors, _warningsOrErrors);
 
         private bool TryGetImageWidth(int dpi, out int width)
         {
-            using var runner = _pageMachine.RenderPage(_pdf, new List<int> { _pageNumber }, dpi);
-            using var stream = runner.GetOutputStream();
+            var imageHandler = new SingleImageDataHandler();
+
+            using var gsRunner = _pageMachine.StartReadingPages(_pdf, new List<int> { 1 }, dpi, imageHandler);
+
+            var bufferWriter = imageHandler.WaitForImageDate();
 
             using var image = new MagickImage();
-            image.Ping(stream);
+            image.Ping(bufferWriter.WrittenSpan);
 
             width = image.Width;
             var dpiHeight = image.Height;
 
+            bufferWriter.Close();
+
             DpiCalculated?.Invoke(this, new DpiCalculatedEventArgs(dpi, width, dpiHeight));
 
-            runner.WaitForExitCode();
-            _errors.AddRange(runner.GetStandardErrorLines());
+            _foundErrors += gsRunner.WaitForExitCode();
+            _warningsOrErrors.AddRange(gsRunner.GetStandardErrorLines());
 
             // Hard cap at the maximum height
             return dpiHeight <= Settings.MaximumHeight;

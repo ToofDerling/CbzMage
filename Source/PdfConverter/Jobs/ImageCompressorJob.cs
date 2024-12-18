@@ -1,81 +1,68 @@
-﻿using CbzMage.Shared.Helpers;
-using CbzMage.Shared.IO;
+﻿using CbzMage.Shared.Buffers;
+using CbzMage.Shared.Helpers;
 using CbzMage.Shared.JobQueue;
-using PdfConverter.ImageConversion;
 using System.IO.Compression;
 
 namespace PdfConverter.Jobs
 {
-    public class ImageCompressorJob : IJobConsumer<IEnumerable<int>>
+    public class ImageCompressorJob : IJobConsumer<IEnumerable<string>>
     {
         private readonly ZipArchive? _compressor;
 
-        private readonly List<AbstractImageConverter> _imageProducers;
+        private readonly List<(string page, ArrayPoolBufferWriter<byte> image)> _imageList;
 
         private readonly ProgressReporter _progressReporter;
 
-        private readonly string? _savedPage;
-
         private readonly string? _coverFile;
 
-        public ImageCompressorJob(ZipArchive? compressor, List<AbstractImageConverter> imageProducers, ProgressReporter progressReporter, string? coverFile = null)
+        public ImageCompressorJob(ZipArchive? compressor, List<(string, ArrayPoolBufferWriter<byte>)> imageList, ProgressReporter progressReporter, string? coverFile = null)
         {
             _compressor = compressor;
 
-            _imageProducers = imageProducers;
+            _imageList = imageList;
 
             _progressReporter = progressReporter;
 
             _coverFile = coverFile;
         }
 
-        public async Task<IEnumerable<int>> ConsumeAsync()
+        public async Task<IEnumerable<string>> ConsumeAsync()
         {
             var firstPage = true;
 
-            foreach (var producer in _imageProducers)
+            foreach (var (page, bufferWriter) in _imageList)
             {
+                var imageData = bufferWriter.WrittenMemory;
+
                 if (firstPage)
                 {
                     if (_coverFile != null)
                     {
-                        using var coverStream = AsyncStreams.AsyncFileWriteStream(_coverFile);
-                        await CopyToStreamAsync(coverStream, close: false);
+                        using var coverStream = new FileStream(_coverFile, FileMode.Create);
+                        await coverStream.WriteAsync(imageData);
+
+                        if (_compressor == null)
+                        {
+                            _progressReporter.ShowProgress($"Saved {page}");
+                        }
                     }
                     firstPage = false;
                 }
 
                 if (_compressor != null)
                 {
-                    var page = producer.GetPageString();
                     var entry = _compressor.CreateEntry(page);
 
                     using var cbzStream = entry.Open();
-                    await CopyToStreamAsync(cbzStream, close: true);
+                    await cbzStream.WriteAsync(imageData);
 
                     _progressReporter.ShowProgress($"Converted {page}");
                 }
 
-                async Task CopyToStreamAsync(Stream stream, bool close)
-                {
-                    if (producer.ConvertedImageData != null)
-                    {
-                        await stream.WriteAsync(producer.ConvertedImageData.WrittenMemory);
-                    }
-                    else
-                    {
-                        using var imageStream = producer.GetImageStream();
-                        await imageStream.CopyToAsync(stream);
-                    }
-
-                    if (close)
-                    {
-                        producer.CloseImage();
-                    }
-                }
+                bufferWriter.Close();
             }
 
-            return _imageProducers.Select(x => x.GetPageNumber());
+            return _imageList.Select(x => x.page);
         }
     }
 }

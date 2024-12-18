@@ -11,7 +11,7 @@ namespace PdfConverter
     {
         private int _pagesCount = 0;
 
-        public async Task ConvertFileOrDirectoryAsync(string path)
+        public void ConvertFileOrDirectory(string path)
         {
             var config = new PdfConvertSettings();
             config.CreateSettings();
@@ -20,12 +20,16 @@ namespace PdfConverter
             {
                 ProgressReporter.Info($"Cbz backups: {Settings.CbzDir}");
             }
+            if (Settings.GhostscriptVersion != null)
+            {
+                ProgressReporter.Info($"Ghostscript version: {Settings.GhostscriptVersion}");
+            }
+            ProgressReporter.Info($"Ghostscript reader threads: {Settings.NumberOfThreads}");
             ProgressReporter.Info($"Jpq quality: {Settings.JpgQuality}");
             ProgressReporter.Info($"Cbz compression: {Settings.CompressionLevel}");
-            ProgressReporter.Info($"Conversion threads: {Settings.NumberOfThreads}");
 
 #if DEBUG
-            ProgressReporter.Info($"{nameof(Settings.ReadRequestSize)}: {Settings.ReadRequestSize}");
+            ProgressReporter.Info($"{nameof(Settings.WriteBufferSize)}: {Settings.WriteBufferSize}");
             ProgressReporter.Info($"{nameof(Settings.ImageBufferSize)}: {Settings.ImageBufferSize}");
 #endif
 
@@ -41,10 +45,12 @@ namespace PdfConverter
             var stopwatch = Stopwatch.StartNew();
 
             var converter = new ConverterEngine();
-            foreach(var pdf in  pdfList) 
-            {
-                await ConvertPdfAsync(pdf, converter);
-            }
+            pdfList.ForEach(pdf => ConvertPdf(pdf, converter));
+
+#if DEBUG
+            StatsCount.ShowStats();
+            ProgressReporter.Line();
+#endif
 
             stopwatch.Stop();
 
@@ -52,28 +58,30 @@ namespace PdfConverter
             var secsPerPage = elapsed.TotalSeconds / _pagesCount;
 
             ProgressReporter.Info($"{_pagesCount} pages converted in {elapsed.Hhmmss()} ({secsPerPage:F2} sec/page)");
-
-            DebugStatsCount.ShowStats();
         }
 
-        private async Task ConvertPdfAsync(Pdf pdf, ConverterEngine converter)
+        private void ConvertPdf(Pdf pdf, ConverterEngine converter)
         {
             var stopwatch = Stopwatch.StartNew();
 
-            ProgressReporter.Info(pdf.PdfPath);
+            ProgressReporter.Info(pdf.Path);
 
             try
             {
-                using var pdfParser = new PdfParser(pdf);
+                using var pdfParser = new PdfImageParser(pdf);
 
                 ProgressReporter.Info($"{pdf.PageCount} pages");
                 _pagesCount += pdf.PageCount;
 
-                await converter.ConvertToCbzAsync(pdf, pdfParser);
+                converter.ConvertToCbz(pdf, pdfParser);
             }
-            catch (PdfEncryptedException)
+            catch (PdfEncryptedException e)
             {
-                ProgressReporter.Error($"Error reading [{pdf.PdfPath}] pdf is encrypted");
+                ProgressReporter.Error($"Error reading [{pdf.Path}] pdf is encrypted");
+            }
+            catch (Exception e)
+            {
+                ProgressReporter.Error($"Error reading [{pdf.Path}] {e.TypeAndMessage()}");
             }
 
             stopwatch.Stop();

@@ -47,10 +47,8 @@
     "Yen",
     "Z2"
   ],
-  "PdfToPngPath": "",
-  "PdfImagesPath": "",
+  "GhostscriptPath": "",
   "JpgQuality": 93,
-  "ForceJpg": false,
   "MinimumDpi": 300,
   "MinimumHeight": 1920,
   "MaximumHeight": 3840,

@@ -49,7 +49,7 @@ namespace BlackSteedConverter
 
             var blackSteedBooks = GetBooks(bookDir);
 
-            Console.WriteLine($"Found {blackSteedBooks.Count} book{blackSteedBooks.SIfNot1()}");
+            Console.WriteLine($"Found {blackSteedBooks.Count} book{blackSteedBooks.SIf1()}");
             Console.WriteLine();
 
             foreach (var blackSteedBook in blackSteedBooks)
@@ -124,7 +124,7 @@ namespace BlackSteedConverter
 
             var pages = GetPages(book, dir);
 
-            Console.WriteLine($"{pages.Count} page{pages.SIfNot1()}");
+            Console.WriteLine($"{pages.Count} page{pages.SIf1()}");
 
             var cbz = GetCbz(dir);
 

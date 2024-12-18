@@ -1,80 +1,40 @@
-﻿using CbzMage.Shared.Extensions;
+﻿using CbzMage.Shared.Buffers;
+using CbzMage.Shared.Extensions;
 using CbzMage.Shared.Helpers;
 using PdfConverter.Exceptions;
-using PdfConverter.ImageConversion;
-using PdfConverter.PageInfo;
+using PdfConverter.ImageProducer;
 using PdfConverter.PageMachines;
 using System.Collections.Concurrent;
-using System.Diagnostics;
 
 namespace PdfConverter
 {
     public class ConverterEngine
     {
-        public async Task ConvertToCbzAsync(Pdf pdf, PdfParser pdfParser)
+        public void ConvertToCbz(Pdf pdf, PdfImageParser pdfParser)
         {
-            SetPageParsed(pdfParser, pdf);
             var sortedImageSizes = ParsePdfImages(pdf, pdfParser);
 
-            // if renderPageCount < pageCount, ie we're saving some original images, pageToSaveMostOfThisSize is not null
-            var (pageInfoMap, pageToSaveMostOfThisSize) = GetPageInfoMap(pdfParser, sortedImageSizes);
-            var renderPageCount = pageInfoMap.Count(p => p.Value is PdfPageInfoRenderImage);
-
-            int? adjustedHeight = null;
-            int renderDpi = 0;
-
-            if (renderPageCount == 0)
+            // Use original images from pdf
+            if (SavePdfImages(pdf, pdfParser, sortedImageSizes))
             {
-                Console.WriteLine("Using original images on all pages");
-                pdf.SaveDirectory.DeleteAndCreateDir();
-
-                adjustedHeight = GetAdjustedHeightForOriginalImages(pageToSaveMostOfThisSize!);
-            }
-            else if (renderPageCount == pdf.PageCount)
-            {
-                Console.WriteLine("Original images not available");
-                var pageWithWantedWidth = GetWantedWidth(pdf, sortedImageSizes, pageInfoMap);
-
-                (renderDpi, int dpiHeight) = CalculateDpiForWantedWidth(pdf, pageWithWantedWidth);
-                adjustedHeight = GetAdjustedHeightForRendering(pdf, sortedImageSizes, dpiHeight);
-            }
-            else
-            {
-                Console.WriteLine($"Using original images on {pdf.PageCount - renderPageCount} pages");
-                pdf.SaveDirectory.DeleteAndCreateDir();
-
-                (renderDpi, _) = CalculateDpiForWantedWidth(pdf, pageToSaveMostOfThisSize!);
-                adjustedHeight = GetAdjustedHeightForOriginalImages(pageToSaveMostOfThisSize!);
+                return;
             }
 
-            if (adjustedHeight.HasValue)
+            var wantedWidth = GetWantedWidth(pdf, sortedImageSizes);
+
+            var (dpi, dpiHeight) = CalculateDpiForWantedWidth(pdf, wantedWidth);
+            var adjustedHeight = GetAdjustedHeight(pdf, sortedImageSizes, dpiHeight);
+
+            var pageLists = CreatePageLists(pdf);
+            var imageProducers = new List<AbstractImageProducer>();
+
+            foreach (var pageList in pageLists)
             {
-                Console.WriteLine($"Adjusted height: {adjustedHeight.Value}");
+                var producer = new PopplerImageProducer(pdf, pageList, dpi);
+                imageProducers.Add(producer);
             }
 
-            var imageProducers = new List<AbstractImageConverter>(pageInfoMap.Count);
-
-            foreach (var page in pageInfoMap.OrderBy(p => p.Key))
-            {
-                if (adjustedHeight.HasValue)
-                {
-                    page.Value.ResizeHeight = adjustedHeight.Value;
-                }
-
-                if (page.Value is PdfPageInfoRenderImage renderImage)
-                {
-                    renderImage.Dpi = renderDpi;
-
-                    imageProducers.Add(new PopplerRenderImageConverter(pdf, renderImage));
-                }
-                else if (page.Value is PdfPageInfoSaveImage saveImage)
-                {
-                    imageProducers.Add(new PopplerSaveImageConverter(pdf, saveImage));
-                }
-            }
-
-            var fileCount = await ConvertPagesAsync(pdf, imageProducers);
-            pdf.SaveDirectory.DeleteIfExists();
+            var fileCount = ConvertPages(pdf, imageProducers, adjustedHeight);
 
             if (!Settings.SaveCoverOnly && (fileCount != pdf.PageCount))
             {
@@ -82,113 +42,68 @@ namespace PdfConverter
             }
         }
 
-        private static void SetPageParsed(PdfParser pdfParser, Pdf pdf)
+        private static List<(int width, int height, int count)> ParsePdfImages(Pdf pdf, PdfImageParser pdfImageParser)
         {
-            pdfParser.PageParsed += (s, e) =>
-            {
-                var parserMode = e.ParserMode switch
-                {
-                    ParserMode.Images => "images",
-                    ParserMode.Text => "text",
-                    _ => "?"
-                };
-                ProgressReporter.ShowProgress($"Parsing {parserMode} on page {e.CurrentPage}", e.CurrentPage, pdf.PageCount);
-            };
-        }
+            var progressReporter = new ProgressReporter(pdf.PageCount);
 
-        private static List<(int width, int height, int count)> ParsePdfImages(Pdf pdf, PdfParser pdfParser)
-        {
-            var sortedImageSizes = pdfParser.AnalyzeImages();
+            pdfImageParser.PageParsed += (s, e) => progressReporter.ShowProgress($"Parsing page-{e.CurrentPage}");
+
+            var sortedImageSizes = pdfImageParser.ParseImages();
+            progressReporter.EndProgress();
 
             Console.WriteLine($"{pdf.ImageCount} images");
 
-            var parserErrors = pdfParser.GetImageParserErrors();
-            parserErrors.ForEach(x => Console.WriteLine($"{x.pageNumber.ToPageString()} - {x.exception.TypeAndMessage()}"));
+            var parserErrors = pdfImageParser.GetImageParserErrors();
+            parserErrors.ForEach(ex => Console.WriteLine(ex.TypeAndMessage()));
 
             return sortedImageSizes;
         }
 
-        private static (Dictionary<int, AbstractPdfPageInfo> pageInfoMap, AbstractPdfPageInfo? pageToSaveMostOfThisSize) GetPageInfoMap(PdfParser pdfParser,
-            List<(int width, int height, int count)> sortedImageSizes)
+        private static bool SavePdfImages(Pdf pdf, PdfImageParser pdfImageParser, List<(int width, int height, int count)> sortedImageSizes)
         {
-            var pageMap = pdfParser.GetPageMap();
-            Debug.Assert(pageMap.Values.All(p => p is PdfPageInfoRenderImage));
-
-            // Saving original images from pdf requires pages with exactly one image
-            var pagesToSave = pageMap.Values.Where(p => p.ImageCount == 1 && p.LargestImage.height >= Settings.MinimumHeight && !IsCroppedDoublePageSpread(p)).ToList();
-
-            // Detect cropping of double page spread original image
-            static bool IsCroppedDoublePageSpread(AbstractPdfPageInfo pageInfo)
+            // Saving original images from pdf requires each page has exactly one image
+            if (pdf.ImageCount != pdf.PageCount
+                // Detect page without an image.
+                || sortedImageSizes.Any(i => i.width == 0))
             {
-                // If image is __ but page is | 
-                return (pageInfo.LargestImage.width > pageInfo.LargestImage.height) && (pageInfo.PageSize.height > pageInfo.PageSize.width);
+                return false;
             }
 
-            if (pagesToSave.Count == 0)
+            return false;
+
+            Console.Write("Use original images: ");
+            try
             {
-                return (pageMap, null);
-            }
-
-            // Disable saving original images if all pages has any text to render
-            pagesToSave = pdfParser.FilterPagesWithText(pagesToSave);
-
-            var parserErrors = pdfParser.GetTextParserErrors();
-            parserErrors.ForEach(x => Console.WriteLine($"{x.pageNumber.ToPageString()} - {x.exception.TypeAndMessage()}"));
-
-            if (pagesToSave.Count == 0)
-            {
-                return (pageMap, null);
-            }
-
-            AbstractPdfPageInfo? pageToSaveMostOfThisSize = null;
-
-            // Finally look at the height, unless all images are the same size
-            if (sortedImageSizes.Count > 1)
-            {
-                foreach (var (width, height, _) in sortedImageSizes)
+                // Disable saving original images if pdf contains any text to render
+                if (pdfImageParser.DetectRenderedText())
                 {
-                    if ((pageToSaveMostOfThisSize = pagesToSave.FirstOrDefault(p => p.LargestImage.width == width && p.LargestImage.height == height)) != null)
-                    {
-                        break;
-                    }
+                    ProgressReporter.Info("not available");
+                    return false;
                 }
-                Debug.Assert(pageToSaveMostOfThisSize != null);
-
-                var highest = pageToSaveMostOfThisSize.LargestImage.height * 1.1d;
-                var lowest = pageToSaveMostOfThisSize.LargestImage.height * 0.9d;
-
-                // Ensure saved pages are roughly the same height 
-                //return resizeHeight.HasValue && (resizeHeight < (height * 1.1d)) || (resizeHeight > (height * 0.9d));
-
-                //pagesToSave = pagesToSave.Where(p => p.LargestImage.height <= highest && p.LargestImage.height >= lowest).ToList();
-
-
-                pagesToSave = pagesToSave.Where(p => AbstractPdfPageInfo.UseResizeHeight(p.LargestImage.height, pageToSaveMostOfThisSize.LargestImage.height)).ToList();
-
-                if (pagesToSave.Count == 0)
-                {
-                    return (pageMap, null);
-                }
+                ProgressReporter.Done("ok");
             }
-
-            // Ensure pages to save gets the correct converter
-            foreach (var page in pagesToSave)
+            catch (IOException)
             {
-                pageMap[page.PageNumber]= (PdfPageInfoSaveImage)page;
-
-                //pageMap[page.PageNumber] = new PdfPageInfoSaveImage(page.PageNumber)
-                //{
-                //    ImageCount = page.ImageCount,
-                //    LargestImage = page.LargestImage,
-                //    LargestImageExt = page.LargestImageExt,
-                //    PageSize = page.PageSize,
-                //};
+                // Text rendering can fail because of a missing font
+                ProgressReporter.Info("error");
+                return false;
             }
 
-            return (pageMap, pageToSaveMostOfThisSize);
+            var pageLists = CreatePageLists(pdf);
+            var imageProducers = new List<AbstractImageProducer>();
+
+            foreach (var pageList in pageLists)
+            {
+                var producer = new ITextImageProducer(pdf, pageList);
+                imageProducers.Add(producer);
+            }
+
+            ConvertPages(pdf, imageProducers, resizeHeight: null);
+
+            return true;
         }
 
-        private static AbstractPdfPageInfo GetWantedWidth(Pdf pdf, List<(int width, int height, int count)> sortedImageSizes, Dictionary<int, AbstractPdfPageInfo> pageMap)
+        private static int GetWantedWidth(Pdf pdf, List<(int width, int height, int count)> sortedImageSizes)
         {
             var mostOfThisSize = sortedImageSizes.First();
 
@@ -200,23 +115,10 @@ namespace PdfConverter
                 Console.WriteLine($"  {count.ToString().PadLeft(padLen, ' ')}: {width} x {height}");
             }
 
-            return pageMap.Values.First(p => p.LargestImage.width == mostOfThisSize.width && p.LargestImage.height == mostOfThisSize.height);
+            return mostOfThisSize.width;
         }
 
-        private static int? GetAdjustedHeightForOriginalImages(AbstractPdfPageInfo pageToSaveMostOfThisSize)
-        {
-            var adjustedHeight = pageToSaveMostOfThisSize.LargestImage.height;
-
-            var maximumHeight = (Settings.MaximumHeight * 1.1d).ToInt(); // Add a little slack because we're saving original images
-            if (adjustedHeight > maximumHeight)
-            {
-                adjustedHeight = maximumHeight;
-            }
-
-            return adjustedHeight;
-        }
-
-        private static int? GetAdjustedHeightForRendering(Pdf pdf, List<(int width, int height, int count)> sortedImageSizes, int dpiHeight)
+        private static int? GetAdjustedHeight(Pdf pdf, List<(int width, int height, int count)> sortedImageSizes, int dpiHeight)
         {
             // The height of the image with the largest page count
             var realHeight = sortedImageSizes.First().height;
@@ -261,14 +163,14 @@ namespace PdfConverter
             return null;
         }
 
-        private static (int dpi, int wantedHeight) CalculateDpiForWantedWidth(Pdf pdf, AbstractPdfPageInfo pagwInfoWithWantedWidth)
+        private static (int dpi, int wantedHeight) CalculateDpiForWantedWidth(Pdf pdf, int wantedImageWidth)
         {
-            Console.WriteLine($"Wanted width: {pagwInfoWithWantedWidth.LargestImage.width}");
+            Console.WriteLine($"Wanted width: {wantedImageWidth}");
 
-            var pageMachine = new PopplerRenderPageMachine();
+            var pageMachine = new PopplerPageMachine();
 
             int dpiHeight = 0;
-            var dpiCalculator = new DpiCalculator(pageMachine, pdf, pagwInfoWithWantedWidth.LargestImage.width, pagwInfoWithWantedWidth.PageNumber);
+            var dpiCalculator = new DpiCalculator(pageMachine, pdf, wantedImageWidth);
 
             dpiCalculator.DpiCalculated += (s, e) =>
             {
@@ -278,41 +180,97 @@ namespace PdfConverter
 
             var dpi = dpiCalculator.CalculateDpi();
 
-            DumpErrors(dpiCalculator.GetErrors());
+            var (foundErrors, warningsOrErrors) = dpiCalculator.WarningsOrErrors;
+            if (warningsOrErrors.Count > 0)
+            {
+                var isWarnings = foundErrors == 0;
+                DumpWarningsOrErrors(isWarnings, warningsOrErrors);
+            }
 
             Console.WriteLine($"Selected dpi: {dpi}");
             return (dpi, dpiHeight);
         }
 
-        private static async Task<int> ConvertPagesAsync(Pdf pdf, List<AbstractImageConverter> imageConverters)
+        private static List<int>[] CreatePageLists(Pdf pdf)
         {
-            // Each converter reads one page and renders it to memory or saves it to disk.
-            // Each converter converts rendered images to jpg, or recompresses png images) in memory. Saved jps
+            // If we're only saving the cover this is all we need.
+            if (Settings.SaveCoverOnly)
+            {
+                return new[] { new List<int> { 1 } };
+            }
+
+            var pageCount = pdf.PageCount;
+            var maxThreads = Settings.NumberOfThreads;
+
+            // The goal is to have no pagelist with only one page (unless pageCount is 1) 
+            var parallelThreads = 1;
+            for (; parallelThreads < maxThreads; parallelThreads++)
+            {
+                if ((pageCount / parallelThreads) < 4)
+                {
+                    break;
+                }
+            }
+
+            //var pageLists = PageChunker.CreatePageLists(pageCount, parallelThreads);
+
+
+            var pageRanges = PageChunker.CreatePageRanges(pageCount, parallelThreads); 
+
+            Array.ForEach(pageRanges, p => Console.WriteLine($"  Reader{p.First()}: {p.Count} pages"));
+
+            return pageRanges;
+        }
+
+        private static int ConvertPages(Pdf pdf, List<AbstractImageProducer> imageProducers, int? resizeHeight)
+        {
+            // Each image producer reads a range of pages continously and renders or saves the images in memory.
+            // Each producer has a dedicated converter thread that converts images to jpg (or recompresses png images), also in memory. 
             // The page compressor thread picks up converted images as they are saved (in page order) and writes them to the cbz file.
 
+            var progressReporter = new ProgressReporter(pdf.PageCount);
+
             // Key is pagenumber
-            var convertedPages = new ConcurrentDictionary<int, AbstractImageConverter>(Settings.NumberOfThreads, pdf.PageCount);
+            var convertedPages = new ConcurrentDictionary<int, (ArrayPoolBufferWriter<byte> imageData, string imageExt)>(imageProducers.Count, pdf.PageCount);
 
             var pageCompressor = new PageCompressor(pdf, convertedPages);
 
             var pagesCompressed = 0;
             pageCompressor.PagesCompressed += (s, e) => OnPagesCompressed(e);
 
-            await Parallel.ForEachAsync(imageConverters, new ParallelOptions { MaxDegreeOfParallelism = 1/*Settings.NumberOfThreads*/ }, async (converter, _) =>
+            Parallel.ForEach(imageProducers, producer =>
             {
-                converter.OpenImage();
-                await converter.ConvertImageAsync();
+                var pageList = producer.PageList;
+                var pageQueue = new Queue<int>(pageList);
 
-                convertedPages.TryAdd(converter.GetPageNumber(), converter);
-                pageCompressor.SignalPageConverted();
+                var pageConverter = new PageConverter(pageQueue, convertedPages, resizeHeight);
+                pageConverter.PageConverted += (s, e) => pageCompressor.OnPageConverted(e);
+
+                producer.Start(pageConverter);
+
+                pageConverter.WaitForPagesConverted();
             });
 
             pageCompressor.SignalAllPagesConverted();
             pageCompressor.WaitForPagesCompressed();
 
-            foreach (var imageProducer in imageConverters)
+            progressReporter.EndProgress();
+
+            var foundErrors = 0;
+            var warningsOrErrors = new List<string>();
+
+            foreach (var producer in imageProducers)
             {
-                DumpErrors(imageProducer.GetErrorLines());
+                foundErrors += producer.WaitForExit();
+                warningsOrErrors.AddRange(producer.GetErrors());
+
+                producer.Dispose();
+            }
+
+            if (warningsOrErrors.Count > 0)
+            {
+                var isWarnings = foundErrors == 0;
+                DumpWarningsOrErrors(isWarnings, warningsOrErrors);
             }
 
             return pagesCompressed;
@@ -323,16 +281,11 @@ namespace PdfConverter
             }
         }
 
-        private static void DumpErrors(List<string> errorLines)
+        private static void DumpWarningsOrErrors(bool linesIsWarnings, List<string> warningsOrErrors)
         {
-            if (errorLines.Count == 0)
-            {
-                return;
-            }
-
             var linesDict = new Dictionary<string, int>();
 
-            foreach (var foundLine in errorLines)
+            foreach (var foundLine in warningsOrErrors)
             {
                 linesDict[foundLine] = linesDict.TryGetValue(foundLine, out var count) ? count + 1 : 1;
             }
@@ -349,7 +302,14 @@ namespace PdfConverter
                 lines.Add(line);
             }
 
-            ProgressReporter.DumpErrors(lines);
+            if (linesIsWarnings)
+            {
+                ProgressReporter.DumpWarnings(lines);
+            }
+            else
+            {
+                ProgressReporter.DumpErrors(lines);
+            }
         }
     }
 }

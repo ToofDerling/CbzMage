@@ -1,21 +1,12 @@
 ﻿namespace PdfConverter
 {
-    public enum ParserMode
-    { 
-        Images, Text
-    }
-
     public class PageParsedEventArgs : EventArgs
     {
-        public PageParsedEventArgs(int currentPage, ParserMode parserMode)
+        public PageParsedEventArgs(int currentPage)
         {
             CurrentPage = currentPage;
-
-            ParserMode = parserMode;
         }
 
         public int CurrentPage { get; private set; }
-
-        public ParserMode ParserMode { get; set; }
     }
 }
