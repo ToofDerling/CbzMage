@@ -10,25 +10,21 @@ namespace CbzMage.Shared.Helpers
 
         private readonly ProcessPriorityClass _priorityClass;
 
-        public ProcessStartInfo ProcessStartInfo { get; private set; }
-
         public ProcessRunner(string path, string args = "", string workingDirectory = "", ProcessPriorityClass processPriority = ProcessPriorityClass.Normal,
             EventHandler<DataReceivedEventArgs>? outputReceived = null)
         {
-            ProcessStartInfo = new ProcessStartInfo
-            {
-                FileName = path,
-                Arguments = args,
-                WorkingDirectory = workingDirectory,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-            };
-
             _process = new Process
             {
-                StartInfo = ProcessStartInfo
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = path,
+                    Arguments = args,
+                    WorkingDirectory = workingDirectory,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                }
             };
 
             if (outputReceived != null)

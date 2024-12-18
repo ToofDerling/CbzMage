@@ -4,6 +4,8 @@ namespace CbzMage.Shared.Helpers
 {
     public class ProgressReporter
     {
+        private readonly object _progressLock = new();
+
         private readonly int _total;
 
         private volatile int _current;
@@ -12,35 +14,28 @@ namespace CbzMage.Shared.Helpers
         {
             _total = total;
         }
-        
+
         public void ShowProgress(string message)
         {
             var current = ++_current;
 
-            ShowProgress(message, current, _total);
-        }
+            var progressPercentage = current / (_total / 100d);
 
-        public static void ShowProgress(string message, int current, int total)
-        {
-            var progressPercentage = current / (total / 100d);
-
-            var convertedProgress = progressPercentage.ToInt();
+            var convertedProgress = Convert.ToInt32(progressPercentage);
             convertedProgress = Math.Min(convertedProgress, 100);
 
             var progress = $"{message} {convertedProgress}%";
 
-            lock (_showLock)
+            lock (_progressLock)
             {
                 Console.CursorLeft = 0;
-                if (current < total)
-                {
-                    Console.Write(progress);
-                }
-                else
-                {
-                    Console.WriteLine(progress);
-                }
+                Console.Write(progress);
             }
+        }
+
+        public void EndProgress()
+        {
+            Console.WriteLine();
         }
 
         public static void ShowMessage(string message)
