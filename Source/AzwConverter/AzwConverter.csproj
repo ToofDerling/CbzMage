@@ -8,8 +8,6 @@
 
   <ItemGroup>
     <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.10.0" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.1" />
   </ItemGroup>
 
   <ItemGroup>
