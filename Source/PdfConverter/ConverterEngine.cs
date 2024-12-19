@@ -61,15 +61,17 @@ namespace PdfConverter
 
         private static bool SavePdfImages(Pdf pdf, PdfImageParser pdfImageParser, List<(int width, int height, int count)> sortedImageSizes)
         {
+            Console.Write("Use original images: ");
+
             // Saving original images from pdf requires each page has exactly one image
             if (pdf.ImageCount != pdf.PageCount
                 // Detect page without an image.
                 || sortedImageSizes.Any(i => i.width == 0))
             {
+                ProgressReporter.Info("not available");
                 return false;
             }
 
-            Console.Write("Use original images: ");
             try
             {
                 // Disable saving original images if pdf contains any text to render
