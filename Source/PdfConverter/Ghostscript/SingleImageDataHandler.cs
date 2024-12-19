@@ -1,7 +1,7 @@
 ﻿using CbzMage.Shared.Buffers;
 using System.Collections.Concurrent;
 
-namespace PdfConverter.ImageData
+namespace PdfConverter.Ghostscript
 {
     public class SingleImageDataHandler : IImageDataHandler
     {

@@ -1,20 +1,19 @@
 ﻿using ImageMagick;
-using PdfConverter.ImageData;
-using PdfConverter.PageMachines;
+using PdfConverter.Ghostscript;
 
 namespace PdfConverter
 {
     public class DpiCalculator
     {
-        private readonly PopplerPageMachine _pageMachine;
+        private readonly GhostscriptPageMachine _ghostScriptPageMachine;
 
         private readonly int _wantedImageWidth;
 
         private readonly Pdf _pdf;
 
-        public DpiCalculator(PopplerPageMachine pageMachine, Pdf pdf, int wantedImageWidth)
+        public DpiCalculator(GhostscriptPageMachine ghostScriptPageMachine, Pdf pdf, int wantedImageWidth)
         {
-            _pageMachine = pageMachine;
+            _ghostScriptPageMachine = ghostScriptPageMachine;
 
             _wantedImageWidth = wantedImageWidth;
 
@@ -130,7 +129,7 @@ namespace PdfConverter
         {
             var imageHandler = new SingleImageDataHandler();
 
-            using var gsRunner = _pageMachine.StartReadingPages(_pdf, new List<int> { 1 }, dpi, imageHandler);
+            using var gsRunner = _ghostScriptPageMachine.StartReadingPages(_pdf, new List<int> { 1 }, dpi, imageHandler);
 
             var bufferWriter = imageHandler.WaitForImageDate();
 

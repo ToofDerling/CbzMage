@@ -1,6 +1,4 @@
-﻿using PdfConverter.ImageData;
-
-namespace PdfConverter.ImageProducer
+﻿namespace PdfConverter.ImageProducer
 {
     public abstract class AbstractImageProducer
     {

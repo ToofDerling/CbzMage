@@ -1,6 +1,5 @@
 ﻿using CbzMage.Shared.Helpers;
-using PdfConverter.ImageData;
-using PdfConverter.PageMachines;
+using PdfConverter.Ghostscript;
 
 namespace PdfConverter.ImageProducer
 {

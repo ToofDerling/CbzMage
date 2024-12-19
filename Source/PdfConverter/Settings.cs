@@ -41,19 +41,5 @@ namespace PdfConverter
         }
 
         public static int WriteBufferSize => 262144;
-
-        public static string PdfToPngPath { get; private set; }
-
-        public static void SetPdfToPngPath(string pdfToPngPath)
-        {
-            PdfToPngPath = pdfToPngPath;
-        }
-
-        public static string PdfImagesPath { get; private set; }
-
-        public static void SetPdfImagesPath(string pdfImagesPath)
-        {
-            PdfImagesPath = pdfImagesPath;
-        }
     }
 }

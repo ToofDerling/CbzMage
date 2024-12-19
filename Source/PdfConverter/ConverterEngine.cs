@@ -2,8 +2,8 @@
 using CbzMage.Shared.Extensions;
 using CbzMage.Shared.Helpers;
 using PdfConverter.Exceptions;
+using PdfConverter.Ghostscript;
 using PdfConverter.ImageProducer;
-using PdfConverter.PageMachines;
 using System.Collections.Concurrent;
 
 namespace PdfConverter
@@ -30,7 +30,7 @@ namespace PdfConverter
 
             foreach (var pageList in pageLists)
             {
-                var producer = new PopplerImageProducer(pdf, pageList, dpi);
+                var producer = new GhostScriptImageProducer(pdf, pageList, dpi);
                 imageProducers.Add(producer);
             }
 
@@ -68,8 +68,6 @@ namespace PdfConverter
             {
                 return false;
             }
-
-            return false;
 
             Console.Write("Use original images: ");
             try
@@ -167,11 +165,11 @@ namespace PdfConverter
         {
             Console.WriteLine($"Wanted width: {wantedImageWidth}");
 
-            var pageMachine = new PopplerPageMachine();
+            var pageMachine = new GhostscriptPageMachine();
 
             int dpiHeight = 0;
-            var dpiCalculator = new DpiCalculator(pageMachine, pdf, wantedImageWidth);
 
+            var dpiCalculator = new DpiCalculator(pageMachine, pdf, wantedImageWidth);
             dpiCalculator.DpiCalculated += (s, e) =>
             {
                 dpiHeight = e.Height;
@@ -212,14 +210,11 @@ namespace PdfConverter
                 }
             }
 
-            //var pageLists = PageChunker.CreatePageLists(pageCount, parallelThreads);
+            var pageLists = PageChunker.CreatePageLists(pageCount, parallelThreads);
 
+            Array.ForEach(pageLists, p => Console.WriteLine($"  Reader{p.First()}: {p.Count} pages"));
 
-            var pageRanges = PageChunker.CreatePageRanges(pageCount, parallelThreads); 
-
-            Array.ForEach(pageRanges, p => Console.WriteLine($"  Reader{p.First()}: {p.Count} pages"));
-
-            return pageRanges;
+            return pageLists;
         }
 
         private static int ConvertPages(Pdf pdf, List<AbstractImageProducer> imageProducers, int? resizeHeight)

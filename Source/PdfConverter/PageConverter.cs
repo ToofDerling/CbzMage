@@ -2,7 +2,6 @@
 using CbzMage.Shared.Extensions;
 using CbzMage.Shared.JobQueue;
 using PdfConverter.Exceptions;
-using PdfConverter.ImageData;
 using PdfConverter.Jobs;
 using System.Collections.Concurrent;
 
@@ -34,7 +33,7 @@ namespace PdfConverter
 
         public void WaitForPagesConverted() => _jobWaiter.WaitForJobsToFinish();
 
-        // Handle png/jpg (possible other types) imagedata from saving the original pdf images.
+        // Handle png/jpg (possible other types) imagedata from Itext saving original pdf images.
         public void HandleSavedImageData(ArrayPoolBufferWriter<byte> bufferWriter, string imageExt)
         {
             if (bufferWriter == null)
@@ -58,7 +57,7 @@ namespace PdfConverter
             _converterExecutor.AddJob(job);
         }
 
-        // Handle png imagedata from rendering the pdf. 
+        // Handle png imagedata from Ghostscript rendering a pdf. 
         public void HandleRenderedImageData(ArrayPoolBufferWriter<byte> bufferWriter)
         {
             if (bufferWriter == null)

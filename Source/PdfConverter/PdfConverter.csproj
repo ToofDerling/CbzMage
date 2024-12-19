@@ -8,13 +8,8 @@
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
 
-	<PropertyGroup>
-		<PublishRepositoryUrl>true</PublishRepositoryUrl>
-		<EmbedUntrackedSources>true</EmbedUntrackedSources>
-	</PropertyGroup>
-	
   <ItemGroup>
-    <Compile Remove="PageMachines\GhostscriptPageMachineManager.cs" />
+    <Compile Remove="Ghostscript\GhostscriptPageMachineManager.cs" />
   </ItemGroup>
  
   <ItemGroup>
@@ -28,9 +23,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="PdfConvertSettings.Development.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="PdfConvertSettings.Development.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

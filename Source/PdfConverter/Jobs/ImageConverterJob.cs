@@ -1,4 +1,5 @@
 ﻿using CbzMage.Shared.Buffers;
+using CbzMage.Shared.Extensions;
 using CbzMage.Shared.JobQueue;
 using ImageMagick;
 using PdfConverter.Helpers;
@@ -40,32 +41,20 @@ namespace PdfConverter.Jobs
             var pngSize = _bufferWriter.WrittenCount;
             using var image = new MagickImage(_bufferWriter.WrittenSpan);
 
-            //switch (_imageExt)
-            //{
-            //    case ImageExt.Png:
-            //        //image.Format = MagickFormat.Png;
-            //        //image.Quality = 100;
-            //        break;
-            //    default:
-            //        _imageExt = ImageExt.Jpg;
+            switch (_imageExt)
+            {
+                case ImageExt.Png:
+                    image.Format = MagickFormat.Png;
+                    image.Quality = 100;
+                    break;
+                default:
+                    _imageExt = ImageExt.Jpg;
 
-            //        // Produce baseline jpgs with no subsampling.
-            //        image.Format = MagickFormat.Jpg;
-            //        image.Quality = Settings.JpgQuality;
-            //        break;
-            //}
-            //_imageExt = ImageExt.Png;
-
-            //var depth = image.Depth;
-
-            //if (depth <= 16)
-            //{
-            //    image.Depth = 24;
-            //}
-
-            // Produce baseline jpgs with no subsampling.
-            image.Format = MagickFormat.Jpg;
-            image.Quality = Settings.JpgQuality;
+                    // Produce baseline jpgs with no subsampling.
+                    image.Format = MagickFormat.Jpg;
+                    image.Quality = Settings.JpgQuality;
+                    break;
+            }
 
             var resized = false;
             if (_resizeHeight.HasValue && image.Height > _resizeHeight.Value)
@@ -86,11 +75,18 @@ namespace PdfConverter.Jobs
 
             var jpgSize = _bufferWriter.WrittenCount;
 
-#if DEBUG
+            if (!string.IsNullOrEmpty(SaveDir))
+            {
+                var page = _pageNumber.ToPageString(_imageExt);
+                var pageFile = Path.Combine(SaveDir, page);
+
+                File.WriteAllBytes(pageFile, _bufferWriter.WrittenSpan.ToArray());
+            }
+
+#if DEBUG 
             stopwatch.Stop();
             StatsCount.AddImageConversion((int)stopwatch.ElapsedMilliseconds, resized, pngSize, jpgSize);
 #endif
-
             return Task.FromResult((_pageNumber, _bufferWriter, _imageExt));
         }
     }
