@@ -15,7 +15,7 @@
   <ItemGroup>
     <PackageReference Include="itext7" Version="9.0.0" />
     <PackageReference Include="itext7.bouncy-castle-adapter" Version="9.0.0" />
-    <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.10.0" />
+    <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="14.10.1" />
   </ItemGroup>
 
   <ItemGroup>
